@@ -42,8 +42,6 @@ If the port is empty or not given, port 80 is assumed.
 
 			<html> ... result ... </html>
 
-	example:
-
 
 
 ### to see a real http request
