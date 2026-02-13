@@ -1,3 +1,145 @@
+# Terminology Notes
+
+## 0 - OSI Model
+
+The `OSI Model` is a conceptual model to organize networking into layers.
+
+It has 7 layers:
+1. Physical
+2. Data Link
+3. Network
+4. Transport
+5. Session
+6. Presentation
+7. Application
+
+for `Webserv`, a simplified representation of the OSI Model would be:
+
+```
+Application   → HTTP
+Transport     → TCP
+Network       → IP
+Link          → Ethernet / Wi-Fi
+```
+
+Which means, we mainly care about:
+
+🔹 Application Layer
+- HTTP request format
+- HTTP response format
+- Headers
+- Status codes
+- Methods (GET, POST, DELETE)
+
+🔹 Transport Layer
+- TCP
+- Ports
+- Connections
+- Listening socket
+- accept()
+- recv()
+- send()
+
+## 1 - Networking basics
+
+### 1.1 What is TCP?
+📌 Definition
+
+TCP (Transmission Control Protocol) is a transport-layer protocol that enables reliable, ordered, and error-checked communication between two devices over a network.
+
+🧠 What makes TCP special?
+
+TCP guarantees:
+- ✅ Reliable delivery (no data loss)
+- ✅ Ordered data (correct sequence)
+- ✅ Error checking
+- ✅ Flow control
+- ✅ Congestion control
+
+Unlike UDP, TCP is connection-oriented.
+
+🔄 How TCP Works (Simplified)
+
+1️⃣ Three-Way Handshake [(see geekforgeek article for more details)](https://www.geeksforgeeks.org/computer-networks/tcp-3-way-handshake-process/)
+
+Before data is sent:
+1. Client → SYN
+2. Server → SYN-ACK
+3. Client → ACK
+
+Connection established.
+
+2️⃣ Data Transfer
+
+Data is split into segments and sent reliably.
+
+3️⃣ Connection Close
+
+Connection is gracefully terminated.
+
+### 1.2 What is a socket?
+📌 Definition
+
+A socket is a software endpoint for communication between two machines.
+
+🧠 More Technical Definition
+
+A socket is defined by:
+```
+IP Address + Port + Protocol (TCP/UDP)
+```
+
+Example:
+```
+192.168.1.10 : 8080 (TCP)
+```
+
+🔥 Important Concept
+
+There are TWO sockets in a TCP server:
+- Listening socket
+- Connected socket (returned by accept())
+
+### 1.3 What is a port?
+📌 Definition
+
+A port is a numerical identifier used to distinguish different services on the same machine.
+
+It allows one computer to run multiple network services simultaneously.
+
+🧠 Why Ports Exist
+
+Your computer can run:
+- Web server
+- SSH server
+- Database
+- FTP server
+- etc.
+
+All on the same IP.
+
+Ports tell the OS which application should receive the data.
+
+### 1.4 Client - Server Architecture
+📌 Definition
+
+Client–Server is a network model where:
+- Client → requests a service
+- Server → provides the service
+
+🧠 What Actually Happens
+
+1. Client creates a socket
+2. Client connects to server IP + port
+3. Server accepts connection
+4. Client sends HTTP request
+5. Server sends HTTP response
+6. Connection closes (or stays open)
+
+## NGINX
+
+
+## HTTP Protocol
 ## `URL` = Uniform Resource Locators
 	is the address that specifies where a resource is located on the internet and how to access it
 
