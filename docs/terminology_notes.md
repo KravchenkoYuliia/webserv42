@@ -52,4 +52,19 @@ If the port is empty or not given, port 80 is assumed.
 		curl -v http://localhost:8080/
 		```
 
+## Socket
 
+		Message Passing is a method where processes communicate by sending and receiving messages to exchange data. One process sends a message and the other process receives it, allowing them to share information. Message Passing can be achieved through different methods like Sockets, Message Queues or Pipes.
+
+![message passing](message_passing.png)
+
+Process A  →  Kernel  →  Network stack  →  Internet  →  Kernel  →  Process B
+🔥 In the case of a TCP server
+
+When a browser connects to web server:
+
+1️⃣ The browser sends the request to its local kernel.
+2️⃣ The kernel initiates the TCP handshake.
+3️⃣ The server’s kernel receives the SYN packet.
+4️⃣ The server’s kernel notifies your process through accept().
+5️⃣ At this point, the connection is established.
