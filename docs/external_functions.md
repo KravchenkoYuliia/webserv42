@@ -67,3 +67,39 @@ return fail: -1
 
 shuts down the socket associated with the socket descriptor d and frees resources allocated to the socket. If s refers to an open TCP connection, the connection is closed
 
+![socket](socket1.png) ![socket](socket2.png)
+
+include <sys/socket.h>
+
+## `socket`
+	int socket(int domain, int type, int protocol);
+
+returns success: file descriptor for the new socket
+returns fail: -1
+
+create an endpoint for communication
+
+## `socketpair`
+	int socketpair(int domain, int type, int protocol, int sv[2]);
+
+returns success: 0;
+return fail: -1
+
+create a pair of connected sockets
+
+## `setsockopt`
+	int setsockopt(int socket, int level, int option_name, const void *option_value, socklen_t option_len);
+
+returns success: 0;
+return fail: -1
+
+configures the behavior of an existing socket by setting specific operating system-level options such as address reuse, timeouts, buffer size.
+
+## `getsockname`
+	int getsockname(int socket, struct sockaddr *restrict address, socklen_t *restrict address_len);
+
+
+returns success: 0;
+return fail: -1
+	
+retrieves the local address (IP and port) currently assigned to a socket
