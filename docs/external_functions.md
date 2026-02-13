@@ -74,6 +74,11 @@ include <sys/socket.h>
 ## `socket`
 	int socket(int domain, int type, int protocol);
 
+	domain: AF_LOCAL as defined in the POSIX standard for communication between processes on the same host
+	type: SOCK_STREAM: TCP(reliable, connection-oriented)
+	protocol: specifies a particular protocol to be used with the socket. Specifying a protocol of 0 causes socket() to use an unspecified default protocol appropriate for the requested socket type
+
+
 returns success: file descriptor for the new socket
 returns fail: -1
 
@@ -92,6 +97,14 @@ create a pair of connected sockets
 
 returns success: 0;
 return fail: -1
+
+Prevents error such as: “address already in use”.
+
+	example:
+		int opt = 1;
+		setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+after our server is restarted `SO_REUSEADDR` allows a server to bind to a port that may still be marked as in use (e.g., in the TIME_WAIT state) preventing the "Address already in use" error
 
 configures the behavior of an existing socket by setting specific operating system-level options such as address reuse, timeouts, buffer size.
 
