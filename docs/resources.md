@@ -10,11 +10,13 @@
 - [OSI model](https://www.youtube.com/watch?v=OTwp3xtd4dg)
 - [Unix Network Programming (TCP, Socket, Poll, etc.)](https://notes.shichao.io/unp/)
 - [I/O Multiplexing: The select and poll Functions](https://notes.shichao.io/unp/ch6/)
+- [Epoll syntax](https://devarea.com/linux-io-multiplexing-select-vs-poll-vs-epoll/)
 
 ## Sockets
 - [Socket in Computer Network](https://www.geeksforgeeks.org/computer-networks/socket-in-computer-network/)
 - [Introduction to Sockets + Client Server Model with code example](https://www.labs.cs.uregina.ca/330/Sockets/sockets.html)
 - [Socket Programming with TCP client-server diagram](https://www.cs.dartmouth.edu/~campbell/cs50/socketprogramming.html)
+- [Socket Code Examples](https://web.stanford.edu/~ouster/cs190-winter23/sockets/)
 
 ## Ports
 - [What is a computer port?](https://www.cloudflare.com/learning/network-layer/what-is-a-computer-port/)
