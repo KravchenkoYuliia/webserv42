@@ -80,7 +80,7 @@ Connection is gracefully terminated.
 ### 1.2 What is a socket?
 📌 Definition
 
-A socket is a software endpoint for communication between two machines.
+A socket is a software abstraction that represents one endpoint of a network communication.
 
 🧠 More Technical Definition
 
@@ -94,11 +94,29 @@ Example:
 192.168.1.10 : 8080 (TCP)
 ```
 
-🔥 Important Concept
+🔥 Important Concept (TCP Server)
 
-There are TWO sockets in a TCP server:
-- Listening socket
-- Connected socket (returned by accept())
+A TCP server uses:
+- One listening socket
+- One connected socket per client (returned by accept())
+
+If multiple clients connect, the server will have multiple connected sockets.
+
+A TCP server has:
+
+1️⃣ One listening socket
+- Bound to a port
+- Waits for connections
+
+2️⃣ One new connected socket per client
+- Returned by accept()
+- Used for communication with that specific client
+
+So if 5 clients connect:
+- 1 listening socket
+- 5 connected sockets
+
+=> Total: 6 sockets
 
 ### 1.3 What is a port?
 📌 Definition
@@ -135,6 +153,122 @@ Client–Server is a network model where:
 4. Client sends HTTP request
 5. Server sends HTTP response
 6. Connection closes (or stays open)
+
+### 1.5 I/O Multiplexing: `select()` VS `poll()` VS `epoll()`
+
+
+this is **core event-driven server knowledge**, and it directly affects how you design your TCP server event loop.
+#### 1️⃣ Why do `select()`, `poll()`, and `epoll()` exist?
+
+When you build a server:
+
+* You may have **1000+ client sockets**
+* You cannot block on one client
+* You need to know **which socket is ready**
+
+These functions are called **I/O multiplexing mechanisms**.
+
+They allow a process to:
+
+> Block until one or more file descriptors become ready for I/O.
+
+Instead of handling one socket per thread, you can manage many sockets in a single event loop.
+📌 `I/O Multiplexing` Definition
+
+I/O multiplexing allows us to simultaneously monitor multiple file descriptors to
+see if I/O is possible on any of them.
+
+#### 2️⃣ What is `select()`?
+📌 Definition
+
+`select()` is a system call that monitors multiple file descriptors to see if they are:
+
+* Ready for reading
+* Ready for writing
+* In an exceptional state (errors)
+
+🧠 How it Works
+
+1. Put file descriptors into sets:
+   * `readfds`
+   * `writefds`
+   * `exceptfds`
+2. Call `select()`
+3. The kernel blocks until at least one FD is ready (or timeout occurs)
+4. The sets are modified to indicate which FDs are ready
+
+❗ Limitations
+
+* Limited by `FD_SETSIZE` (commonly ~1024 files)
+* O(n) complexity — Scans all FDs every time
+* You must rebuild fd_set every loop
+* Inefficient for large numbers of connections
+
+#### 3️⃣ What is `poll()`?
+
+📌 Definition
+
+`poll()` is similar to `select()` but:
+
+* Uses an array of `struct pollfd`
+* Does not have a fixed hard limit like `FD_SETSIZE`
+* Has a cleaner and more flexible interface
+
+🧠 How it Works
+
+You create an array:
+
+```cpp
+struct pollfd fds[];
+```
+
+Each entry contains:
+* fd (file descriptor)
+* events (what you care about)
+* revents (what actually happened)
+
+You call `poll()`, and the kernel fills in which FDs are ready.
+
+❗ Limitation
+
+Still:
+
+* Still O(n) — kernel scans all FDs on each call
+* Performance degrades linearly with number of connections
+
+`poll()` improves usability over `select()`, but scalability is still limited.
+
+#### 4️⃣ What is `epoll()`? (Linux only)
+📌 Definition
+
+`epoll()` is a high-performance I/O event notification system for Linux.
+
+Designed for:
+
+> Massive concurrency (10k–1M connections)
+
+🧠 Key Idea
+
+With `select()` and `poll()`:
+
+> Each call scans the entire set of file descriptors.
+
+With `epoll()`:
+* You register file descriptors once
+* The kernel maintains an internal interest list
+* The kernel tracks which FDs become ready
+* `epoll_wait()` returns only the ready file descriptors
+
+🚀 Why It Scales Better
+
+* Adding/removing FDs is O(1)
+* Waiting is proportional to the number of ready FDs
+* No need to rescan the entire FD set
+* No hard descriptor limit (other than system limits)
+
+This makes it much more efficient for high-concurrency servers.
+
+## 1.6 I/O multiplexing mechanisms
 
 ## NGINX
 
