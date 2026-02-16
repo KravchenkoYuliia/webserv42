@@ -8,6 +8,8 @@
 ## Network Programming
 - [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/html/)
 - [OSI model](https://www.youtube.com/watch?v=OTwp3xtd4dg)
+- [Unix Network Programming (TCP, Socket, Poll, etc.)](https://notes.shichao.io/unp/)
+- [I/O Multiplexing: The select and poll Functions](https://notes.shichao.io/unp/ch6/)
 
 ## Sockets
 - [Socket in Computer Network](https://www.geeksforgeeks.org/computer-networks/socket-in-computer-network/)
@@ -23,3 +25,4 @@
 ## Nginx
 - [Nginx Master-Worker Architecture: From Zero to Production](https://medium.com/%40nomannayeem/nginx-master-worker-architecture-from-zero-to-production-c451ee8e44ca)
 - [How NGINX's Event-Driven Architecture Handles Million Concurrent Connections ? Overview of NGNIX's Event Driven Non-Blocking I/O Architecture](https://engineeringatscale.substack.com/p/nginx-millions-connections-event-driven-architecture)
+
