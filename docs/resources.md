@@ -28,3 +28,5 @@
 - [Nginx Master-Worker Architecture: From Zero to Production](https://medium.com/%40nomannayeem/nginx-master-worker-architecture-from-zero-to-production-c451ee8e44ca)
 - [How NGINX's Event-Driven Architecture Handles Million Concurrent Connections ? Overview of NGNIX's Event Driven Non-Blocking I/O Architecture](https://engineeringatscale.substack.com/p/nginx-millions-connections-event-driven-architecture)
 
+## HTTP
+- [Webserv tutorials with good HTTP response flow-chart](https://m4nnb3ll.medium.com/webserv-building-a-non-blocking-web-server-in-c-98-a-42-project-04c7365e4ec7)
