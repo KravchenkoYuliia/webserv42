@@ -1,4 +1,4 @@
-![function for socket connection](socket_connection.png)
+![function for socket connection](./assets/socket_connection.png)
 
 include <sys/socket.h>
 
@@ -58,7 +58,7 @@ receives data on a socket with descriptor socket and stores it in buffer
 ## `close`
 	include <manifest.h>
 	include <socket.h>
-	
+
 	int	close( int d );
 		d -> descriptor of the socket to be closed
 
@@ -67,7 +67,7 @@ return fail: -1
 
 shuts down the socket associated with the socket descriptor d and frees resources allocated to the socket. If s refers to an open TCP connection, the connection is closed
 
-![socket](socket1.png) ![socket](socket2.png)
+![socket](./assets/socket1.png) ![socket](./assets/socket2.png)
 
 include <sys/socket.h>
 
@@ -114,5 +114,5 @@ configures the behavior of an existing socket by setting specific operating syst
 
 returns success: 0;
 return fail: -1
-	
+
 retrieves the local address (IP and port) currently assigned to a socket
