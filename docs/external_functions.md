@@ -8,7 +8,7 @@ include <sys/socket.h>
 returns success: 0
 return fail: -1
 
-use the Bide function to assign a unique local name (network address) to a socket
+use the bind function to assign a unique local name (network address) to a socket
 attaches a socket to a specific IP address and port so the server can receive connections on that address
 
 ## `listen`
@@ -169,7 +169,7 @@ network long ---> host  ( IP addresses )
 the simple way to handle multiple clients would be `epoll`
 
 - epoll_create()
-	
+
 	int epoll_create(int size);
 
 	returns success: file descriptor (a nonnegative integer)
@@ -199,7 +199,7 @@ the simple way to handle multiple clients would be `epoll`
            epoll_data_t  data;    /* specifies data that the kernel should save and then return */
        };
 	   the epoll_event structure specifies data that the kernel should save and return when the corresponding file descriptor becomes ready
-	     
+
 		 union epoll_data {
            void     *ptr;
            int       fd;
@@ -211,7 +211,7 @@ the simple way to handle multiple clients would be `epoll`
 - epoll_wait()
 
 	int		epoll_wait( int epfd, struct epoll_event *events, int maxevents, int timeout );
-	
+
 	returns success: the number of file descriptors ready for the requested I/O operation
 	returns fail: -1
 
@@ -220,31 +220,32 @@ the simple way to handle multiple clients would be `epoll`
 
 
 	example:
+	```cpp
 			struct epoll_event events[5];
 			int epfd = epoll_create(10);
 			...
 			...
-			for (i=0;i<5;i++) 
+			for (i=0;i<5;i++)
 			{
 				static struct epoll_event ev;
 				memset(&client, 0, sizeof (client));
 				addrlen = sizeof(client);
 				ev.data.fd = accept(sockfd,(struct sockaddr*)&client, &addrlen);
 				ev.events = EPOLLIN;
-				epoll_ctl(epfd, EPOLL_CTL_ADD, ev.data.fd, &ev); 
+				epoll_ctl(epfd, EPOLL_CTL_ADD, ev.data.fd, &ev);
 			}
-			
+
 			while(1){
 				puts("round again");
 				nfds = epoll_wait(epfd, events, 5, 10000);
-				
+
 				for(i=0;i<nfds;i++) {
 						memset(buffer,0,MAXBUF);
 						read(events[i].data.fd, buffer, MAXBUF);
 						puts(buffer);
 				}
 			}
-
+	```
 
 ## `getaddrinfo`
 	include <sys/types.h>
@@ -269,8 +270,9 @@ resolves a hostname and port into socket-ready address structures for use with b
                struct addrinfo *ai_next;
            };
 
-example: 
-			 include <cstring> 
+example:
+```cpp
+	 include <cstring>
 
 
 		struct addrinfo		hints;
@@ -289,7 +291,7 @@ example:
 								res->ai_protocol);
 
 		bind( sock, res->ai_addr, res->ai_addrlen );
-
+```
 
 ## `freeaddrinfo`
 
