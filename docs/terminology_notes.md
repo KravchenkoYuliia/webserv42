@@ -208,3 +208,23 @@ When a browser connects to web server:
 - 3️⃣ The server’s kernel receives the SYN packet.
 - 4️⃣ The server’s kernel notifies your process through accept().
 - 5️⃣ At this point, the connection is established.
+
+
+
+
+## Test nginx and telnet
+- create docker with nginx
+- run it with port 8080
+	`docker run --rm -p 8080:80 nginx`
+
+- connect via telnet
+	`telnet localhost 8080`
+- send a request
+
+```
+GET / HTTP/1.1
+Host: localhost
+```
+
+
+	
