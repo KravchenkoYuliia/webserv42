@@ -321,7 +321,33 @@ returns fail: NULL pointer
 
 int		stat( const char *restrict path, struct stat *restrict buf );
 
-returns success: 0;
+returns success: 0
 return fail: -1
 
 retrieves information about a file ( type, size, permission, timestamps ) from the filesystem
+
+## `fcntl`
+ #include <fcntl.h>
+
+       int fcntl(int fd, int op, ...);
+
+returns success: depends on the operation
+return fail: -1
+
+performs one of the operations on the open
+file descriptor fd.  The operation is determined by op.
+
+`op` can be :
+- F_GETFL 
+int fcntl(int fd, F_GETFL);
+
+returns success: (as the function result) the file access mode and the file status flags;
+      
+- F_SETFL
+ int fcntl(int fd, F_SETFL, int arg);
+
+returns success: 0
+
+ Set the file status flags to the value specified by arg.
+ On Linux, this operation can change only the O_APPEND, O_ASYNC, O_DIRECT, O_NOATIME, and O_NONBLOCK flags. 
+ O_NONBLOCK sets a socket to non-blocking mode

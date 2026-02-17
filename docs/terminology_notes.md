@@ -121,6 +121,8 @@ So if 5 clients connect:
 ### 1.3 What is a port?
 📌 Definition
 
+Port is a 16-bits number ( 0-65535 )
+
 A port is a numerical identifier used to distinguish different services on the same machine.
 
 It allows one computer to run multiple network services simultaneously.
@@ -137,6 +139,9 @@ Your computer can run:
 All on the same IP.
 
 Ports tell the OS which application should receive the data.
+
+Ports from 0 to 1023 requires root privilege
+We can use ports 1024-65535 in config file
 
 ### 1.4 Client - Server Architecture
 📌 Definition
@@ -326,6 +331,17 @@ If the port is empty or not given, port 80 is assumed.
 		curl -v http://localhost:8080/
 		```
 
+		or
+- connect to nginx
+- `nc localhost 8080`
+- write a request
+```
+GET / HTTP/1.1
+Host: localhost
+```
+
+
+
 ## Socket
 
 		Message Passing is a method where processes communicate by sending and receiving messages to exchange data. One process sends a message and the other process receives it, allowing them to share information. Message Passing can be achieved through different methods like Sockets, Message Queues or Pipes.
@@ -359,6 +375,3 @@ When a browser connects to web server:
 GET / HTTP/1.1
 Host: localhost
 ```
-
-
-	

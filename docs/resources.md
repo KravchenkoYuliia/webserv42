@@ -17,6 +17,8 @@
 - [Introduction to Sockets + Client Server Model with code example](https://www.labs.cs.uregina.ca/330/Sockets/sockets.html)
 - [Socket Programming with TCP client-server diagram](https://www.cs.dartmouth.edu/~campbell/cs50/socketprogramming.html)
 - [Socket Code Examples](https://web.stanford.edu/~ouster/cs190-winter23/sockets/)
+- [Socket programming in C++](https://www.geeksforgeeks.org/cpp/socket-programming-in-cpp/)
+- [Communication par sockets TCP/IP](https://du-isn.gricad-pages.univ-grenoble-alpes.fr/2-sr/Reseaux/3--cours_reseaux--sockets_java.pdf)
 
 ## Ports
 - [What is a computer port?](https://www.cloudflare.com/learning/network-layer/what-is-a-computer-port/)
