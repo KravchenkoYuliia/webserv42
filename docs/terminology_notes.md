@@ -118,7 +118,9 @@ So if 5 clients connect:
 
 => Total: 6 sockets
 
-### 1.3 What is a port?
+### 1.3 What is an Interface: Port Pair?
+
+#### 1.3.1 What is a port?
 📌 Definition
 
 Port is a 16-bits number ( 0-65535 )
@@ -142,6 +144,28 @@ Ports tell the OS which application should receive the data.
 
 Ports from 0 to 1023 requires root privilege
 We can use ports 1024-65535 in config file
+
+#### 1.3.2 What is an Interface?
+📌 Definition
+An interface is basically an IP address on your machine.
+
+Common ones:
+| Interface     | Meaning                                       |
+| ------------- | --------------------------------------------- |
+| `127.0.0.1`   | localhost (only accessible from your machine) |
+| `0.0.0.0`     | all interfaces                                |
+| `192.168.x.x` | local network IP                              |
+| Public IP     | accessible from the internet                  |
+
+#### 1.3.3 What is an Interface: Port Pair?
+It’s simply: `IP_ADDRESS:PORT`
+
+Examples:
+- 127.0.0.1:8080
+- 0.0.0.0:80
+- 192.168.1.10:3000
+
+Each one is a separate listening socket.
 
 ### 1.4 Client - Server Architecture
 📌 Definition
