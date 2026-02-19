@@ -10,6 +10,7 @@ return fail: -1
 
 use the bind function to assign a unique local name (network address) to a socket
 attaches a socket to a specific IP address and port so the server can receive connections on that address
+sockaddr_in: It is the data type that is used to store the address of the socket
 
 ## `listen`
 	int	listen( int socket. int backlog );

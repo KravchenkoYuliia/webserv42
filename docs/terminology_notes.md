@@ -389,6 +389,7 @@ When a browser connects to web server:
 ## Test nginx and telnet
 - create docker with nginx
 - run it with port 8080
+	Docker run mapping a container's port 80 to localhost:8080
 	`docker run --rm -p 8080:80 nginx`
 
 - connect via telnet
@@ -399,3 +400,131 @@ When a browser connects to web server:
 GET / HTTP/1.1
 Host: localhost
 ```
+
+
+## localhost
+When you see http://localhost:8080 in a browser or configuration file, it refers to a web service running on your own machine, bound to the TCP port 8080. 
+	*8080 port number isn't fixed, can be any other number in range 1024-65535
+	check if port is not used by other process:
+`lsof -i:8080`
+
+![localhost:80](assets/localhost:8080.png)
+
+ By default, HTTP uses port 80. When you type http://localhost with no port, your browser automatically assumes port 80. If instead you type http://localhost:8080, the browser explicitly connects to port 8080 on your local machine.
+
+Port 8080 is often used as an alternative HTTP port when 80 is already in use or requires administrator privileges.
+Running a service on localhost:8080 gives you a controlled environment for testing, debugging, and experimentation.
+Example API test :
+`curl http://localhost:8080/api/users`
+
+
+## config file
+
+### location block
+![exact match](assets/location-exact_match.png)
+![prefix match](assets/location-prefix_match.png)
+![regex match](assets/location-regex_match.png)
+![case insensitive regex](assets/location-case-insensitive_regex.png)	        
+![^~](assets/location-^~modifier.png)
+
+
+Order of checking:
+![order of checking location](assets/plan_checking_location.png)
+
+- step 1:
+	Nginx’s location selection focuses on prefix-based matches
+- step 2:
+	If no exact match exists, Nginx compares the URI against all other prefix locations
+
+	example:
+
+		location / {
+		    root /var/www/base;
+		}
+
+		location /images/ {
+		    root /var/www/media;
+		}
+
+		location /images/icons/ {
+		    root /var/www/icons;
+		} 
+
+For a request to /images/icons/logo.png, Nginx finds that all three prefixes match, but /images/icons/ is the longest and therefore wins. 
+		
+The order in which these locations are defined in the configuration does not matter; only the length of the matching prefix determines priority.
+
+
+- step 3:
+	The `^~` Shortcut Rule
+	example:
+		```
+		location ^~ /static/ {
+    		root /var/www/assets;
+		}
+		```
+	This rule is particularly helpful for serving static files, such as images, CSS, or JavaScript, that should bypass slower regex-based checks.
+
+step 4:
+	If no ^~ prefix applies, Nginx evaluates regex locations next. These are defined using ~ (case-sensitive) or ~* (case-insensitive) modifiers.
+
+step 5:
+	If none of the regex locations match, Nginx falls back to the previously stored longest prefix match. This ensures every request has a clear, deterministic handler.
+
+
+### autoindex on/off
+
+- config:  
+```
+			location /test {
+				root /www;
+				autoindex on;
+			}
+```
+	
+- request1:  
+`http://localhost:8080/test/test.html`
+
+the precised file test.html 
+
+| EXISTS  					|	DOESN'T EXISTS |
+|-------------------------- |----------------- |
+|give this file to localhost|	error 404	   |
+
+- request2:
+`http://localhost:8080/test/`
+
+no precised file ---> looking for index.html(default file)
+![autoindex](assets/autoindex.png)
+
+
+
+
+- test:
+	add this location to /etc/nginx/conf.d/default.conf in nginx:
+``` 
+	location /public {
+	    alias /var/www/public;
+	    autoindex on;
+	    autoindex_localtime on;
+	    autoindex_exact_size off;
+	    charset utf-8;
+	}
+```
+`docker pull nginx`
+```
+docker run --name my_test_nginx \
+  -p 8080:80 \
+  -v $(pwd)/my_test_config.conf:/etc/nginx/conf.d/default.conf \
+  -v $(pwd)/public:/var/www/public \
+  nginx
+```
+
+so `my_test_config.conf` replace the original default.conf
+`my_test_config.conf` is the copy of the original default.conf + location /public 
+
+open `http://localhost:8080/public/`  
+result:  
+![listing](assets/listing_example.png)
+
+	
