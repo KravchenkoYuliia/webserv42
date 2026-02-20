@@ -27,8 +27,9 @@
 - [How NGINX's Event-Driven Architecture Handles Million Concurrent Connections ? Overview of NGNIX's Event Driven Non-Blocking I/O Architecture](https://engineeringatscale.substack.com/p/nginx-millions-connections-event-driven-architecture)
 - ✨ [Location block in config of NGINX](https://www.digitalocean.com/community/tutorials/understanding-nginx-server-and-location-block-selection-algorithms)
 - [Mime Types in Nginx](https://freedium-mirror.cfd/https://medium.com/@alendennis77/understanding-mime-types-and-their-usage-in-nginx-d0ed94bf7363)
-- [nginx.conf doc](https://docsaid.org/en/docs/nginx-notes/supplementary/nginx-conf-intro/)
-- [localhost doc](https://localhost.co/8080)
+- [Nginx.conf doc](https://docsaid.org/en/docs/nginx-notes/supplementary/nginx-conf-intro/)
+- [Localhost doc](https://localhost.co/8080)
+- [Indexer](https://blog.fernvenue.com/archives/nginx-file-indexer/)
 
 ## HTTP
 - [Creating an HTTP Server from Scratch](https://medium.com/@sakhawy/creating-an-http-server-from-scratch-ed41ef83314b)
