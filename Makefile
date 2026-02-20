@@ -24,7 +24,7 @@ GFLAG = -g3
 EXTENSION_TYPE = cpp
 
 # TODO: Update SRC_FILES
-SRC_FILES =	$(shell find $(SRC_DIR) -type f -name "*.c")
+SRC_FILES =	$(shell find $(SRC_DIR) -type f -name "*.cpp")
 # SRC_FILES = $(SRC_DIR)/main.cpp \
 
 

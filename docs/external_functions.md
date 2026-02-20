@@ -27,7 +27,7 @@ listens for connections on a socket and puts the socket into the LISTEN state
 returns success: non-negative file descriptor of the accepted socket
 returns fail: -1
 
-used by a server to aacept a connection request from a client
+used by a server to accept a connection request from a client
 
 ## `connect`
 
@@ -57,8 +57,7 @@ return fail: -1
 receives data on a socket with descriptor socket and stores it in buffer
 
 ## `close`
-	include <manifest.h>
-	include <socket.h>
+	
 
 	int	close( int d );
 		d -> descriptor of the socket to be closed
@@ -76,7 +75,7 @@ include <sys/socket.h>
 	int socket(int domain, int type, int protocol);
 
 	domain: AF_LOCAL as defined in the POSIX standard for communication between processes on the same host
-	type: SOCK_STREAM: TCP(reliable, connection-oriented)
+	type: SOCK_STREAM -> TCP(reliable, connection-oriented)
 	protocol: specifies a particular protocol to be used with the socket. Specifying a protocol of 0 causes socket() to use an unspecified default protocol appropriate for the requested socket type
 
 

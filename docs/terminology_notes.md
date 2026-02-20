@@ -527,4 +527,10 @@ open `http://localhost:8080/public/`
 result:  
 ![listing](assets/listing_example.png)
 
-	
+### client_max_body_size
+
+K / k  → * 1024  
+M / m  → * 1024 * 1024  
+G / g  → * 1024 * 1024 * 1024
+
+![bytes](assets/bytes.jpg)

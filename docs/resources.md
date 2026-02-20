@@ -15,6 +15,7 @@
 - [Socket programming in C++](https://www.geeksforgeeks.org/cpp/socket-programming-in-cpp/)
 - [Communication par sockets TCP/IP](https://du-isn.gricad-pages.univ-grenoble-alpes.fr/2-sr/Reseaux/3--cours_reseaux--sockets_java.pdf)
 - [Socket in Computer Network](https://www.geeksforgeeks.org/computer-networks/socket-in-computer-network/)
+- [Create TCP Echo Server using Libev ](https://codefundas.blogspot.com/2010/09/create-tcp-echo-server-using-libev.html)
 
 ## Ports
 - [What is a computer port?](https://www.cloudflare.com/learning/network-layer/what-is-a-computer-port/)
@@ -30,6 +31,7 @@
 - [Nginx.conf doc](https://docsaid.org/en/docs/nginx-notes/supplementary/nginx-conf-intro/)
 - [Localhost doc](https://localhost.co/8080)
 - [Indexer](https://blog.fernvenue.com/archives/nginx-file-indexer/)
+- [How to Increase client_max_body_size](https://oneuptime.com/blog/post/2025-12-16-increase-client-max-body-size-nginx/view)
 
 ## HTTP
 - [Creating an HTTP Server from Scratch](https://medium.com/@sakhawy/creating-an-http-server-from-scratch-ed41ef83314b)
