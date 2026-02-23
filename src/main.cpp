@@ -3,20 +3,21 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yukravch <yukravch@42.fr>                  +#+  +:+       +#+        */
+/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 15:12:11 by yukravch          #+#    #+#             */
-/*   Updated: 2026/02/20 16:39:30 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/02/20 17:27:57 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream> 
+#include <iostream>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <arpa/inet.h>
-#include <cstring> //for memset 
+#include <cstring> //for memset
 #include <unistd.h>
+#include <stdio.h>
 
 int	main(){
 
@@ -50,21 +51,34 @@ int	main(){
 	if ( accepted_fd == -1 )
 		return 1;
 
+	char buffer[1024];
+	ssize_t received_bytes = 0;
 
-	char	buffer[1024];
-	ssize_t		received_bytes = 0;
+	while (1)
+	{
+		received_bytes = recv(accepted_fd, buffer, sizeof(buffer) - 1, 0);
 
-	while ( 1 ) {
+		if (received_bytes > 0)
+		{
+			buffer[received_bytes] = '\0';  // null terminate
 
-		received_bytes = recv( accepted_fd, &buffer, 1024, 0 );
-		std::cout << "Received bytes is " << received_bytes << std::endl;
-		if ( received_bytes == -1 )
-			return 1;
-		std::cout << "Successfully received " << received_bytes << " bytes from client" << std::endl << "Message is:  " << buffer << std::endl;
-
+			std::cout << "Received bytes is " << received_bytes << std::endl;
+			std::cout << "Message is: " << buffer << std::endl;
+		}
+		else if (received_bytes == 0)
+		{
+			std::cout << "Client disconnected" << std::endl;
+			close(accepted_fd);
+			break;
+		}
+		else
+		{
+			perror("recv");
+			close(accepted_fd);
+			break;
+		}
 	}
-
-	close(socket_fd);	
+	close(socket_fd);
 	std::cout << "banana3" << std::endl;
 	return 0;
 }
