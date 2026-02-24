@@ -10,6 +10,6 @@
 #include <arpa/inet.h>
 #include <cstring> //for memset
 #include <unistd.h> // for close
-
+#include <errno.h>
 
 #endif
