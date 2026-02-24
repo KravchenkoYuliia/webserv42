@@ -38,3 +38,6 @@
 - [HTTP Cats](https://http.cat/)
 - [Webserv tutorials with good HTTP response flow-chart](https://m4nnb3ll.medium.com/webserv-building-a-non-blocking-web-server-in-c-98-a-42-project-04c7365e4ec7)
 - [HTTP : HyperText Transfer Protocol - by MDN (Mozilla Developper Network)](https://developer.mozilla.org/fr/docs/Web/HTTP)
+
+## epoll()
+- [Mastering epoll()](https://medium.com/@m-ibrahim.research/mastering-epoll-the-engine-behind-high-performance-linux-networking-85a15e6bde90)

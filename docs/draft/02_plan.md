@@ -78,7 +78,7 @@ This class is responsible to encapsulates epoll.
 
 ### Connection
 Represent one client
-- [] handle connection lifecycle (reading, writingm closed)
+- [] handle connection lifecycle (reading, writing, closed)
 
 ```
 Because one connection goes through phases:
@@ -233,7 +233,7 @@ Class should:
 - Generate autoindex (if needed)
 - content-type detection
 - content-length header check
-- keep-alive header?
+- keep-alive header? => won't handle
 
 ## Routing
 ### Router
