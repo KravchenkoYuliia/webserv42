@@ -5,12 +5,44 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/24 12:08:39 by yukravch          #+#    #+#             */
-/*   Updated: 2026/02/25 15:00:42 by jgossard         ###   ########.fr       */
+/*   Created: 2026/02/20 15:12:11 by yukravch          #+#    #+#             */
+/*   Updated: 2026/02/26 15:24:54 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "webserv.hpp"
+#include <iostream>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <fcntl.h> // fcntl
+#include <arpa/inet.h>
+#include <cstring> //for memset
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/epoll.h> // epoll_creat, epoll_ctl, epoll_wait
+#include <errno.h> // errno
+#include <string.h>
+
+int safe_close(int *fd)
+{
+	if (!fd || *fd < 0)
+		return (0);
+	int exit_code = -1;
+
+	while (true)
+	{
+		exit_code = close(*fd);
+		if (exit_code != -1 || errno != EINTR)
+			break;
+	}
+
+	if (exit_code == -1)
+	{
+		std::cerr << "close failed" << std::endl;
+		return (exit_code);
+	}
+	*fd = -1;
+	return (0);
+}
 
 int main(int argc, char **argv)
 {
@@ -26,7 +58,7 @@ int main(int argc, char **argv)
 	int opt = 1;
 	if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
 	{
-		close(socket_fd);
+		safe_close(&socket_fd);
 		return 1;
 	}
 
@@ -42,68 +74,74 @@ int main(int argc, char **argv)
 	if ( bind_status == -1 ) {
 
 		std::cerr << "bind failed" << std::endl;
-		close(socket_fd);
+		safe_close(&socket_fd);
 		return 1;
 	}
 
-	// Set socket non-blocking
-	int	flag = fcntl( socket_fd, F_GETFL );
-	if ( flag == -1 ) {
-		std::cerr << " socket fcntl SET failed" << std::endl;
-		close(socket_fd);
-		return 1;
+	int flags = fcntl(socket_fd, F_GETFL);
+	if (flags == -1)
+	{
+		std::cerr << "fcntl F_GETFL failed" << std::endl;
+		safe_close(&socket_fd);
+		return (1);
 	}
-	if ( fcntl( socket_fd, F_SETFL, flag | O_NONBLOCK ) == -1 ) {
-		std::cerr << " socket fcntl GET failed" << std::endl;
-		close(socket_fd);
-		return 1;
+	if (fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK) == -1)
+	{
+		std::cerr << "fcntl F_SETFL failed" << std::endl;
+		safe_close(&socket_fd);
+		return (1);
 	}
 
-	// Listening socket
 	int	listen_status = listen( socket_fd, SOMAXCONN);
 	if ( listen_status == -1 )
 	{
-		close(socket_fd);
+		safe_close(&socket_fd);
 		return 1;
 	}
 
-	// Create EPOLL
-	int	epoll_fd = epoll_create(1); //create an instance of epoll
-	if ( epoll_fd == -1 ) {
+	// int	accepted_fd = accept( socket_fd, NULL, NULL );
+	// if ( accepted_fd == -1 )
+	// {
+	// 	safe_close(&socket_fd);
+	// 	return 1;
+	// }
 
-		std::cerr << "epoll_create failed" << std::endl;
-		close(socket_fd);
-		return 1;
+	// char buffer[1024];
+	// ssize_t received_bytes = 0;
+
+	// Integrate epoll()
+
+	// create epoll_fd
+	int epoll_fd = epoll_create(1);
+
+	struct epoll_event epoll_event;
+	epoll_event.events = EPOLLIN; // Data available to read (readable)
+	epoll_event.data.fd = socket_fd;
+
+	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, socket_fd, &epoll_event) == -1)
+	{
+		std::cerr << "epoll_ctl: add failed" << std::endl;
+		safe_close(&socket_fd);
+		// safe_close(&accepted_fd);
+		safe_close(&epoll_fd);
+		return (1);
 	}
 
-	struct	epoll_event	event;
-	event.events = EPOLLIN; // tells when data is available to read (readable) instead of checking everything constantly
-	event.data.fd = socket_fd;
-	if ( epoll_ctl( epoll_fd, EPOLL_CTL_ADD, socket_fd, &event ) == -1 ) { //register event
-
-		std::cerr << "epoll_ctl for socket_fd failed" << std::endl;
-		close(socket_fd);
-		close(epoll_fd);
-		return 1;
-	}
-
-	int kMaxReadyEventsBatchSize = 1024;
+	int kMaxReadyEventsBatchSize = 10;
 	struct epoll_event ready_events_list[kMaxReadyEventsBatchSize];
 
 	// === Per-client state (single client for simplicity) ===
-	int new_client_accepted = -1;
-	// char request_buffer[8192];
-	// int request_size = 0;
-	std::string response =
+	int accepted_fd = -1;
+	char request_buffer[8192];
+	int request_size = 0;
+	const char *response =
 		"HTTP/1.1 200 OK\r\n"
 		"Content-Length: 24\r\n"
 		"Connection: close\r\n"
 		"\r\n"
 		"Hello pink t-shirts team";
-	int response_length = response.length();
+	int response_length = strlen(response);
 	int bytes_sent = 0;
-
-	// Start listening
 	while (true)
 	{
 		int num_fds_ready = epoll_wait(epoll_fd, ready_events_list, kMaxReadyEventsBatchSize, -1);
@@ -111,138 +149,148 @@ int main(int argc, char **argv)
 		{
 			if (errno == EINTR)
 				continue;
-			std::cerr << "epoll_wait failed" << std::endl;
-			close(socket_fd);
-			if (new_client_accepted >= 0)
-				close(new_client_accepted);
-			close(epoll_fd);
+			std::cerr << "epoll wait failed" << std::endl;
+			safe_close(&socket_fd);
+			safe_close(&accepted_fd);
+			safe_close(&epoll_fd);
 			return (1);
 		}
 
-		// Iterate over the list of ready_events_list
 		for (int i = 0; i < num_fds_ready; ++i)
 		{
-			int			ready_client_fd = ready_events_list[i].data.fd;
-			uint32_t	ready_events = ready_events_list[i].events;
+			// retrieve client_fd that is ready
+			int ready_client_fd = ready_events_list[i].data.fd;
+			uint32_t ready_events = ready_events_list[i].events;
+
+			if (ready_events_list[i].events & (EPOLLHUP | EPOLLERR))
+			{
+				if (ready_client_fd == accepted_fd)
+				{
+					safe_close(&accepted_fd);
+					request_size = bytes_sent = 0;
+				}
+				continue;
+			}
 
 			if (ready_client_fd == socket_fd)
 			{
-				// while (true)
-				// {
-					new_client_accepted = accept(socket_fd, NULL, NULL);
-					if (new_client_accepted == -1)
+				while (true)
+				{
+					accepted_fd = accept(socket_fd, NULL, NULL);
+					if (accepted_fd == -1)
 					{
-						// the following is usefull because connetcion are closed automatically and it is not an error
 						if (errno == EAGAIN || errno == EWOULDBLOCK)
-						{
-							close(ready_client_fd);
 							break;
-						}
 						else
 						{
 							std::cerr << "client accept failed";
-							close(ready_client_fd);
 							break;
 						}
 					}
-
-					//make non blocking;
-					int	flag = fcntl( new_client_accepted, F_GETFL );
-					if ( flag == -1 ) {
-						std::cerr << " fcntl SET failed" << std::endl;
-						close(new_client_accepted);
-						close(ready_client_fd);
-						break;
+					int flags = fcntl(accepted_fd, F_GETFL);
+					if (flags == -1)
+					{
+						std::cerr << "fcntl F_GETFL failed" << std::endl;
 					}
-					if ( fcntl( new_client_accepted, F_SETFL, flag | O_NONBLOCK ) == -1 ) {
-						std::cerr << " fcntl GET failed" << std::endl;
-						close(new_client_accepted);
-						close(ready_client_fd);
-						break;
+					if (fcntl(accepted_fd, F_SETFL, flags | O_NONBLOCK) == -1)
+					{
+						std::cerr << "fcntl F_SETFL failed" << std::endl;
 					}
-
-					struct	epoll_event	event;
-					event.events = EPOLLIN;
-					event.data.fd = new_client_accepted;
-					if ( epoll_ctl( epoll_fd, EPOLL_CTL_ADD, new_client_accepted, &event) == -1 ) {
-						std::cerr << " epoll_ctl for new_client_accepted failed" << std::endl;
-						close(new_client_accepted);
-						close(ready_client_fd);
-						return 1;
+					struct epoll_event client_event;
+					client_event.data.fd = accepted_fd;
+					client_event.events = EPOLLIN;
+					if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, accepted_fd, &client_event) == -1)
+					{
+						std::cerr << "epoll_ctl: add failed" << std::endl;
+						safe_close(&accepted_fd);
 					}
-						std::cout << "New client connected: " << new_client_accepted << std::endl;
-				// }
+					request_size = bytes_sent = 0;
+					std::cout << "New client connected: " << accepted_fd << std::endl;
+				}
 			}
 			else
 			{
-				// EPOLLIN
 				if (ready_events & EPOLLIN)
 				{
-					char buffer[8192];
-					std::cout << "EPOLLIN case" << std::endl;
-					ssize_t bytes = recv(ready_client_fd, buffer, sizeof(buffer), 0);
-					if (bytes <= 0)
+					char buffer[4096];
+					while (true)
 					{
-						// TODO: remove check with EAGAIN
-						if (errno == EAGAIN || errno == EWOULDBLOCK)
+						ssize_t bytes = recv(ready_client_fd, buffer, sizeof(buffer), 0);
+						if (bytes == 0)
+						{
+							safe_close(&ready_client_fd);
 							break;
-						std::cout << ": Client disconnected: " << ready_client_fd << std::endl;
-						close(ready_client_fd);
-						break;
-					}
-					// if (request_size >= 4 && strstr(request_buffer, "\r\n\r\n"))
-					// {
-						// Switch to write mode
-						struct epoll_event ev;
-						ev.events = EPOLLOUT;  // Switch socket to write mode
-						ev.data.fd = ready_client_fd;
+						}
+						else if (bytes < 0)
+						{
+							if (errno == EAGAIN || errno == EWOULDBLOCK)
+								break;
+							safe_close(&ready_client_fd);
+							break;
+						}
+						if (request_size + bytes >= (int)sizeof(request_buffer))
+						{
+							safe_close(&ready_client_fd);
+							request_size = 0;
+							break;
+						}
 
-						epoll_ctl(epoll_fd, EPOLL_CTL_MOD, ready_client_fd, &ev);
-						std::cout << "SWITCH socket to EPOLLOUT" << std::endl;
-					// 	break;
-					// }
+						memcpy(request_buffer + request_size, buffer, bytes);
+						request_size += bytes;
+						request_buffer[request_size] = '\0';
+
+						// Simple HTTP end detection
+						if (request_size >= 4 &&
+							strstr(request_buffer, "\r\n\r\n"))
+						{
+							// Switch to write mode
+							struct epoll_event ev;
+							ev.events = EPOLLOUT;
+							ev.data.fd = ready_client_fd;
+
+							epoll_ctl(epoll_fd, EPOLL_CTL_MOD, ready_client_fd, &ev);
+							break;
+						}
+					}
 				}
 
-				// EPOLLOUT
 				if (ready_events & EPOLLOUT)
 				{
-					std::cout << "EPOLLOUT case" << std::endl;
-
-					while (bytes_sent < response_length) {
+					while (bytes_sent < response_length)
+					{
 						ssize_t bytes = send(
 							ready_client_fd,
-							response.c_str(),
-							response_length,
-							0
-						);
+							response + bytes_sent,
+							response_length - bytes_sent,
+							MSG_NOSIGNAL);
 
-						if (bytes == -1) {
-							std::cerr << "Error sending data!" << std::endl;
+						if (bytes < 0)
+						{
+							if (errno == EAGAIN || errno == EWOULDBLOCK)
+								break;
+
+							safe_close(&ready_client_fd);
+							// client_fd = -1;
+							request_size = bytes_sent = 0;
 							break;
 						}
 
 						bytes_sent += bytes;
-
-						std::cout << "Sent " << bytes << " bytes, total sent: "
-								<< bytes_sent << " / " << response_length << std::endl;
-
-						// Optional: print the actual chunk sent (for debugging)
-						std::string chunk = response.substr(bytes_sent - bytes, bytes);
-						std::cout << "Chunk sent:\n" << chunk << std::endl << "-----" << std::endl;
 					}
 
 					// Done sending → close connection
 					if (bytes_sent >= response_length)
 					{
-						close(ready_client_fd);
-						bytes_sent = 0;
+						safe_close(&ready_client_fd);
+						// client_fd = -1;
+						request_size = bytes_sent = 0;
 					}
-
 				}
 			}
 		}
 
 	}
+
 	close(socket_fd);
 	return (0);
 }
