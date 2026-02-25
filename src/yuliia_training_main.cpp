@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   yuliia_training_main.cpp                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/20 15:12:11 by yukravch          #+#    #+#             */
+/*   Updated: 2026/02/25 11:57:45 by jgossard         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "include_library.hpp"
 
@@ -45,11 +56,11 @@ int	main() {
 	//
 	int	epoll_fd = epoll_create(1); //create an instance of epoll
 	if ( epoll_fd == -1 ) {
-		
+
 		cerr << "epoll_create failed" << endl;
 		return 1;
 	}
-	
+
 	//epoll 2 STEP
 	//
 	struct	epoll_event	event;
@@ -60,17 +71,17 @@ int	main() {
 		cerr << "epoll_ctl for socket_fd failed" << endl;
 		return 1;
 	}
-	
+
 	//epoll 3 STEP
 	//
 	struct	epoll_event	event_for_wait[1024]; //used by kernel
-	
+
 	while ( 1 ) {
 		int	fd_ready_for_IO = epoll_wait( epoll_fd, event_for_wait, 1024, -1 );
 		//a timeout of -1 causes epoll_wait() to block indefinitely till an event occurs
 		//server is "sleeping" till smth happens( CPU is not running )
 		if ( fd_ready_for_IO == -1 ){
-			
+
 			cerr << "epoll_wait failed" << endl;
 			return 1;
 		}
@@ -78,10 +89,10 @@ int	main() {
 		for ( int i = 0; i < fd_ready_for_IO; i++ ){ //how many events happens while server was waiting
 
 			int	current_fd = event_for_wait[i].data.fd;
-			if ( current_fd == socket_fd ) { //there is a new client 
-				
+			if ( current_fd == socket_fd ) { //there is a new client
+
 				while ( 1 ) {
-					
+
 					int	accepted_client_fd = accept( socket_fd, NULL, NULL );
 					if ( accepted_client_fd == -1 ) {
 
@@ -104,7 +115,7 @@ int	main() {
 						cerr << " fcntl GET failed" << endl;
 						return 1;
 					}
-						
+
 
 					struct	epoll_event	event;
 					event.events = EPOLLIN;
@@ -120,13 +131,13 @@ int	main() {
 
 			}
 			else { //it's a client that exists already and he send smth
-				
+
 					if ( event_for_wait[i].events & EPOLLIN ) {
-						
+
 						cout << "EPOLLIN condition: client is readable" << endl;
 						char buffer[8192];
 						ssize_t	received_bytes = recv( current_fd, buffer, sizeof(buffer), 0 );
-						
+
 
 						if ( received_bytes <= 0 ) {
 							cout << ": Client disconnected: " << current_fd << endl;
@@ -153,8 +164,8 @@ int	main() {
 						cout << "EPOLLOUT condition: client is ready to receive the answer" << endl;
 							string	response = "HTTP/1.0 200 OK\r\nContent-Type: text/html\r\nContent-Length:108\r\n\r\n<!DOCTYPE html>\n<html>\n<body>\n<h1>Welcome to Webserv</h1>\n<p>Team T-shirt rose.</p>\n</body>\n</html>";
 							cout << "Sending response html" << endl;
-						
-							
+
+
 							send( current_fd, response.c_str(), response.length(), 0);
 							close( current_fd );
 					}
