@@ -24,8 +24,14 @@ listens for connections on a socket and puts the socket into the LISTEN state
 	int	accept( int socket, struct sockaddr *restrict address,
        socklen_t *restrict address_len);
 
+
 returns success: non-negative file descriptor of the accepted socket
 returns fail: -1
+
+The accept() function shall fail if:
+
+[EAGAIN] or [EWOULDBLOCK]
+    O_NONBLOCK is set for the socket file descriptor and no connections are present to be accepted.
 
 used by a server to accept a connection request from a client
 
@@ -167,6 +173,7 @@ network long ---> host  ( IP addresses )
 
 #include <sys/epoll.h>
 the simple way to handle multiple clients would be `epoll`
+kernel-level I/O event notification system.
 
 - epoll_create()
 
