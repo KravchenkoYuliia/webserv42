@@ -257,3 +257,6 @@ Class should:
 ## To clarify
 - [] A request to your server should never hang indefinitely.=> add timeout request/response/connection?
 
+## Error handling
+- [] try-catch, free fd, return 1 in main ?
+    exit() is not autorized
