@@ -3,16 +3,30 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/24 12:08:39 by yukravch          #+#    #+#             */
-/*   Updated: 2026/02/25 15:00:42 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/02/25 16:53:36 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
 
-int main(int argc, char **argv)
+int	main( int ac, char** av ) {
+	
+	if ( ac != 2 )
+		return 1;
+
+	try {
+		ConfigParser configParser( av[1] );
+	}
+	catch ( std::runtime_error& err ) {
+		std::cerr << err.what() << std::endl;
+	}
+	
+}
+
+/*int main(int argc, char **argv)
 {
 	(void)argc; // TODO: delete line
 	(void)argv; // TDOD: delete line
@@ -245,4 +259,4 @@ int main(int argc, char **argv)
 	}
 	close(socket_fd);
 	return (0);
-}
+}*/

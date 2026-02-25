@@ -10,5 +10,9 @@
 #include <cstring> //for memset
 #include <unistd.h> // for close
 #include <errno.h> // errno
+#include <fstream>
+#include <vector>
+
+#include "ConfigParser.hpp"
 
 #endif
