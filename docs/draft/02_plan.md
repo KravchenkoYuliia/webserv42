@@ -19,7 +19,8 @@ webserv/
 │   │   ├── ConfigParser.hpp
 │   │   ├── ServerConfig.hpp
 │   │   ├── LocationConfig.hpp
-│   │   └── Tokenizer.hpp
+│   │   ├── Lexer.hpp
+│   │   └── Token.hpp
 │   │
 │   ├── http/
 │   │   ├── HttpRequest.hpp
@@ -133,7 +134,7 @@ This class is responsible to wrap raw socket API.
 
 ## Config
 ### ConfigParser
-- [] Parse method that will englob parserServer, parseLocation, etc.
+- [x] Parse method that will englob parserServer, parseLocation, etc.
 - [] Parse server block
 - [] Parse location block
 - [] validate required directives block

@@ -3,15 +3,19 @@
 ConfigParser::ConfigParser() {}
 ConfigParser::ConfigParser( char* config_file ) {
 
-	std::ifstream	config_stream( config_file );
-	if ( !config_stream || config_stream.fail() )
-		throw std::runtime_error("Error: can't read from configuration file");
+	openBrace_ = 0;
+	Lexer	lexer( config_file );
 
-	std::string	line;
-	while ( std::getline( config_stream, line) ) {
-		ConfigParser::createTokens_( line );
-		ConfigParser::parseTokens_();
-		//ConfigParser::parseLine_( line );
+	Token	token = lexer.getNextToken();
+	while ( token.getType() != TOKEN_ENDFILE ) {
+
+		std::cout << "token is " << token.getValue() << std::endl << std::endl;
+		ConfigParser::parseTokens_( token );
+		token = lexer.getNextToken();
+	}
+
+	if ( openBrace_ != 0 ) {
+		throw std::runtime_error( "Error: extra parenthesis in configuration file" );
 	}
 }
 
@@ -28,7 +32,7 @@ ConfigParser&	ConfigParser::operator=(const ConfigParser& other) {
 //TODO
 //use as prototype to parseTokens
 //
-void	ConfigParser::parseLine_( std::string line ) {
+/*void	ConfigParser::parseLine_( std::string line ) {
 
 	int	i = 0;
 	int	count_server = 0;
@@ -46,15 +50,28 @@ void	ConfigParser::parseLine_( std::string line ) {
 		count_server += 1;
 	}
 	return ;
-}
+}*/
 
+void	ConfigParser::parseTokens_( Token token ) {
 
-void	ConfigParser::createTokens_( std::string line ) {
-	(void)line;
-}
+	if ( token.getType() == TOKEN_LEFTBRACE ) { 
+		openBrace_ += 1;
+	}
+	
+	else if ( token.getType() == TOKEN_RIGHTBRACE ) {
+		openBrace_ -= 1;
+		if ( openBrace_ < 0 )
+			throw std::runtime_error( "Error: extra parenthesis in configuration file" );
+	}
 
-void	ConfigParser::parseTokens_() {
+	else if ( token.getType() == TOKEN_WORD ) {
+	
+		if ( token.getValue() == "server" ) {
 
+			ServerConfig	server;
+			server_.push_back( server );
+		}
+	}
 }
 
 ConfigParser::~ConfigParser() {}
