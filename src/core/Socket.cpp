@@ -1,0 +1,109 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Socket.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/25 16:54:38 by jgossard          #+#    #+#             */
+/*   Updated: 2026/02/26 14:38:05 by jgossard         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include <iostream>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/epoll.h>
+#include <fcntl.h>          // fcntl
+#include <netinet/in.h>     // sockaddr_in
+#include <arpa/inet.h>      // htons , htonl
+#include <cstring>          // memset
+#include <unistd.h>         // close
+#include <errno.h>
+#include <stdexcept>        //std::runtime_error
+#include "core/Socket.hpp"
+
+Socket::Socket(void)
+    :   fd_(kDefaultFd),
+        bind_port_(kDefaultPort)
+{
+}
+
+Socket::Socket( const Socket& copy )
+{
+    *this = copy;
+}
+
+Socket::~Socket(void)
+{
+    if (fd_ != -1)
+        ::close(fd_);
+}
+
+Socket& Socket::operator=(const Socket& copy)
+{
+    if (this != &copy) {
+        fd_ = copy.fd_;
+        bind_port_ = copy.bind_port_;
+    }
+    return (*this);
+}
+
+void Socket::create()
+{
+    int fd = ::socket( AF_INET, SOCK_STREAM, 0 );
+    if (fd < 0)
+        throw std::runtime_error("Socket creation failed");
+    fd_ = fd;
+}
+
+void Socket::bind( uint16_t port )
+{
+    bind_port_  = port;
+
+    struct sockaddr_in address;
+
+    std::memset( &address, 0, sizeof(address) );
+    address.sin_family = AF_INET;
+    address.sin_port = htons(bind_port_);
+    address.sin_addr.s_addr = INADDR_ANY;
+
+    int bind_status = ::bind(fd_, (struct sockaddr*)&address, sizeof(address));
+    if (bind_status < 0)
+        throw std::runtime_error("bind failed");
+}
+
+void Socket::listen()
+{
+    int	listen_status = ::listen( fd_, SOMAXCONN);
+	if ( listen_status == -1 )
+        throw std::runtime_error("listen failed");
+}
+
+int Socket::accept()
+{
+    int new_fd = ::accept(fd_, NULL, NULL);
+    if (new_fd < 0)
+    {
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+            return (-1);
+        throw std::runtime_error("accept failed");
+    }
+    return (new_fd);
+}
+
+void Socket::setNonBlocking()
+{
+    int	flag = fcntl( fd_, F_GETFL );
+    if ( flag == -1 )
+        throw std::runtime_error(" socket fcntl GET failed");
+    if ( fcntl( fd_, F_SETFL, flag | O_NONBLOCK ) == -1 )
+        throw std::runtime_error("socket fcntl SET failed");
+}
+
+void Socket::setReusable()
+{
+    int opt = 1;
+    if (setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+        throw std::runtime_error("setsockopt failed");
+}
