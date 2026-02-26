@@ -1,0 +1,48 @@
+{
+    // ===== Appearance =====
+    // -- Editor
+    "editor.minimap.enabled": false,
+    "editor.tabSize": 4,
+    "editor.rulers": [80],
+    "workbench.editor.enablePreview": true,
+    "window.zoomLevel": 0,
+
+    // -- Sidebar
+    "workbench.tree.renderIndentGuides": "always",
+
+    // ===== Code Style =====
+    // Use spaces for C++
+    "editor.insertSpaces": true,
+    "editor.renderWhitespace": "all",
+    "editor.suggest.insertMode": "replace",
+    "editor.detectIndentation": false,
+
+    // ===== Theme & Font =====
+    "editor.fontFamily": "'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace",
+    "editor.lineHeight": 0,
+    "editor.fontSize": 12,
+    "workbench.iconTheme": "material-icon-theme",
+
+    // ===== Explorer =====
+    "explorer.confirmDelete": false,
+    "explorer.autoReveal": true,
+
+    // ===== Files =====
+    "files.autoSave": "afterDelay",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.defaultLanguage": "cpp",
+
+    // ===== Terminal =====
+    "terminal.integrated.cursorStyle": "line",
+
+    // ===== Language-Specific Overrides =====
+    "[c]": {
+        "editor.insertSpaces": false,
+        "editor.tabSize": 4,
+    },
+    "[cpp]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 4,
+    },
+}
