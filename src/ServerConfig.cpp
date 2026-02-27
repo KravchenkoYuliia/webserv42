@@ -14,14 +14,14 @@ ServerConfig&	ServerConfig::operator=(const ServerConfig& other) {
 }
 
 
-void	ServerConfig::setPort( unsigned int port ) {
+void	ServerConfig::setPort( uint16_t port ) {
 	port_ = port;
 }
-void	ServerConfig::setInterface( unsigned int interface ) {
+void	ServerConfig::setInterface( std::string interface ) {
 	interface_ = interface;
 }
 
-unsigned int	ServerConfig::getPort() const {
+uint16_t	ServerConfig::getPort() const {
 	return port_;
 }
 std::string	ServerConfig::getInterface() const {

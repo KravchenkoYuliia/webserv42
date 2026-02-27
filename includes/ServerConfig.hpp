@@ -7,19 +7,19 @@ class ServerConfig {
 
 public:
 	ServerConfig();
-	ServerConfig( const ServerConfig& other ) ; //TODO: keep public or private?
-	ServerConfig&	operator = ( const ServerConfig& other ); //TODO: keep public or private?
+	ServerConfig( const ServerConfig& other );
+	ServerConfig&	operator = ( const ServerConfig& other );
 
 	~ServerConfig();
 
-	void	setPort( unsigned int port );
-	void	setInterface( unsigned int interface );
+	void	setPort( uint16_t port );
+	void	setInterface( std::string interface );
 
-	unsigned int	getPort() const;
+	uint16_t	getPort() const;
 	std::string	getInterface() const;
 
 private:
-	unsigned int	port_;
+	uint16_t	port_;
 	std::string		interface_;
 };
 

@@ -61,6 +61,7 @@ Token	Lexer::getNextToken() {
 	return Token( TOKEN_ENDFILE, "" );
 }
 
+
 Lexer::Lexer(const Lexer& other) { *this = other; }
 
 Lexer&	Lexer::operator=(const Lexer& other) {

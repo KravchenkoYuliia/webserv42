@@ -8,6 +8,7 @@
 class Lexer {
 
 public:
+	Lexer();
 	Lexer( char* file);
 	~Lexer();
 
@@ -16,8 +17,8 @@ public:
 private:
 	std::ifstream	stream_;
 	char		current_;
-	
-	Lexer();
+
+
 	Lexer( const Lexer& other );
 	Lexer&	operator = ( const Lexer& other );
 };

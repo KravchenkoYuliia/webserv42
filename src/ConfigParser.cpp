@@ -1,18 +1,16 @@
 #include "ConfigParser.hpp"
 
-ConfigParser::ConfigParser( char* config_file ) {
+ConfigParser::ConfigParser( char* config_file ) 
+	: lexer_(config_file) {
 
 	mode_.push_back( MODE_GLOBAL );
 	waiting_for_brace_ = false;
 
-	Lexer	lexer( config_file );
-
-	Token	token = lexer.getNextToken();
+	Token	token = lexer_.getNextToken();
 	while ( token.getType() != TOKEN_ENDFILE ) {
 
-		std::cout << "token is " << token.getValue() << std::endl << std::endl;
 		ConfigParser::parseTokens_( token );
-		token = lexer.getNextToken();
+		token = lexer_.getNextToken();
 	}
 }
 
@@ -40,7 +38,7 @@ void	ConfigParser::parseLeftBrace_() {
 
 			mode_.push_back( MODE_SERVER );
 			ServerConfig	server;
-			server_.push_back( server );
+			servers_list_.push_back( server );
 			waiting_for_brace_ = false;
 		}
 		else
@@ -78,12 +76,66 @@ void	ConfigParser::parseWord_( Token token ) {
 		
 		waiting_for_brace_ = true;
 	}
-	if ( token.getValue() == "location" ) {
+	else if ( token.getValue() == "server{" ) {
+
+		if ( mode_.back() != MODE_GLOBAL )
+			throw std::runtime_error( "Error in config: server block is written wrong" );
+		mode_.push_back( MODE_SERVER );
+		ServerConfig	server;
+		servers_list_.push_back( server );
+
+	}
+
+	else if ( token.getValue() == "location" ) {
 	
 		if ( mode_.back() != MODE_SERVER )
 			throw std::runtime_error( "Error in config: location block is written wrong" );
 		
 		waiting_for_brace_ = true;
+	}
+	else {
+		ConfigParser::storeValueOfWord( token );
+	}
+
+
+}
+
+void	ConfigParser::storeValueOfWord( Token token ) {
+
+	if ( mode_.back() == MODE_GLOBAL ) {
+		throw std::runtime_error( "Error in config: no data outside SERVER braces is allowed");
+	}
+	else if ( mode_.back() == MODE_SERVER ) {
+		//std::cout << "SERVER MODE: " << token.getValue() << std::endl;
+		/*if ( waiting_for_brace_ == true ) {
+			servers_list_[ servers_list_.size()-1 ]. 
+		}*/
+		ConfigParser::addWordToServer( token );
+	}
+	else if ( mode_.back() == MODE_LOCATION ){
+
+		//std::cout << "LOCATION MODE: " << token.getValue() << std::endl;
+	}
+}
+
+void	ConfigParser::addWordToServer( Token token ) {
+
+	if ( token.getValue() == "listen" ) {
+		token = lexer_.getNextToken();
+		if ( token.getType() == TOKEN_ENDFILE )
+			throw std::runtime_error( "Error in config: listen require interface:port" );
+		// get interface
+		std::string::size_type	position = token.getValue().find(':');
+		if ( position == token.getValue().npos )
+			throw std::runtime_error( "Error in config: write \"interface:port\"" );
+		servers_list_[ servers_list_.size()-1 ].setInterface( token.getValue().substr( 0, position ) );
+		//get port
+		char* end;
+		long port_long = std::strtol( token.getValue().substr( position + 1 ).c_str(), &end, 10 );
+		if ( *end )
+			throw std::runtime_error( "Error in config: port must be a number" );
+		servers_list_[ servers_list_.size()-1 ].setPort( static_cast<uint16_t>(port_long) );
+		std::cout << "Server " << servers_list_.size()-1 << " has interface[" << servers_list_[ servers_list_.size()-1 ].getInterface() << "] and port[" << servers_list_[ servers_list_.size()-1 ].getPort() << "]" << std::endl;
 	}
 }
 
