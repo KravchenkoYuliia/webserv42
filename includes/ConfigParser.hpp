@@ -25,13 +25,16 @@ public:
 
 
 private:
-	void				parseTokens_( Token token );
-	int				openBrace_;
 	bool				waiting_for_brace_;
 	
 	std::vector<current_mode>	mode_;
 	std::vector<ServerConfig>	server_;
 	
+
+	void				parseTokens_( Token token );
+	void				parseLeftBrace_();
+	void				parseRightBrace_();
+	void				parseWord_( Token token );
 
 	ConfigParser();
 	ConfigParser( const ConfigParser& other );
