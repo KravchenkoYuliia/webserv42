@@ -23,6 +23,20 @@ Token	Lexer::getNextToken() {
 		current_ = static_cast<char>( getReturn );
 	}
 
+	while ( current_ == '#' ) {
+		std::string	line;
+		getline( stream_, line );
+		
+		current_ = ' ';
+		while ( std::isspace( current_ ) ) {
+			getReturn = stream_.get();
+			if ( getReturn == -1 )
+				return Token( TOKEN_ENDFILE, "" );
+
+			current_ = static_cast<char>( getReturn );
+		}
+	}
+
 	if ( current_ == '{' ) {
 		return Token( TOKEN_LEFTBRACE, "{" );
 	}

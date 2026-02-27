@@ -4,6 +4,9 @@ ConfigParser::ConfigParser() {}
 ConfigParser::ConfigParser( char* config_file ) {
 
 	openBrace_ = 0;
+	mode_.push_back( MODE_GLOBAL );
+	waiting_for_brace_ = false;
+
 	Lexer	lexer( config_file );
 
 	Token	token = lexer.getNextToken();
@@ -14,9 +17,9 @@ ConfigParser::ConfigParser( char* config_file ) {
 		token = lexer.getNextToken();
 	}
 
-	if ( openBrace_ != 0 ) {
+	/*if ( openBrace_ != 0 ) {
 		throw std::runtime_error( "Error: extra parenthesis in configuration file" );
-	}
+	}*/
 }
 
 ConfigParser::ConfigParser(const ConfigParser& other) { *this = other; }
@@ -54,23 +57,56 @@ ConfigParser&	ConfigParser::operator=(const ConfigParser& other) {
 
 void	ConfigParser::parseTokens_( Token token ) {
 
-	if ( token.getType() == TOKEN_LEFTBRACE ) { 
-		openBrace_ += 1;
+
+	if ( token.getType() == TOKEN_LEFTBRACE ) {
+		if ( mode_.back() == MODE_GLOBAL ) {
+			
+			if ( waiting_for_brace_ ) {
+
+				mode_.push_back( MODE_SERVER );
+				ServerConfig	server;
+				server_.push_back( server );
+				waiting_for_brace_ = false;
+			}
+			else
+				throw std::runtime_error( "Error in config: fix the braces");
+		}
+		else if ( mode_.back() == MODE_SERVER ) {
+		
+			if ( waiting_for_brace_ ) {
+
+				mode_.push_back( MODE_LOCATION );
+				//adding location instance in latest Server in server_
+				waiting_for_brace_ = false;
+			}
+			else
+				throw std::runtime_error( "Error in config: fix the braces");
+
+		}
 	}
 	
 	else if ( token.getType() == TOKEN_RIGHTBRACE ) {
-		openBrace_ -= 1;
-		if ( openBrace_ < 0 )
-			throw std::runtime_error( "Error: extra parenthesis in configuration file" );
+
+		if ( mode_.back() == MODE_GLOBAL )
+			throw std::runtime_error( "Error in config: fix the braces" );
+		if ( mode_.size() > 1 ) {
+			mode_.pop_back();
+		}
 	}
 
 	else if ( token.getType() == TOKEN_WORD ) {
 	
 		if ( token.getValue() == "server" ) {
-
-			ServerConfig	server;
-			server_.push_back( server );
+			if ( mode_.back() != MODE_GLOBAL )
+				throw std::runtime_error( "Error in config: server block is written wrong" );
+			waiting_for_brace_ = true;
 		}
+		if ( token.getValue() == "location" ) {
+			if ( mode_.back() != MODE_SERVER )
+				throw std::runtime_error( "Error in config: location block is written wrong" );
+			waiting_for_brace_ = true;
+		}
+
 	}
 }
 

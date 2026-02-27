@@ -10,6 +10,13 @@ class ServerConfig;
 class Lexer;
 class Token;
 
+enum	current_mode {
+
+	MODE_GLOBAL,
+	MODE_SERVER,
+	MODE_LOCATION
+};
+
 class ConfigParser {
 
 public:
@@ -20,6 +27,9 @@ public:
 private:
 	void				parseTokens_( Token token );
 	int				openBrace_;
+	bool				waiting_for_brace_;
+	
+	std::vector<current_mode>	mode_;
 	std::vector<ServerConfig>	server_;
 	
 
