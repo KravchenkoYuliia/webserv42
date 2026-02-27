@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "webserv.hpp"
-
+/*
 int	main( int ac, char** av ) {
 	
 	if ( ac != 2 )
@@ -25,8 +25,8 @@ int	main( int ac, char** av ) {
 	}
 	
 }
-
-/*int main(int argc, char **argv)
+*/
+int main(int argc, char **argv)
 {
 	(void)argc; // TODO: delete line
 	(void)argv; // TDOD: delete line
@@ -259,4 +259,4 @@ int	main( int ac, char** av ) {
 	}
 	close(socket_fd);
 	return (0);
-}*/
+}
