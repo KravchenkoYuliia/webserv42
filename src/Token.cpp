@@ -22,10 +22,10 @@ Token&	Token::operator=(const Token& other) {
 Token::~Token() {}
 
 
-TokenType	Token::getType() const {
+const TokenType&	Token::getType() const {
 	return type_;
 }
 
-std::string	Token::getValue() const {
+const std::string&	Token::getValue() const {
 	return value_;
 }

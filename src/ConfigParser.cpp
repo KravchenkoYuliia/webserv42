@@ -3,8 +3,7 @@
 ConfigParser::ConfigParser( char* config_file ) 
 	: lexer_(config_file) {
 
-	mode_.push_back( MODE_GLOBAL );
-	waiting_for_brace_ = false;
+	mode_.push( MODE_GLOBAL );
 
 	Token	token = lexer_.getNextToken();
 	while ( token.getType() != TOKEN_ENDFILE ) {
@@ -12,13 +11,17 @@ ConfigParser::ConfigParser( char* config_file )
 		ConfigParser::parseTokens_( token );
 		token = lexer_.getNextToken();
 	}
+	//
+	//TODO delete visualisation function
+	//
+	ConfigParser::printAll();
 }
 
-void	ConfigParser::parseTokens_( Token token ) {
+void	ConfigParser::parseTokens_( Token& token ) {
 
 
 	if ( token.getType() == TOKEN_LEFTBRACE ) {
-		ConfigParser::parseLeftBrace_();
+		throw std::runtime_error( "Error in config: fix the braces");
 	}
 
 	else if ( token.getType() == TOKEN_RIGHTBRACE ) {
@@ -30,115 +33,151 @@ void	ConfigParser::parseTokens_( Token token ) {
 	}
 }
 
-void	ConfigParser::parseLeftBrace_() {
-	
-	if ( mode_.back() == MODE_GLOBAL ) {
-			
-		if ( waiting_for_brace_ ) {
-
-			mode_.push_back( MODE_SERVER );
-			ServerConfig	server;
-			servers_list_.push_back( server );
-			waiting_for_brace_ = false;
-		}
-		else
-			throw std::runtime_error( "Error in config: fix the braces");
-	}
-	else if ( mode_.back() == MODE_SERVER ) {
-	
-		if ( waiting_for_brace_ ) {
-
-			mode_.push_back( MODE_LOCATION );
-			//adding location instance in latest Server in server_
-			waiting_for_brace_ = false;
-		}
-		else
-			throw std::runtime_error( "Error in config: fix the braces");
-	}
-}
-
-
 void	ConfigParser::parseRightBrace_() {
 
-	if ( mode_.back() == MODE_GLOBAL )
+	if ( mode_.top() == MODE_GLOBAL )
 			throw std::runtime_error( "Error in config: fix the braces" );
 	if ( mode_.size() > 1 ) {
-		mode_.pop_back();
+		mode_.pop();
 	}
 }
 
-void	ConfigParser::parseWord_( Token token ) {
+void	ConfigParser::parseWord_( Token& token ) {
 
-	if ( token.getValue() == "server" ) {
-		
-		if ( mode_.back() != MODE_GLOBAL )
-			throw std::runtime_error( "Error in config: server block is written wrong" );
-		
-		waiting_for_brace_ = true;
-	}
-	else if ( token.getValue() == "server{" ) {
-
-		if ( mode_.back() != MODE_GLOBAL )
-			throw std::runtime_error( "Error in config: server block is written wrong" );
-		mode_.push_back( MODE_SERVER );
-		ServerConfig	server;
-		servers_list_.push_back( server );
-
+	const std::string&	current_word = token.getValue();
+	if ( current_word == "server" || current_word == "server{" || current_word == "server{}" ) {
+		ConfigParser::parseWordServer_( current_word );
 	}
 
-	else if ( token.getValue() == "location" ) {
-	
-		if ( mode_.back() != MODE_SERVER )
-			throw std::runtime_error( "Error in config: location block is written wrong" );
-		
-		waiting_for_brace_ = true;
+	else if ( current_word == "location" ) {
+		ConfigParser::parseWordLocation_();
 	}
+
 	else {
-		ConfigParser::storeValueOfWord( token );
+		ConfigParser::parseAnotherWord_( token );
 	}
 
 
 }
 
-void	ConfigParser::storeValueOfWord( Token token ) {
+void	ConfigParser::parseWordServer_( const std::string& current_word ) {
 
-	if ( mode_.back() == MODE_GLOBAL ) {
+	if ( current_word == "server" ) {
+		
+		if ( mode_.top() != MODE_GLOBAL )
+			throw std::runtime_error( "Error in config: server block is written wrong" );
+		
+		Token token = lexer_.getNextToken();
+		if ( token.getType() != TOKEN_LEFTBRACE )
+			throw std::runtime_error( "Error in config: server block must have braces: \"server {...}\"" );
+
+		mode_.push( MODE_SERVER );
+		ServerConfig	server_config;
+		servers_list_.push_back( server_config );
+
+	}
+	else if ( current_word == "server{" || current_word == "server{}" ) {
+
+		if ( mode_.top() != MODE_GLOBAL || current_word == "server{}" )
+			throw std::runtime_error( "Error in config: server block is written wrong" );
+		mode_.push( MODE_SERVER );
+		ServerConfig	server_config;
+		servers_list_.push_back( server_config );
+	}
+}
+
+void	ConfigParser::parseWordLocation_() {
+		
+	if ( mode_.top() != MODE_SERVER )
+		throw std::runtime_error( "Error in config: location block is written wrong" );
+	//
+	//nextToken must be a location's path :
+	//
+	Token token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: location block must have path: \"location /PATH {}\"" );
+	if ( token.getValue()[0] != '/' )
+		throw std::runtime_error( "Error in config: location path must start with a slash: \"location /PATH {}\"" );
+
+	//
+	//adding an instance of class Location with /path to location_list in lattest server
+	//
+	mode_.push( MODE_LOCATION );
+	LocationConfig	location_config( token.getValue() );
+	if ( servers_list_.size() < 1 )
+		throw std::runtime_error( "Error in config: location block is outside of server block" );
+	
+	servers_list_.back().setLocationList( location_config );
+
+	//
+	//check if there is open brace after location /path
+	//
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_LEFTBRACE )
+		throw std::runtime_error( "Error in config: location block must have braces: \"location /PATH {}\"" );
+}
+
+void	ConfigParser::parseAnotherWord_( Token& token ) {
+
+	if ( mode_.top() == MODE_GLOBAL ) {
 		throw std::runtime_error( "Error in config: no data outside SERVER braces is allowed");
 	}
-	else if ( mode_.back() == MODE_SERVER ) {
-		//std::cout << "SERVER MODE: " << token.getValue() << std::endl;
-		/*if ( waiting_for_brace_ == true ) {
-			servers_list_[ servers_list_.size()-1 ]. 
-		}*/
-		ConfigParser::addWordToServer( token );
+	else if ( mode_.top() == MODE_SERVER ) {
+		ConfigParser::parseWordInsideServerBloc_( token );
 	}
-	else if ( mode_.back() == MODE_LOCATION ){
+	else if ( mode_.top() == MODE_LOCATION ){
 
-		//std::cout << "LOCATION MODE: " << token.getValue() << std::endl;
 	}
 }
 
-void	ConfigParser::addWordToServer( Token token ) {
+void	ConfigParser::parseWordInsideServerBloc_( Token& token ) {
 
 	if ( token.getValue() == "listen" ) {
-		token = lexer_.getNextToken();
-		if ( token.getType() == TOKEN_ENDFILE )
+		token = lexer_.getNextToken(); // this token must be interface:port
+		if ( token.getType() != TOKEN_WORD )
 			throw std::runtime_error( "Error in config: listen require interface:port" );
-		// get interface
+		//
+		// get interface from token
+		// 
 		std::string::size_type	position = token.getValue().find(':');
 		if ( position == token.getValue().npos )
 			throw std::runtime_error( "Error in config: write \"interface:port\"" );
-		servers_list_[ servers_list_.size()-1 ].setInterface( token.getValue().substr( 0, position ) );
-		//get port
+		ServerConfig&	current_server = servers_list_.back();
+		current_server.setInterface( token.getValue().substr( 0, position ) );
+
+		//
+		//get port from token
+		//
 		char* end;
 		long port_long = std::strtol( token.getValue().substr( position + 1 ).c_str(), &end, 10 );
 		if ( *end )
 			throw std::runtime_error( "Error in config: port must be a number" );
-		servers_list_[ servers_list_.size()-1 ].setPort( static_cast<uint16_t>(port_long) );
-		std::cout << "Server " << servers_list_.size()-1 << " has interface[" << servers_list_[ servers_list_.size()-1 ].getInterface() << "] and port[" << servers_list_[ servers_list_.size()-1 ].getPort() << "]" << std::endl;
+		current_server.setPort( static_cast<uint16_t>(port_long) );
+
+
+		token = lexer_.getNextToken(); // this token can be default_server
+		if ( token.getType() != TOKEN_WORD )
+			throw std::runtime_error( "Error in config: fix server block" );
 	}
 }
+//
+//TODO delete visualisation function
+//
+void	ConfigParser::printAll() {
 
+	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
+		std::cout << "Server[" << i << "]" << "-> "<< &servers_list_[i] << " has: " << std::endl
+			<< "	Port: " << servers_list_[i].getPort() << std::endl
+			<< "	Interface: " << servers_list_[i].getInterface() << std::endl 
+			<< "	Location list: " << std::endl;
+			
+		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {
+			
+			std::cout << "		Location[" << j << "] has path: "
+				<< servers_list_[i].getLocationList()[j].getPath() << std::endl;
+		}
+	}
+}
 
 ConfigParser::ConfigParser() {}
 ConfigParser::ConfigParser(const ConfigParser& other) { *this = other; }

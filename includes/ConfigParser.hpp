@@ -4,10 +4,12 @@
 #include <algorithm>
 #include <vector>
 #include "ServerConfig.hpp"
+#include "LocationConfig.hpp"
 #include "Lexer.hpp"
 #include "Token.hpp"
 
 class ServerConfig;
+class LocationConfig;
 class Lexer;
 class Token;
 
@@ -26,20 +28,24 @@ public:
 
 
 private:
-	bool				waiting_for_brace_;
 
-	std::vector<current_mode>	mode_;
+	std::stack<current_mode>	mode_;
 	std::vector<ServerConfig>	servers_list_;
 	Lexer						lexer_;
 
 
-	void				parseTokens_( Token token );
-	void				parseLeftBrace_();
+	void				parseTokens_( Token& token );
 	void				parseRightBrace_();
-	void				parseWord_( Token token );
-	void				storeValueOfWord( Token token );
-	void				addWordToServer( Token token );
+	void				parseWord_( Token& token );
+	void				parseWordServer_( const std::string& word );
+	void				parseWordLocation_();
+	void				parseAnotherWord_( Token& token );
+	void				parseWordInsideServerBloc_( Token& token );
 
+	//
+	//TODO remove this function
+	//
+	void	printAll();
 	ConfigParser();
 	ConfigParser( const ConfigParser& other );
 	ConfigParser&	operator = ( const ConfigParser& other );
