@@ -1,6 +1,8 @@
 #include "ConfigParser.hpp"
+#include <algorithm>
+#include <iostream>
 
-ConfigParser::ConfigParser( char* config_file ) 
+ConfigParser::ConfigParser( char* config_file )
 	: lexer_(config_file) {
 
 	mode_.push( MODE_GLOBAL );
@@ -8,7 +10,7 @@ ConfigParser::ConfigParser( char* config_file )
 	Token	token = lexer_.getNextToken();
 	while ( token.getType() != TOKEN_ENDFILE ) {
 
-		ConfigParser::parseTokens_( token );
+		ConfigParser::parseTokens( token );
 		token = lexer_.getNextToken();
 	}
 
@@ -28,22 +30,22 @@ ConfigParser::ConfigParser( char* config_file )
 	ConfigParser::printAll();
 }
 
-void	ConfigParser::parseTokens_( Token& token ) {
+void	ConfigParser::parseTokens( const Token& token ) {
 
 	if ( token.getType() == TOKEN_LEFTBRACE ) {
-		throw std::runtime_error( "Error in config: fix the braces");
+		throw std::runtime_error( "Error in config: unexpected '{' outside server or location block");
 	}
 
 	else if ( token.getType() == TOKEN_RIGHTBRACE ) {
-		ConfigParser::parseRightBrace_();
+		ConfigParser::parseRightBrace();
 	}
 
 	else if ( token.getType() == TOKEN_WORD ) {
-		ConfigParser::parseWord_( token );	
+		ConfigParser::parseDirectiveWord( token );
 	}
 }
 
-void	ConfigParser::parseRightBrace_() {
+void	ConfigParser::parseRightBrace() {
 
 	if ( mode_.top() == MODE_GLOBAL )
 			throw std::runtime_error( "Error in config: fix the braces" );
@@ -52,12 +54,13 @@ void	ConfigParser::parseRightBrace_() {
 	}
 }
 
-void	ConfigParser::parseWord_( Token& token ) {
-	
+void	ConfigParser::parseDirectiveWord( const Token& token ) {
+
+
 	const std::string&	current_word = token.getValue();
-	
+
 	if ( current_word == "server" ) {
-		ConfigParser::parseWordServer_();
+		ConfigParser::parseWordServer();
 	}
 
 	else if ( current_word == "location" ) {
@@ -65,15 +68,15 @@ void	ConfigParser::parseWord_( Token& token ) {
 	}
 
 	else {
-		ConfigParser::parseAnotherWord_( token );
+		ConfigParser::parseWords( token );
 	}
 }
 
-void	ConfigParser::parseWordServer_() {
-	
+void	ConfigParser::parseWordServer() {
+
 	if ( mode_.top() != MODE_GLOBAL )
-		throw std::runtime_error( "Error in config: server block is written wrong" );
-		
+		throw std::runtime_error( "Error in config: server block must be declared at the top level" );
+
 	Token token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_LEFTBRACE )
 		throw std::runtime_error( "Error in config: server block must have braces: \"server {...}\"" );
@@ -84,9 +87,9 @@ void	ConfigParser::parseWordServer_() {
 }
 
 void	ConfigParser::parseWordLocation_() {
-		
+
 	if ( mode_.top() != MODE_SERVER )
-		throw std::runtime_error( "Error in config: location block is written wrong" );
+		throw std::runtime_error( "Error in config: location block must be declared inside server block" );
 	//
 	//nextToken must be a location's path :
 	//
@@ -111,7 +114,7 @@ void	ConfigParser::parseWordLocation_() {
 	LocationConfig	location_config( token.getValue() );
 	if ( servers_list_.size() < 1 )
 		throw std::runtime_error( "Error in config: location block is outside of server block" );
-	
+
 	servers_list_.back().setLocationList( location_config );
 
 	//
@@ -122,41 +125,40 @@ void	ConfigParser::parseWordLocation_() {
 		throw std::runtime_error( "Error in config: location block must have braces: \"location /PATH {}\"" );
 }
 
-void	ConfigParser::parseAnotherWord_( Token& token ) {
+void	ConfigParser::parseWords( const Token& token ) {
 
 	if ( mode_.top() == MODE_GLOBAL ) {
 		throw std::runtime_error( "Error in config: no data outside SERVER braces is allowed");
 	}
 	else if ( mode_.top() == MODE_SERVER ) {
-		ConfigParser::parseWordInsideServerBloc_( token );
+		ConfigParser::parseWordInServer( token );
 	}
 	else if ( mode_.top() == MODE_LOCATION ){
 
 	}
 }
 
-void	ConfigParser::parseWordInsideServerBloc_( Token& token ) {
+void	ConfigParser::parseWordInServer( const Token& token ) {
 
 	if ( token.getValue() == "listen" ) {
-		ConfigParser::parseListenInsideServerBlock();
+		ConfigParser::parseListenInServer();
 	}
 
 	//TODO
 	//if WORD is no one from the listed above -> error invalid input
-}		
+}
 
-void	ConfigParser::parseListenInsideServerBlock() {
+void	ConfigParser::parseListenInServer() {
 
 	Token token = lexer_.getNextToken(); // this token must have port( numbers ); can also have interface
 	if ( token.getType() != TOKEN_WORD )
 		throw std::runtime_error( "Error in config: listen require port or interface:port" );
-	
 	std::string	portValue;
 	ServerConfig&	current_server = servers_list_.back();
 	//
 	// get interface from token if there is any
-	// 
-	
+	//
+
 
 	std::string::size_type	position = token.getValue().find(':');
 	if ( position == 0 || position == token.getValue().size() - 1 )
@@ -187,10 +189,9 @@ void	ConfigParser::parseListenInsideServerBlock() {
 		servers_list_.back().setDefaultServer( true );
 	}
 	else {
-		ConfigParser::parseWord_( token );
+		ConfigParser::parseDirectiveWord( token );
 	}
 }
-	
 //
 //TODO delete visualisation function
 //
@@ -203,9 +204,8 @@ void	ConfigParser::printAll() {
 			if ( servers_list_[i].getDefaultServer() == true )
 				std::cout << " default_server";
 			std::cout << std::endl << "	Location list: " << std::endl;
-			
 		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {
-			
+
 			std::cout << "		Location[" << j << "] has path: "
 				<< servers_list_[i].getLocationList()[j].getPath() << std::endl;
 		}

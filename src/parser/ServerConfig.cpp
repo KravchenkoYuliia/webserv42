@@ -1,8 +1,8 @@
 #include "ServerConfig.hpp"
 
 ServerConfig::ServerConfig()
-	: port_( 8080 ),
-	interface_( "0.0.0.0" ),
+	: port_( kDefaultServerPort ),
+	interface_( kDefaultServerInterface ),
 	default_server_( false ) {}
 
 ServerConfig::ServerConfig(const ServerConfig& other) { *this = other; }
@@ -25,7 +25,7 @@ void	ServerConfig::setPort( uint16_t port ) {
 	port_ = port;
 }
 
-void	ServerConfig::setInterface( std::string interface ) {
+void	ServerConfig::setInterface( const std::string& interface ) {
 	interface_ = interface;
 }
 
@@ -33,21 +33,21 @@ void	ServerConfig::setDefaultServer( bool default_server ) {
 	default_server_ = default_server;
 }
 
-void	ServerConfig::setLocationList( LocationConfig location_config ) {
+void	ServerConfig::setLocationList( const LocationConfig& location_config ) {
 	location_list_.push_back( location_config );
 	//std::cout << "adress of location list is " << &location_list_ << std::endl;
 }
 
 //
 //getters
-const uint16_t&	ServerConfig::getPort() const {
+uint16_t	ServerConfig::getPort() const {
 	return port_;
 }
 const std::string&	ServerConfig::getInterface() const {
 	return interface_;
 }
 
-const bool&	ServerConfig::getDefaultServer() const {
+bool	ServerConfig::getDefaultServer() const {
 	return default_server_;
 }
 

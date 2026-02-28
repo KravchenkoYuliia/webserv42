@@ -2,10 +2,16 @@
 #define SERVERCONFIG_HPP
 
 #include <string>
+#include <vector>
 #include <inttypes.h> // uint16_t
+#include "LocationConfig.hpp"
 
 class LocationConfig;
 class ServerConfig {
+
+#define kDefaultServerPort 8080
+#define kDefaultServerInterface "0.0.0.0"
+
 
 public:
 	ServerConfig();
@@ -15,13 +21,13 @@ public:
 	~ServerConfig();
 
 	void	setPort( uint16_t port );
-	void	setInterface( std::string interface );
+	void	setInterface( const std::string& interface );
 	void	setDefaultServer( bool default_server );
-	void	setLocationList( LocationConfig location_config );
+	void	setLocationList( const LocationConfig& location_config );
 
-	const uint16_t&			getPort() const;
-	const std::string&			getInterface() const;
-	const bool&		 		getDefaultServer() const;
+	uint16_t			                getPort() const;
+	const std::string&			        getInterface() const;
+	bool		 		                getDefaultServer() const;
 	const std::vector<LocationConfig>&	getLocationList() const;
 
 

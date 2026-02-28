@@ -1,6 +1,6 @@
 #include "Token.hpp"
 
-Token::Token() 
+Token::Token()
 	: type_(TOKEN_WORD),
 	value_("default") {}
 
@@ -22,7 +22,7 @@ Token&	Token::operator=(const Token& other) {
 Token::~Token() {}
 
 
-const TokenType&	Token::getType() const {
+TokenType	Token::getType() const {
 	return type_;
 }
 

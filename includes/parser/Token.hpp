@@ -1,7 +1,6 @@
 #ifndef TOKEN_HPP
 #define TOKEN_HPP
 
-#include <iostream>
 #include <string>
 
 enum TokenType {
@@ -20,8 +19,8 @@ public:
 	~Token();
 
 
-	TokenType	getType() const;
-	std::string	getValue() const;
+	TokenType       	getType() const;
+	const std::string&	getValue() const;
 
 private:
 	TokenType		type_;

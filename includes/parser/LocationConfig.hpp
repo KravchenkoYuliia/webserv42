@@ -1,15 +1,16 @@
 #ifndef LOCATIONCONFIG_HPP
 #define LOCATIONCONFIG_HPP
 
-#include <iostream>
-#include <map> 
+#include <map>
+#include <string>
 
+#define kDefaultLoctaionPath "/"
 class LocationConfig {
 
 public:
-	
+
 	LocationConfig();
-	LocationConfig( std::string path );
+	LocationConfig( const std::string& path );
 	LocationConfig(const LocationConfig& other);
 	LocationConfig&	operator = (const LocationConfig& other);
 	~LocationConfig();
@@ -25,7 +26,7 @@ private:
 	std::vector<std::string>		methods_;
 	std::map<int, std::string>		return_page_;
 */
-	
+
 
 };
 

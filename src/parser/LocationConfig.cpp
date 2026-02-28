@@ -1,8 +1,8 @@
 #include "LocationConfig.hpp"
 
 LocationConfig::LocationConfig()
-			: path_("/") {}
-LocationConfig::LocationConfig( std::string path )
+			: path_(kDefaultLoctaionPath) {}
+LocationConfig::LocationConfig( const std::string& path )
 			: path_( path ) {}
 
 

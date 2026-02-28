@@ -1,8 +1,8 @@
 #ifndef CONFIGPARSER_HPP
 #define CONFIGPARSER_HPP
 
-#include <algorithm>
 #include <vector>
+#include <stack>
 #include "ServerConfig.hpp"
 #include "LocationConfig.hpp"
 #include "Lexer.hpp"
@@ -13,8 +13,7 @@ class LocationConfig;
 class Lexer;
 class Token;
 
-enum	current_mode {
-
+enum	ParserMode {
 	MODE_GLOBAL,
 	MODE_SERVER,
 	MODE_LOCATION
@@ -29,19 +28,19 @@ public:
 
 private:
 
-	std::stack<current_mode>	mode_;
+	std::stack<ParserMode>	mode_;
 	std::vector<ServerConfig>	servers_list_;
 	Lexer						lexer_;
 
 
-	void				parseTokens_( Token& token );
-	void				parseRightBrace_();
-	void				parseWord_( Token& token );
-	void				parseWordServer_();
+	void				parseTokens( const Token& token );
+	void				parseRightBrace();
+	void				parseDirectiveWord( const Token& token );
+	void				parseWordServer();
 	void				parseWordLocation_();
-	void				parseAnotherWord_( Token& token );
-	void				parseWordInsideServerBloc_( Token& token );
-	void				parseListenInsideServerBlock();
+	void				parseWords( const Token& token );
+	void				parseWordInServer( const Token& token );
+	void				parseListenInServer();
 
 	//
 	//TODO remove this function
