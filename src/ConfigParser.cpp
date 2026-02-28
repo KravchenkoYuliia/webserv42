@@ -1,6 +1,6 @@
 #include "ConfigParser.hpp"
 
-ConfigParser::ConfigParser( char* config_file ) 
+ConfigParser::ConfigParser( char* config_file )
 	: lexer_(config_file) {
 
 	mode_.push( MODE_GLOBAL );
@@ -29,7 +29,7 @@ void	ConfigParser::parseTokens_( Token& token ) {
 	}
 
 	else if ( token.getType() == TOKEN_WORD ) {
-		ConfigParser::parseWord_( token );	
+		ConfigParser::parseWord_( token );
 	}
 }
 
@@ -45,8 +45,9 @@ void	ConfigParser::parseRightBrace_() {
 void	ConfigParser::parseWord_( Token& token ) {
 
 	const std::string&	current_word = token.getValue();
-	if ( current_word == "server" || current_word == "server{" || current_word == "server{}" ) {
-		ConfigParser::parseWordServer_( current_word );
+
+	if ( current_word == "server" ) {
+		ConfigParser::parseWordServer_();
 	}
 
 	else if ( current_word == "location" ) {
@@ -60,13 +61,20 @@ void	ConfigParser::parseWord_( Token& token ) {
 
 }
 
-void	ConfigParser::parseWordServer_( const std::string& current_word ) {
+void	ConfigParser::parseWordServer_() {
+
+	if ( mode_.top() != MODE_GLOBAL )
+		throw std::runtime_error( "Error in config: server block is written wrong" );
+
+	Token token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_LEFTBRACE )
+		throw std::runtime_error( "Error in config: server block must have braces: \"server {...}\"" );
 
 	if ( current_word == "server" ) {
-		
+
 		if ( mode_.top() != MODE_GLOBAL )
 			throw std::runtime_error( "Error in config: server block is written wrong" );
-		
+
 		Token token = lexer_.getNextToken();
 		if ( token.getType() != TOKEN_LEFTBRACE )
 			throw std::runtime_error( "Error in config: server block must have braces: \"server {...}\"" );
@@ -87,7 +95,7 @@ void	ConfigParser::parseWordServer_( const std::string& current_word ) {
 }
 
 void	ConfigParser::parseWordLocation_() {
-		
+
 	if ( mode_.top() != MODE_SERVER )
 		throw std::runtime_error( "Error in config: location block is written wrong" );
 	//
@@ -106,7 +114,7 @@ void	ConfigParser::parseWordLocation_() {
 	LocationConfig	location_config( token.getValue() );
 	if ( servers_list_.size() < 1 )
 		throw std::runtime_error( "Error in config: location block is outside of server block" );
-	
+
 	servers_list_.back().setLocationList( location_config );
 
 	//
@@ -133,16 +141,30 @@ void	ConfigParser::parseAnotherWord_( Token& token ) {
 void	ConfigParser::parseWordInsideServerBloc_( Token& token ) {
 
 	if ( token.getValue() == "listen" ) {
-		token = lexer_.getNextToken(); // this token must be interface:port
-		if ( token.getType() != TOKEN_WORD )
-			throw std::runtime_error( "Error in config: listen require interface:port" );
-		//
-		// get interface from token
-		// 
-		std::string::size_type	position = token.getValue().find(':');
-		if ( position == token.getValue().npos )
-			throw std::runtime_error( "Error in config: write \"interface:port\"" );
-		ServerConfig&	current_server = servers_list_.back();
+		ConfigParser::parseListenInsideServerBlock();
+	}
+
+	//TODO
+	//if WORD is no one from the listed above -> error invalid input
+}
+
+void	ConfigParser::parseListenInsideServerBlock() {
+
+	Token token = lexer_.getNextToken(); // this token must have port( numbers ); can also have interface
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: listen require port or interface:port" );
+
+	std::string	portValue;
+	ServerConfig&	current_server = servers_list_.back();
+	//
+	// get interface from token if there is any
+	//
+
+
+	std::string::size_type	position = token.getValue().find(':');
+	if ( position == 0 || position == token.getValue().size() - 1 )
+		throw std::runtime_error( "Error in config: listen to invalid port" );
+	if ( position != token.getValue().npos ) {
 		current_server.setInterface( token.getValue().substr( 0, position ) );
 
 		//
@@ -168,11 +190,13 @@ void	ConfigParser::printAll() {
 	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
 		std::cout << "Server[" << i << "]" << "-> "<< &servers_list_[i] << " has: " << std::endl
 			<< "	Port: " << servers_list_[i].getPort() << std::endl
-			<< "	Interface: " << servers_list_[i].getInterface() << std::endl 
-			<< "	Location list: " << std::endl;
-			
+			<< "	Interface: " << servers_list_[i].getInterface();
+			if ( servers_list_[i].getDefaultServer() == true )
+				std::cout << " default_server";
+			std::cout << std::endl << "	Location list: " << std::endl;
+
 		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {
-			
+
 			std::cout << "		Location[" << j << "] has path: "
 				<< servers_list_[i].getLocationList()[j].getPath() << std::endl;
 		}
