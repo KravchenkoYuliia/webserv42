@@ -14,6 +14,7 @@
 #define SOCKET_HPP
 
 #include <string>
+#include <inttypes.h> // uint16_t
 
 class Socket {
 public:

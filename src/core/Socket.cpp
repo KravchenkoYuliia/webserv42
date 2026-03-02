@@ -13,10 +13,9 @@
 #include <iostream>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/epoll.h>
 #include <fcntl.h>          // fcntl
 #include <netinet/in.h>     // sockaddr_in
-#include <arpa/inet.h>      // htons , htonl
+#include <arpa/inet.h>      // htons , htonl, uint16_t
 #include <cstring>          // memset
 #include <unistd.h>         // close
 #include <errno.h>
@@ -47,6 +46,11 @@ Socket& Socket::operator=(const Socket& copy)
         bind_port_ = copy.bind_port_;
     }
     return (*this);
+}
+
+int Socket::getFd() const
+{
+    return (fd_);
 }
 
 void Socket::create()
