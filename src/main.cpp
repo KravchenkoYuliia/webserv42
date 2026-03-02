@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/24 12:08:39 by yukravch          #+#    #+#             */
-/*   Updated: 2026/03/02 15:24:20 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/02 15:48:53 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,10 @@
 #include "ConfigParser.hpp"
 #include "core/Socket.hpp"
 #include "utils/Utils.hpp"
+#include "core/ServerManager.hpp"
 
 int main(int argc, char **argv)
 {
-	(void)argv; // TDOD: delete line
 
     if ( argc != 2 )
     {
@@ -37,27 +37,15 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    try {
-        // ConfigParser configParser( argv[1] );
-        Socket socket;
+    ServerManager server_manager;
 
-        socket.create();
-        socket.setReusable();
-        socket.bind(8080); // TODO: update port 8080 with ServerConfig::getPort()
-        Utils::setNonBlocking(socket.getFd());
-        socket.listen();
-        while (true)
-        {
-            try {
-                int new_fd = socket.accept();
-                if (new_fd != -1)
-                    std::cout << "New client connected: " << new_fd << std::endl;
-                close(new_fd);
-            } catch (const std::exception& e) {
-                std::cerr << "Exception caught in accept loop: " << e.what() << std::endl;
-            }
-        }
-    } catch (const std::exception& e) {
+    try {
+        (void)argv; // TODO: delete line
+        // ConfigParser configParser( argv[1] );
+        server_manager.init(8080);
+        server_manager.run();
+    } catch (const std::exception& e)
+    {
         std::cerr << "Exception caught: " << e.what() << std::endl;
         return (1);
     }
