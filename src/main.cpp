@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/24 12:08:39 by yukravch          #+#    #+#             */
-/*   Updated: 2026/03/02 14:59:10 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/02 15:11:41 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,21 @@
 // end here
 
 #include <exception>
+#include "ConfigParser.hpp"
 #include "core/Socket.hpp"
 
 int main(int argc, char **argv)
 {
-	(void)argc; // TODO: delete line
 	(void)argv; // TDOD: delete line
 
+    if ( argc != 2 )
+    {
+        std::cerr << "Usage: ./webserv <config_file> " << std::endl;
+        return 1;
+    }
+
     try {
+        // ConfigParser configParser( argv[1] );
         Socket socket;
 
         socket.create();

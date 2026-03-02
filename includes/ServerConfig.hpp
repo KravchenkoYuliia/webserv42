@@ -1,7 +1,8 @@
 #ifndef SERVERCONFIG_HPP
 #define SERVERCONFIG_HPP
 
-#include "webserv.hpp"
+#include <string>
+#include <inttypes.h> // uint16_t
 
 class ServerConfig {
 

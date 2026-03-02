@@ -1,8 +1,8 @@
 #ifndef CONFIGPARSER_HPP
 #define CONFIGPARSER_HPP
 
-#include <algorithm> 
-#include "webserv.hpp"
+#include <algorithm>
+#include <vector>
 #include "ServerConfig.hpp"
 #include "Lexer.hpp"
 #include "Token.hpp"
@@ -27,11 +27,11 @@ public:
 
 private:
 	bool				waiting_for_brace_;
-	
+
 	std::vector<current_mode>	mode_;
 	std::vector<ServerConfig>	servers_list_;
 	Lexer						lexer_;
-	
+
 
 	void				parseTokens_( Token token );
 	void				parseLeftBrace_();
@@ -42,7 +42,7 @@ private:
 
 	ConfigParser();
 	ConfigParser( const ConfigParser& other );
-	ConfigParser&	operator = ( const ConfigParser& other );	
+	ConfigParser&	operator = ( const ConfigParser& other );
 };
 
 #endif

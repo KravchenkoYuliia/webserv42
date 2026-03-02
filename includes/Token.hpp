@@ -2,6 +2,7 @@
 #define TOKEN_HPP
 
 #include <iostream>
+#include <string>
 
 enum TokenType {
 	TOKEN_WORD,
@@ -20,12 +21,12 @@ public:
 
 
 	TokenType	getType() const;
-	std::string	getValue() const;	
+	std::string	getValue() const;
 
 private:
 	TokenType		type_;
 	std::string		value_;
-	
+
 	Token();
 };
 
