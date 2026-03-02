@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Acceptor.cpp                                       :+:      :+:    :+:   */
+/*   ConnectionAcceptor.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -14,29 +14,30 @@
 
 #include <sys/epoll.h>
 #include "core/ConnectionHandler.hpp"
-#include "reactor/Acceptor.hpp"
+#include "reactor/ConnectionAcceptor.hpp"
 #include "utils/Utils.hpp"
 
-Acceptor::Acceptor(Socket *server_socket, Reactor& reactor)
+ConnectionAcceptor::ConnectionAcceptor(Socket *server_socket, Reactor& reactor)
     :   server_socket_(server_socket),
         reactor_(reactor)
 {
+    std::cout << "ConnectionAcceptor parametized constructor called" << std::endl;
 }
 
-Acceptor::~Acceptor(void)
+ConnectionAcceptor::~ConnectionAcceptor(void)
 {
 }
 
-int Acceptor::getFd() const
+int ConnectionAcceptor::getFd() const
 {
     return (server_socket_->getFd());
 }
 
-void Acceptor::handleWrite() {}
+void ConnectionAcceptor::handleWrite() {}
 
-void Acceptor::handleError() {}
+void ConnectionAcceptor::handleError() {}
 
-void Acceptor::handleRead()
+void ConnectionAcceptor::handleRead()
 {
     while (true)
     {
