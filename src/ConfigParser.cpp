@@ -44,6 +44,7 @@ void	ConfigParser::parseRightBrace_() {
 
 void	ConfigParser::parseWord_( Token& token ) {
 
+
 	const std::string&	current_word = token.getValue();
 
 	if ( current_word == "server" ) {
@@ -70,27 +71,12 @@ void	ConfigParser::parseWordServer_() {
 	if ( token.getType() != TOKEN_LEFTBRACE )
 		throw std::runtime_error( "Error in config: server block must have braces: \"server {...}\"" );
 
-	if ( current_word == "server" ) {
+	mode_.push( MODE_SERVER );
+	ServerConfig	server_config;
+	servers_list_.push_back( server_config );
 
-		if ( mode_.top() != MODE_GLOBAL )
-			throw std::runtime_error( "Error in config: server block is written wrong" );
-
-		Token token = lexer_.getNextToken();
-		if ( token.getType() != TOKEN_LEFTBRACE )
-			throw std::runtime_error( "Error in config: server block must have braces: \"server {...}\"" );
-
-		mode_.push( MODE_SERVER );
-		ServerConfig	server_config;
-		servers_list_.push_back( server_config );
-
-	}
-	else if ( current_word == "server{" || current_word == "server{}" ) {
-
-		if ( mode_.top() != MODE_GLOBAL || current_word == "server{}" )
-			throw std::runtime_error( "Error in config: server block is written wrong" );
-		mode_.push( MODE_SERVER );
-		ServerConfig	server_config;
-		servers_list_.push_back( server_config );
+	if ( current_word == "server{}") {
+		ConfigParser::parseRightBrace_();
 	}
 }
 
@@ -107,7 +93,14 @@ void	ConfigParser::parseWordLocation_() {
 	if ( token.getValue()[0] != '/' )
 		throw std::runtime_error( "Error in config: location path must start with a slash: \"location /PATH {}\"" );
 
-	//TODO check if path does not already exist in location_list
+	//
+	//check if current path is unique
+	const std::vector<LocationConfig>&	loc_list = servers_list_.back().getLocationList();
+	for ( std::vector<LocationConfig>::size_type i = 0; i < loc_list.size(); i++ ) {
+		if ( loc_list[i].getPath() == token.getValue() )
+			throw std::runtime_error( "Error in config: same location can't be repeated twice for the same server" );
+	}
+
 	//
 	//adding an instance of class Location with /path to location_list in lattest server
 	//
@@ -145,7 +138,6 @@ void	ConfigParser::parseWordInsideServerBloc_( Token& token ) {
 		ConfigParser::parseListenInsideServerBlock();
 	}
 
-
 	//TODO
 	//if WORD is no one from the listed above -> error invalid input
 }
@@ -169,7 +161,6 @@ void	ConfigParser::parseListenInsideServerBlock() {
 	if ( position != token.getValue().npos ) {
 		current_server.setInterface( token.getValue().substr( 0, position ) );
 
-=======
 
 	//TODO
 	//if WORD is no one from the listed above -> error invalid input
@@ -189,11 +180,12 @@ void	ConfigParser::parseListenInsideServerBlock() {
 	ServerConfig&	current_server = servers_list_.back();
 	current_server.setInterface( token.getValue().substr( 0, position ) );
 
+=======
 	//
 	//get port from token
 	//
 	char* end;
-	long port_long = std::strtol( token.getValue().substr( position + 1 ).c_str(), &end, 10 );
+	long port_long = std::strtol( portValue.c_str(), &end, 10 );
 	if ( *end )
 		throw std::runtime_error( "Error in config: port must be a number" );
 	current_server.setPort( static_cast<uint16_t>(port_long) );
@@ -209,7 +201,6 @@ void	ConfigParser::parseListenInsideServerBlock() {
 		ConfigParser::parseWord_( token );
 	}
 }
-
 //
 //TODO delete visualisation function
 //
