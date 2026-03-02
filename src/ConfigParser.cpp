@@ -11,6 +11,14 @@ ConfigParser::ConfigParser( char* config_file )
 		ConfigParser::parseTokens_( token );
 		token = lexer_.getNextToken();
 	}
+
+	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
+		if ( servers_list_[i].getLocationList().empty() ) {
+			LocationConfig	location_config;
+			servers_list_[i].setLocationList( location_config );
+		}
+	}
+
 	//
 	//TODO delete visualisation function
 	//
@@ -43,6 +51,7 @@ void	ConfigParser::parseRightBrace_() {
 }
 
 void	ConfigParser::parseWord_( Token& token ) {
+	
 
 	const std::string&	current_word = token.getValue();
 	if ( current_word == "server" || current_word == "server{" || current_word == "server{}" ) {
@@ -62,7 +71,7 @@ void	ConfigParser::parseWord_( Token& token ) {
 
 void	ConfigParser::parseWordServer_( const std::string& current_word ) {
 
-	if ( mode_.top() != MODE_GLOBAL || current_word == "server{}" )
+	if ( mode_.top() != MODE_GLOBAL )
 		throw std::runtime_error( "Error in config: server block is written wrong" );
 	
 	if ( current_word == "server" ) {
@@ -78,6 +87,10 @@ void	ConfigParser::parseWordServer_( const std::string& current_word ) {
 	mode_.push( MODE_SERVER );
 	ServerConfig	server_config;
 	servers_list_.push_back( server_config );
+
+	if ( current_word == "server{}") {
+		ConfigParser::parseRightBrace_();
+	}
 }
 
 void	ConfigParser::parseWordLocation_() {
@@ -93,7 +106,14 @@ void	ConfigParser::parseWordLocation_() {
 	if ( token.getValue()[0] != '/' )
 		throw std::runtime_error( "Error in config: location path must start with a slash: \"location /PATH {}\"" );
 
-	//TODO check if path does not already exist in location_list
+	//
+	//check if current path is unique
+	const std::vector<LocationConfig>&	loc_list = servers_list_.back().getLocationList();
+	for ( std::vector<LocationConfig>::size_type i = 0; i < loc_list.size(); i++ ) {
+		if ( loc_list[i].getPath() == token.getValue() )
+			throw std::runtime_error( "Error in config: same location can't be repeated twice for the same server" );
+	}
+
 	//
 	//adding an instance of class Location with /path to location_list in lattest server
 	//
