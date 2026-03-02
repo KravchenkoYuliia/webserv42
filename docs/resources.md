@@ -42,3 +42,11 @@
 ## epoll()
 - [Mastering epoll()](https://medium.com/@m-ibrahim.research/mastering-epoll-the-engine-behind-high-performance-linux-networking-85a15e6bde90)
 - [Epoll tuto](https://suchprogramming.com/epoll-in-3-easy-steps/)
+
+## Reactor Pattern
+- [Wikipedia - Reactor Pattern](https://en.wikipedia.org/wiki/Reactor_pattern)
+- [Reactor - An Object Behavioral Pattern for Demultiplexing and Dispatching Handles for Synchronous Events](https://www.dre.vanderbilt.edu/~schmidt/PDF/reactor-siemens.pdf)
+- [Acceptor - A Design Pattern for Passively Initializing Network Services](https://www.dre.vanderbilt.edu/~schmidt/PDF/Acceptor.pdf)
+- [Reactor - Concurreny Pattern - Nantes University presentation](https://patterns.univ-nantes.io/reactor.html#/)
+- [Pattern-Oriented Software Architecture: Patterns for Concurrent and Networked Objects](https://www.dre.vanderbilt.edu/~schmidt/POSA/POSA2/)
+- []()
