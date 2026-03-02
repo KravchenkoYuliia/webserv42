@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 16:54:38 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/02 15:39:36 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/02 15:41:23 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,15 +94,6 @@ int Socket::accept()
         throw std::runtime_error("accept failed");
     }
     return (new_fd);
-}
-
-void Socket::setNonBlocking()
-{
-    int	flag = fcntl( fd_, F_GETFL );
-    if ( flag == -1 )
-        throw std::runtime_error(" socket fcntl GET failed");
-    if ( fcntl( fd_, F_SETFL, flag | O_NONBLOCK ) == -1 )
-        throw std::runtime_error("socket fcntl SET failed");
 }
 
 void Socket::setReusable()
