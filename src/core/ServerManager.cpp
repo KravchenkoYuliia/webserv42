@@ -6,13 +6,13 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 18:51:35 by jgossard          #+#    #+#             */
-/*   Updated: 2026/02/27 19:05:51 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/02 10:41:18 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <sys/epoll.h>
 #include "utils/Utils.hpp"
-#include "reactor/Acceptor.hpp"
+#include "reactor/ConnectionAcceptor.hpp"
 #include "core/ServerManager.hpp"
 #include <iostream>
 
@@ -49,7 +49,7 @@ void ServerManager::init( uint16_t port)
     Utils::setNonBlocking(server_socket_.getFd());
     server_socket_.listen();
 
-    Acceptor *acceptor = new Acceptor(&server_socket_, reactor_);  // TODO: how to free memory if exception is throwing?
+    ConnectionAcceptor *acceptor = new ConnectionAcceptor(&server_socket_, reactor_);  // TODO: how to free memory if exception is throwing?
     reactor_.addHandler(acceptor, EPOLLIN);
 }
 

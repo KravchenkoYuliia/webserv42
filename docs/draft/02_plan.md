@@ -66,20 +66,23 @@ webserv/
 ## Core
 ### ServerManager
 - [] load server config
-- [] set up server config (create / bind / listen)
-- [] start server (start even loop and register listening socket in EvenLoop?)
+- [x] set up server config (create / bind / listen)
+- [x] start server (start even loop and register listening socket in EvenLoop?)
 - []
 
-### EvenLoop
+### EvenLoop => renamed Reactor
 This class is responsible to encapsulates epoll.
-- [] add fd
-- [] remove fd
-- [] modify fd
-- [] run(connectionManager) => infinite loop that is responsible to wait for events and dispatch them to the right owner through connection_manager
+- [x] add fd
+- [x] remove fd
+- [x] modify fd
+- [x] run(connectionManager) => infinite loop that is responsible to wait for events and dispatch them to the right owner through connection_manager
 
 ### Connection
 Represent one client
 - [] handle connection lifecycle (reading, writing, closed)
+    -> [] handle Read
+    -> [] handle write
+    -> [] handle error
 
 ```
 Because one connection goes through phases:
@@ -124,13 +127,13 @@ This class manages client connections.
 
 ### Socket
 This class is responsible to wrap raw socket API.
-- [] Create socket
-- [] Bind socket
-- [] Listen socket
-- [] accept client socket
-- [] set non blocking socket
-- [] getter to retrieve listening fd
-- [] allow reuse of socket => wrap method setsockopt()
+- [x] Create socket
+- [x] Bind socket
+- [x] Listen socket
+- [x] accept client socket
+- [x] set non blocking socket
+- [x] getter to retrieve listening fd
+- [x] allow reuse of socket => wrap method setsockopt()
 
 ## Config
 ### ConfigParser

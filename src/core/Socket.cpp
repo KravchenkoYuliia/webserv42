@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 16:54:38 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/02 15:41:23 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/02 15:46:13 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ Socket::Socket(void)
     :   fd_(kDefaultFd),
         bind_port_(kDefaultPort)
 {
+    std::cout << "Socket parametized constructor called" << std::endl;
 }
 
 Socket::Socket( const Socket& copy )
@@ -74,14 +75,14 @@ void Socket::bind( uint16_t port )
 
     int bind_status = ::bind(fd_, (struct sockaddr*)&address, sizeof(address));
     if (bind_status < 0)
-        throw std::runtime_error("bind failed");
+        throw std::runtime_error(std::string("bind failed! ") + std::strerror(errno));
 }
 
 void Socket::listen()
 {
     int	listen_status = ::listen( fd_, SOMAXCONN);
 	if ( listen_status == -1 )
-        throw std::runtime_error("listen failed");
+        throw std::runtime_error(std::string("listen failed! ") + std::strerror(errno));
 }
 
 int Socket::accept()
@@ -91,7 +92,7 @@ int Socket::accept()
     {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             return (-1);
-        throw std::runtime_error("accept failed");
+        throw std::runtime_error(std::string("accept failed! ") + std::strerror(errno));
     }
     return (new_fd);
 }
@@ -100,5 +101,5 @@ void Socket::setReusable()
 {
     int opt = 1;
     if (setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-        throw std::runtime_error("setsockopt failed");
+        throw std::runtime_error(std::string("setsockopt failed! ") + std::strerror(errno));
 }

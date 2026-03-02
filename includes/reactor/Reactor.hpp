@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:19:32 by jgossard          #+#    #+#             */
-/*   Updated: 2026/02/27 18:12:15 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/02 11:03:42 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ public:
     void    addHandler( IEventHandler *handler, uint32_t epoll_event_type);
     void    updateHandler( IEventHandler *handler, uint32_t epoll_event_type );
     void    deleteHandler( int fd );
-    void    run();
+    void    run(); // TODO: should it be renamed to handleEvent?
 
 protected:
     // ---------- Protected Data Members ---------------------

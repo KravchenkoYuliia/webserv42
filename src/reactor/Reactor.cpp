@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:54:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/02/27 19:23:39 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/02 10:42:30 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 
 Reactor::Reactor(void)
 {
+    std::cout << "Reactor default constructor called" << std::endl;
+
     epoll_fd_ = epoll_create(1);
     if (epoll_fd_ == -1)
         throw std::runtime_error("epoll_create failed");
@@ -27,7 +29,8 @@ Reactor::Reactor(void)
 Reactor::~Reactor(void)
 {
     // TODO: not sure if Reactor really own handlers_ or not, to clarify after implementation of ServerManager
-    // delete handlers_
+
+    // delete handlers_ if Reactor owns handlers
     for (std::vector<IEventHandler*>::iterator it = handlers_.begin(); it < handlers_.end(); ++it)
         delete *it;
     handlers_.clear();

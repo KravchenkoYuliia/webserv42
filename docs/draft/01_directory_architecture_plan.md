@@ -11,6 +11,11 @@ webserv/
 │   │   ├── ConnectionManager.hpp
 │   │   └── Socket.hpp
 │   │
+│   ├── reactor/
+│   │   ├── Reactor.hpp
+│   │   ├── IEventHandler.hpp
+│   │   └── ConnectionAcceptor.hpp
+│   │
 │   ├── config/
 │   │   ├── ConfigParser.hpp
 │   │   ├── ServerConfig.hpp
