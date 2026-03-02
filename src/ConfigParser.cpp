@@ -62,6 +62,9 @@ void	ConfigParser::parseWord_( Token& token ) {
 
 void	ConfigParser::parseWordServer_( const std::string& current_word ) {
 
+	if ( mode_.top() != MODE_GLOBAL || current_word == "server{}" )
+		throw std::runtime_error( "Error in config: server block is written wrong" );
+	
 	if ( current_word == "server" ) {
 		
 		if ( mode_.top() != MODE_GLOBAL )
@@ -70,20 +73,11 @@ void	ConfigParser::parseWordServer_( const std::string& current_word ) {
 		Token token = lexer_.getNextToken();
 		if ( token.getType() != TOKEN_LEFTBRACE )
 			throw std::runtime_error( "Error in config: server block must have braces: \"server {...}\"" );
-
-		mode_.push( MODE_SERVER );
-		ServerConfig	server_config;
-		servers_list_.push_back( server_config );
-
 	}
-	else if ( current_word == "server{" || current_word == "server{}" ) {
 
-		if ( mode_.top() != MODE_GLOBAL || current_word == "server{}" )
-			throw std::runtime_error( "Error in config: server block is written wrong" );
-		mode_.push( MODE_SERVER );
-		ServerConfig	server_config;
-		servers_list_.push_back( server_config );
-	}
+	mode_.push( MODE_SERVER );
+	ServerConfig	server_config;
+	servers_list_.push_back( server_config );
 }
 
 void	ConfigParser::parseWordLocation_() {
@@ -99,6 +93,7 @@ void	ConfigParser::parseWordLocation_() {
 	if ( token.getValue()[0] != '/' )
 		throw std::runtime_error( "Error in config: location path must start with a slash: \"location /PATH {}\"" );
 
+	//TODO check if path does not already exist in location_list
 	//
 	//adding an instance of class Location with /path to location_list in lattest server
 	//
@@ -133,33 +128,48 @@ void	ConfigParser::parseAnotherWord_( Token& token ) {
 void	ConfigParser::parseWordInsideServerBloc_( Token& token ) {
 
 	if ( token.getValue() == "listen" ) {
-		token = lexer_.getNextToken(); // this token must be interface:port
-		if ( token.getType() != TOKEN_WORD )
-			throw std::runtime_error( "Error in config: listen require interface:port" );
-		//
-		// get interface from token
-		// 
-		std::string::size_type	position = token.getValue().find(':');
-		if ( position == token.getValue().npos )
-			throw std::runtime_error( "Error in config: write \"interface:port\"" );
-		ServerConfig&	current_server = servers_list_.back();
-		current_server.setInterface( token.getValue().substr( 0, position ) );
+		ConfigParser::parseListenInsideServerBlock();
+	}
 
-		//
-		//get port from token
-		//
-		char* end;
-		long port_long = std::strtol( token.getValue().substr( position + 1 ).c_str(), &end, 10 );
-		if ( *end )
-			throw std::runtime_error( "Error in config: port must be a number" );
-		current_server.setPort( static_cast<uint16_t>(port_long) );
+	//TODO
+	//if WORD is no one from the listed above -> error invalid input
+}		
+
+void	ConfigParser::parseListenInsideServerBlock() {
+
+	Token token = lexer_.getNextToken(); // this token must be interface:port
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: listen require interface:port" );
+	//
+	// get interface from token
+	// 
+	std::string::size_type	position = token.getValue().find(':');
+	if ( position == token.getValue().npos )
+		throw std::runtime_error( "Error in config: write \"interface:port\"" );
+	ServerConfig&	current_server = servers_list_.back();
+	current_server.setInterface( token.getValue().substr( 0, position ) );
+
+	//
+	//get port from token
+	//
+	char* end;
+	long port_long = std::strtol( token.getValue().substr( position + 1 ).c_str(), &end, 10 );
+	if ( *end )
+		throw std::runtime_error( "Error in config: port must be a number" );
+	current_server.setPort( static_cast<uint16_t>(port_long) );
 
 
-		token = lexer_.getNextToken(); // this token can be default_server
-		if ( token.getType() != TOKEN_WORD )
-			throw std::runtime_error( "Error in config: fix server block" );
+	token = lexer_.getNextToken(); // this token can be default_server
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix server block" );
+	if ( token.getValue() == "default_server" ) {
+		servers_list_.back().setDefaultServer( true );
+	}
+	else {
+		ConfigParser::parseWord_( token );
 	}
 }
+	
 //
 //TODO delete visualisation function
 //
@@ -168,8 +178,10 @@ void	ConfigParser::printAll() {
 	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
 		std::cout << "Server[" << i << "]" << "-> "<< &servers_list_[i] << " has: " << std::endl
 			<< "	Port: " << servers_list_[i].getPort() << std::endl
-			<< "	Interface: " << servers_list_[i].getInterface() << std::endl 
-			<< "	Location list: " << std::endl;
+			<< "	Interface: " << servers_list_[i].getInterface();
+			if ( servers_list_[i].getDefaultServer() == true )
+				std::cout << " default_server";
+			std::cout << std::endl << "	Location list: " << std::endl;
 			
 		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {
 			

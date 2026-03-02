@@ -1,6 +1,9 @@
 #include "ServerConfig.hpp"
 
-ServerConfig::ServerConfig() {}
+ServerConfig::ServerConfig()
+	: port_( 8080 ),
+	interface_( "0.0.0.0" ),
+	default_server_( false ) {}
 
 ServerConfig::ServerConfig(const ServerConfig& other) { *this = other; }
 
