@@ -42,6 +42,7 @@ private:
 	void				parseAnotherWord_( Token& token );
 	void				parseWordInsideServerBloc_( Token& token );
 	void				parseListenInsideServerBlock();
+
 	//
 	//TODO remove this function
 	//

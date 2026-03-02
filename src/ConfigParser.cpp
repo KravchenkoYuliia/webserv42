@@ -74,10 +74,6 @@ void	ConfigParser::parseWordServer_() {
 	mode_.push( MODE_SERVER );
 	ServerConfig	server_config;
 	servers_list_.push_back( server_config );
-
-	if ( current_word == "server{}") {
-		ConfigParser::parseRightBrace_();
-	}
 }
 
 void	ConfigParser::parseWordLocation_() {
