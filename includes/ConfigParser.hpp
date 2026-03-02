@@ -2,9 +2,7 @@
 #define CONFIGPARSER_HPP
 
 #include <algorithm>
-#include <stack>
-
-#include "webserv.hpp"
+#include <vector>
 #include "ServerConfig.hpp"
 #include "LocationConfig.hpp"
 #include "Lexer.hpp"
@@ -30,11 +28,11 @@ public:
 
 
 private:
-	
+
 	std::stack<current_mode>	mode_;
 	std::vector<ServerConfig>	servers_list_;
 	Lexer						lexer_;
-	
+
 
 	void				parseTokens_( Token& token );
 	void				parseRightBrace_();
@@ -50,7 +48,7 @@ private:
 	void	printAll();
 	ConfigParser();
 	ConfigParser( const ConfigParser& other );
-	ConfigParser&	operator = ( const ConfigParser& other );	
+	ConfigParser&	operator = ( const ConfigParser& other );
 };
 
 #endif

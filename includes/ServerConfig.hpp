@@ -1,8 +1,8 @@
 #ifndef SERVERCONFIG_HPP
 #define SERVERCONFIG_HPP
 
-#include "webserv.hpp"
-#include "LocationConfig.hpp" 
+#include <string>
+#include <inttypes.h> // uint16_t
 
 class LocationConfig;
 class ServerConfig {
@@ -24,7 +24,7 @@ public:
 	const bool&		 		getDefaultServer() const;
 	const std::vector<LocationConfig>&	getLocationList() const;
 
-	
+
 private:
 	uint16_t					port_;
 	std::string					interface_;
