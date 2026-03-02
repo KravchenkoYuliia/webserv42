@@ -12,6 +12,9 @@ ConfigParser::ConfigParser( char* config_file )
 		token = lexer_.getNextToken();
 	}
 
+	//
+	//check if there is no location in server block
+	//
 	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
 		if ( servers_list_[i].getLocationList().empty() ) {
 			LocationConfig	location_config;
@@ -26,7 +29,6 @@ ConfigParser::ConfigParser( char* config_file )
 }
 
 void	ConfigParser::parseTokens_( Token& token ) {
-
 
 	if ( token.getType() == TOKEN_LEFTBRACE ) {
 		throw std::runtime_error( "Error in config: fix the braces");
@@ -52,10 +54,10 @@ void	ConfigParser::parseRightBrace_() {
 
 void	ConfigParser::parseWord_( Token& token ) {
 	
-
 	const std::string&	current_word = token.getValue();
-	if ( current_word == "server" || current_word == "server{" || current_word == "server{}" ) {
-		ConfigParser::parseWordServer_( current_word );
+	
+	if ( current_word == "server" ) {
+		ConfigParser::parseWordServer_();
 	}
 
 	else if ( current_word == "location" ) {
@@ -65,32 +67,20 @@ void	ConfigParser::parseWord_( Token& token ) {
 	else {
 		ConfigParser::parseAnotherWord_( token );
 	}
-
-
 }
 
-void	ConfigParser::parseWordServer_( const std::string& current_word ) {
-
+void	ConfigParser::parseWordServer_() {
+	
 	if ( mode_.top() != MODE_GLOBAL )
 		throw std::runtime_error( "Error in config: server block is written wrong" );
-	
-	if ( current_word == "server" ) {
 		
-		if ( mode_.top() != MODE_GLOBAL )
-			throw std::runtime_error( "Error in config: server block is written wrong" );
-		
-		Token token = lexer_.getNextToken();
-		if ( token.getType() != TOKEN_LEFTBRACE )
-			throw std::runtime_error( "Error in config: server block must have braces: \"server {...}\"" );
-	}
+	Token token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_LEFTBRACE )
+		throw std::runtime_error( "Error in config: server block must have braces: \"server {...}\"" );
 
 	mode_.push( MODE_SERVER );
 	ServerConfig	server_config;
 	servers_list_.push_back( server_config );
-
-	if ( current_word == "server{}") {
-		ConfigParser::parseRightBrace_();
-	}
 }
 
 void	ConfigParser::parseWordLocation_() {

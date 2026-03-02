@@ -46,14 +46,20 @@ Token	Lexer::getNextToken() {
 
 	else {
 		std::string	word( 1, current_ );
-		while ( !std::isspace( current_ ) ) {
+		while ( !std::isspace( current_ ) && current_ != '{' ) {
 			
 			getReturn = stream_.get();
 			if ( getReturn == -1 )
 				return Token( TOKEN_ENDFILE, "" );
 			current_ = static_cast<char>( getReturn );
-			if ( !std::isspace( current_ ) )
-				word += current_;
+			if ( std::isspace( current_ ) || current_ == '{' ) {
+				stream_.unget();
+				if ( stream_.fail() ) {
+					throw std::runtime_error( "Error in config: ifstream fail during unget() call" );
+				}
+				break;
+			}
+			word += current_;
 		}
 		return Token( TOKEN_WORD, word );
 	}

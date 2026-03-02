@@ -37,11 +37,12 @@ private:
 	void				parseTokens_( Token& token );
 	void				parseRightBrace_();
 	void				parseWord_( Token& token );
-	void				parseWordServer_( const std::string& word );
+	void				parseWordServer_();
 	void				parseWordLocation_();
 	void				parseAnotherWord_( Token& token );
 	void				parseWordInsideServerBloc_( Token& token );
 	void				parseListenInsideServerBlock();
+
 	//
 	//TODO remove this function
 	//
