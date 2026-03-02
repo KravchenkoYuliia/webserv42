@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <stack>
 #include "ServerConfig.hpp"
 #include "LocationConfig.hpp"
 #include "Lexer.hpp"

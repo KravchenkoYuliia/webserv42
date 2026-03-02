@@ -2,7 +2,9 @@
 #define SERVERCONFIG_HPP
 
 #include <string>
+#include <vector>
 #include <inttypes.h> // uint16_t
+#include "LocationConfig.hpp"
 
 class LocationConfig;
 class ServerConfig {
