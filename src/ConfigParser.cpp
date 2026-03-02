@@ -13,7 +13,7 @@ ConfigParser::ConfigParser( char* config_file )
 	}
 
 	//
-	//check if there is no location in server block
+	//check if there is server block that has 0 location
 	//
 	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
 		if ( servers_list_[i].getLocationList().empty() ) {
@@ -147,23 +147,33 @@ void	ConfigParser::parseWordInsideServerBloc_( Token& token ) {
 
 void	ConfigParser::parseListenInsideServerBlock() {
 
-	Token token = lexer_.getNextToken(); // this token must be interface:port
+	Token token = lexer_.getNextToken(); // this token must have port( numbers ); can also have interface
 	if ( token.getType() != TOKEN_WORD )
-		throw std::runtime_error( "Error in config: listen require interface:port" );
-	//
-	// get interface from token
-	// 
-	std::string::size_type	position = token.getValue().find(':');
-	if ( position == token.getValue().npos )
-		throw std::runtime_error( "Error in config: write \"interface:port\"" );
+		throw std::runtime_error( "Error in config: listen require port or interface:port" );
+	
+	std::string	portValue;
 	ServerConfig&	current_server = servers_list_.back();
-	current_server.setInterface( token.getValue().substr( 0, position ) );
+	//
+	// get interface from token if there is any
+	// 
+	
+
+	std::string::size_type	position = token.getValue().find(':');
+	if ( position == 0 || position == token.getValue().size() - 1 )
+		throw std::runtime_error( "Error in config: listen to invalid port" );
+	if ( position != token.getValue().npos ) {
+		current_server.setInterface( token.getValue().substr( 0, position ) );
+		portValue = token.getValue().substr( position + 1 );
+	}
+	else {
+		portValue = token.getValue();
+	}
 
 	//
 	//get port from token
 	//
 	char* end;
-	long port_long = std::strtol( token.getValue().substr( position + 1 ).c_str(), &end, 10 );
+	long port_long = std::strtol( portValue.c_str(), &end, 10 );
 	if ( *end )
 		throw std::runtime_error( "Error in config: port must be a number" );
 	current_server.setPort( static_cast<uint16_t>(port_long) );
@@ -172,6 +182,7 @@ void	ConfigParser::parseListenInsideServerBlock() {
 	token = lexer_.getNextToken(); // this token can be default_server
 	if ( token.getType() != TOKEN_WORD )
 		throw std::runtime_error( "Error in config: fix server block" );
+
 	if ( token.getValue() == "default_server" ) {
 		servers_list_.back().setDefaultServer( true );
 	}
