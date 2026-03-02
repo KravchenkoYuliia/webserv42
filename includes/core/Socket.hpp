@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/24 17:45:19 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/02 15:23:33 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/02 15:41:12 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,6 @@ public:
     void    bind( uint16_t port );
     void    listen();
     int     accept();
-    void    setNonBlocking();
     void    setReusable();
 
 protected:

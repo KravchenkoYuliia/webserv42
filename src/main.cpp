@@ -25,6 +25,7 @@
 #include <exception>
 #include "ConfigParser.hpp"
 #include "core/Socket.hpp"
+#include "utils/Utils.hpp"
 
 int main(int argc, char **argv)
 {
@@ -43,7 +44,7 @@ int main(int argc, char **argv)
         socket.create();
         socket.setReusable();
         socket.bind(8080); // TODO: update port 8080 with ServerConfig::getPort()
-        socket.setNonBlocking();
+        Utils::setNonBlocking(socket.getFd());
         socket.listen();
         while (true)
         {
