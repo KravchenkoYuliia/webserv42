@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/24 12:08:39 by yukravch          #+#    #+#             */
-/*   Updated: 2026/03/02 15:49:24 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/04 14:15:26 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,12 @@ int main(int argc, char **argv)
     }
 
     ServerManager server_manager;
+
+    if ( argc != 2 )
+    {
+        std::cerr << "Usage: ./webserv <config_file> " << std::endl;
+        return 1;
+    }
 
     try {
         (void)argv; // TODO: delete line
