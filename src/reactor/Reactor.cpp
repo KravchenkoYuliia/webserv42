@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:54:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/02 10:42:30 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/03 19:00:02 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,9 @@ Reactor::~Reactor(void)
 
 void Reactor::addHandler( IEventHandler *handler, uint32_t epoll_event_type )
 {
+    if (handler == NULL)
+        throw std::invalid_argument("handler is NULL");
+
     int fd = handler->getFd();
 
     struct epoll_event event;
@@ -48,10 +51,7 @@ void Reactor::addHandler( IEventHandler *handler, uint32_t epoll_event_type )
     event.data.ptr = handler;
 
     if (epoll_ctl( epoll_fd_, EPOLL_CTL_ADD, fd, &event) == -1)
-    {
-        delete handler; // TODO: to keep it here?
         throw std::runtime_error("epoll_ctl ADD failed");
-    }
     handlers_.push_back(handler);
 }
 
@@ -64,17 +64,14 @@ void Reactor::updateHandler( IEventHandler *handler, uint32_t epoll_event_type)
     event.data.ptr = handler;
 
     if (epoll_ctl( epoll_fd_, EPOLL_CTL_MOD, fd, &event) == -1)
-    {
-        delete handler; // TODO: to keep it here?
         throw std::runtime_error("epoll_ctl MOD failed");
-    }
 }
 
 void Reactor::deleteHandler( int fd )
 {
     if (epoll_ctl( epoll_fd_, EPOLL_CTL_DEL, fd, NULL) == -1)
         throw std::runtime_error("epoll_ctl DEL failed");
-    for (std::vector<IEventHandler* >::iterator it = handlers_.begin(); it < handlers_.end(); ++it)
+    for (std::vector<IEventHandler* >::iterator it = handlers_.begin(); it != handlers_.end(); ++it)
     {
         if ((*it)->getFd() == fd)
         {

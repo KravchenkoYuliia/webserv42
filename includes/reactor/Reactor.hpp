@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:19:32 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/02 11:03:42 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/03 18:09:30 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ protected:
 
 private:
     // ---------- Private Data members -------------------------
-    int                             epoll_fd_;
+    int                           epoll_fd_;
     std::vector<IEventHandler *>  handlers_;
 
     Reactor(const Reactor& copy);
