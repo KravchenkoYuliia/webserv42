@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 18:51:35 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/02 10:41:18 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/03 18:56:25 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,15 @@ void ServerManager::init( uint16_t port)
     Utils::setNonBlocking(server_socket_.getFd());
     server_socket_.listen();
 
-    ConnectionAcceptor *acceptor = new ConnectionAcceptor(&server_socket_, reactor_);  // TODO: how to free memory if exception is throwing?
-    reactor_.addHandler(acceptor, EPOLLIN);
+    ConnectionAcceptor *acceptor = new ConnectionAcceptor(&server_socket_, reactor_);
+    try {
+        reactor_.addHandler(acceptor, EPOLLIN);
+    }
+    catch (const std::exception& e)
+    {
+        delete acceptor;
+        throw; // rethrow the exception after cleanup
+    }
 }
 
 void    ServerManager::run()
