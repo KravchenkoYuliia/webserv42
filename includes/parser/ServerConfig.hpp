@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <inttypes.h> // uint16_t
+
 #include "LocationConfig.hpp"
 
 class LocationConfig;
@@ -23,19 +24,25 @@ public:
 	void	setPort( uint16_t port );
 	void	setInterface( const std::string& interface );
 	void	setDefaultServer( bool default_server );
-	void	setLocationList( const LocationConfig& location_config );
+	void	setLocationList( LocationConfig location_config );
+	void	setServerName( std::string server_name );
+	void	setRoot( std::string root );
 
-	uint16_t			                getPort() const;
-	const std::string&			        getInterface() const;
-	bool		 		                getDefaultServer() const;
-	const std::vector<LocationConfig>&	getLocationList() const;
+	uint16_t			getPort() const;
+	std::string			getInterface() const;
+	bool		 		getDefaultServer() const;
+	std::vector<LocationConfig>&	getLocationList();
+	std::vector<std::string>	getServerName() const;
+	std::string	getRoot() const;
 
 
 private:
-	uint16_t					port_;
-	std::string					interface_;
-	bool						default_server_;
-	std::vector<LocationConfig>			location_list_;
+	uint16_t				port_;
+	std::string				interface_;
+	bool					default_server_;
+	std::vector<LocationConfig>		location_list_;
+	std::vector<std::string>		server_name_;
+	std::string				root_;
 };
 
 #endif

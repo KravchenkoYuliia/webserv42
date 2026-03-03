@@ -43,6 +43,10 @@ void	ConfigParser::parseTokens( const Token& token ) {
 	else if ( token.getType() == TOKEN_WORD ) {
 		ConfigParser::parseDirectiveWord( token );
 	}
+	else if ( token.getType() == TOKEN_SEMICOLON ) {
+		//TODO
+		//does it useless this condition or semicilon only can be after key words like listen ip:port;
+	}
 }
 
 void	ConfigParser::parseRightBrace() {
@@ -64,7 +68,7 @@ void	ConfigParser::parseDirectiveWord( const Token& token ) {
 	}
 
 	else if ( current_word == "location" ) {
-		ConfigParser::parseWordLocation_();
+		ConfigParser::parseWordLocation();
 	}
 
 	else {
@@ -86,7 +90,7 @@ void	ConfigParser::parseWordServer() {
 	servers_list_.push_back( server_config );
 }
 
-void	ConfigParser::parseWordLocation_() {
+void	ConfigParser::parseWordLocation() {
 
 	if ( mode_.top() != MODE_SERVER )
 		throw std::runtime_error( "Error in config: location block must be declared inside server block" );
@@ -134,14 +138,21 @@ void	ConfigParser::parseWords( const Token& token ) {
 		ConfigParser::parseWordInServer( token );
 	}
 	else if ( mode_.top() == MODE_LOCATION ){
+		ConfigParser::parseWordInLocation( token );
 
 	}
 }
 
-void	ConfigParser::parseWordInServer( const Token& token ) {
+void	ConfigParser::parseWordInServer( Token& token ) {
 
 	if ( token.getValue() == "listen" ) {
 		ConfigParser::parseListenInServer();
+	}
+	else if ( token.getValue() == "server_name" ) {
+		ConfigParser::parseServerNameInServer();
+	}
+	else if ( token.getValue() == "root" ) {
+		ConfigParser::parseRootInServer();
 	}
 
 	//TODO
@@ -150,7 +161,7 @@ void	ConfigParser::parseWordInServer( const Token& token ) {
 
 void	ConfigParser::parseListenInServer() {
 
-	Token token = lexer_.getNextToken(); // this token must have port( numbers ); can also have interface
+	Token token = lexer_.getNextToken(); // this token must have port( numbers ) and can also have interface
 	if ( token.getType() != TOKEN_WORD )
 		throw std::runtime_error( "Error in config: listen require port or interface:port" );
 	std::string	portValue;
@@ -181,7 +192,9 @@ void	ConfigParser::parseListenInServer() {
 	current_server.setPort( static_cast<uint16_t>(port_long) );
 
 
-	token = lexer_.getNextToken(); // this token can be default_server
+	token = lexer_.getNextToken(); // this token can be default_server or  ;
+	if ( token.getType() == TOKEN_SEMICOLON )
+		return ;
 	if ( token.getType() != TOKEN_WORD )
 		throw std::runtime_error( "Error in config: fix server block" );
 
@@ -192,6 +205,55 @@ void	ConfigParser::parseListenInServer() {
 		ConfigParser::parseDirectiveWord( token );
 	}
 }
+
+void	ConfigParser::parseServerNameInServer() {
+
+	Token	token = lexer_.getNextToken();
+	while ( token.getType() == TOKEN_WORD ) {
+		servers_list_.back().setServerName( token.getValue() );
+		token = lexer_.getNextToken();
+	}
+
+	if ( token.getType() != TOKEN_SEMICOLON )
+		throw std::runtime_error( "Error in config: fix server_name block");
+}
+
+void	ConfigParser::parseRootInServer() {
+
+	Token	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix root block");
+
+	servers_list_.back().setRoot( token.getValue() );
+
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_SEMICOLON )
+		throw std::runtime_error( "Error in config: fix root block");
+}
+
+void	ConfigParser::parseWordInLocation( Token token ) {
+
+	if ( token.getValue() == "root" ) {
+		ConfigParser::parseRootInLocation();
+	}
+	//TODO
+	//if WORD is no one from the listed above -> error invalid input
+
+}
+
+void	ConfigParser::parseRootInLocation() {
+
+	Token	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix root block in location");
+
+	servers_list_.back().getLocationList().back().setRoot( token.getValue() );
+
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_SEMICOLON )
+		throw std::runtime_error( "Error in config: fix root block in location");
+}
+
 //
 //TODO delete visualisation function
 //
@@ -203,14 +265,24 @@ void	ConfigParser::printAll() {
 			<< "	Interface: " << servers_list_[i].getInterface();
 			if ( servers_list_[i].getDefaultServer() == true )
 				std::cout << " default_server";
+			std::cout << std::endl << "	Server name: ";
+			for ( std::vector<std::string>::size_type s = 0; s < servers_list_[i].getServerName().size(); s++ ) {
+				std::cout << servers_list_[i].getServerName()[s] << " ";
+			}
+			std::cout << std::endl << "	Root: " << servers_list_[i].getRoot();
 			std::cout << std::endl << "	Location list: " << std::endl;
 		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {
 
-			std::cout << "		Location[" << j << "] has path: "
+			std::cout << "		Location[" << j << "] has:" << std::endl << "				path: "
 				<< servers_list_[i].getLocationList()[j].getPath() << std::endl;
+				if ( servers_list_[i].getLocationList()[j].getRoot() != "" )
+					std::cout << "				root: " << servers_list_[i].getLocationList()[j].getRoot() << std::endl;
 		}
 	}
 }
+
+
+
 
 ConfigParser::ConfigParser() {}
 ConfigParser::ConfigParser(const ConfigParser& other) { *this = other; }

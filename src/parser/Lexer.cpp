@@ -25,6 +25,8 @@ Token	Lexer::getNextToken() {
 	else if ( current_ == '}' ) {
 		return Token( TOKEN_RIGHTBRACE, "}" );
 	}
+	else if ( current_ == ';' )
+		return Token( TOKEN_SEMICOLON, ";" );
 
 	else {
 

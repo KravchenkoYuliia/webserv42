@@ -22,7 +22,7 @@ Token&	Token::operator=(const Token& other) {
 Token::~Token() {}
 
 
-const TokenType&	Token::getType() const {
+TokenType	Token::getType() const {
 	return type_;
 }
 
