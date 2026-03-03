@@ -27,7 +27,6 @@ private:
 	std::map<int, std::string>		return_page_;
 */
 
-
 };
 
 #endif

@@ -4,7 +4,6 @@ Lexer::Lexer() {}
 
 
 Lexer::Lexer( char* file) {
-
 	stream_.open( file );
 	if ( stream_.fail() || !stream_.is_open() )
 		throw std::runtime_error( "Error: can't open configuration file" );
