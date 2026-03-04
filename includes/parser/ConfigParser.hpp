@@ -38,6 +38,7 @@ private:
 	void	parseWordServer();
 	void	parseWordLocation();
 	void	parseWords( const Token& token );
+	void	fillEmptyDirectives();
 
 	void	parseWordInServer( const Token& token );
 	void	parseListenInServer();

@@ -13,33 +13,9 @@ ConfigParser::ConfigParser( char* config_file )
 		ConfigParser::parseTokens( token );
 		token = lexer_.getNextToken();
 	}
-
-	//
-	//check if there is server block that has 0 location
-	//
-	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
-		if ( servers_list_[i].getLocationList().empty() ) {
-			LocationConfig	location_config;
-			servers_list_[i].setLocationList( location_config );
-		}
-	}
-
-	//check if there is server block that has no index
-	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
-		if ( servers_list_[i].getIndex().empty() ) {
-			servers_list_[i].setIndex( kDefaultIndex );
-		}
-	}
-
-	//
-	//check if there is server block that has 0 error page
-		
-	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
-		if ( servers_list_[i].getErrorPage().empty() ) {
-			servers_list_[i].setErrorPage( 404, "404.html" ); //TODO create a list of default error pages
-		}
-	}
 	
+	ConfigParser::fillEmptyDirectives();
+		
 
 
 	//TODO delete visualisation function
@@ -339,6 +315,32 @@ void	ConfigParser::parseIndexInLocation() {
 
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix index block in location");
+}
+
+void	ConfigParser::fillEmptyDirectives() {
+	//
+	//check if there is server block that has 0 location
+	//
+	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
+		if ( servers_list_[i].getLocationList().empty() ) {
+			LocationConfig	location_config;
+			servers_list_[i].setLocationList( location_config );
+		}
+	}
+	//check if there is server block that has no index
+	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
+		if ( servers_list_[i].getIndex().empty() ) {
+			servers_list_[i].setIndex( kDefaultIndex );
+		}
+	}
+	//
+	//check if there is server block that has 0 error page
+		
+	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
+		if ( servers_list_[i].getErrorPage().empty() ) {
+			servers_list_[i].setErrorPage( 404, "404.html" ); //TODO create a list of default error pages
+		}
+	}
 }
 
 //
