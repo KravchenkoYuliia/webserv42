@@ -30,7 +30,18 @@ ConfigParser::ConfigParser( char* config_file )
 			servers_list_[i].setIndex( kDefaultIndex );
 		}
 	}
+
 	//
+	//check if there is server block that has 0 error page
+		
+	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
+		if ( servers_list_[i].getErrorPage().empty() ) {
+			servers_list_[i].setErrorPage( 404, "404.html" ); //TODO create a list of default error pages
+		}
+	}
+	
+
+
 	//TODO delete visualisation function
 	//
 	ConfigParser::printAll();
@@ -163,6 +174,9 @@ void	ConfigParser::parseWordInServer(const Token& token ) {
 	else if ( token.getValue() == "index" ) {
 		ConfigParser::parseIndexInServer();
 	}
+	else if ( token.getValue() == "error_page" ) {
+		ConfigParser::parseErrorPageInServer();
+	}
 
 	//TODO
 	//if WORD is no one from the listed above -> error invalid input
@@ -199,6 +213,11 @@ void	ConfigParser::parseListenInServer() {
 
 	if ( *end )
 		throw std::runtime_error( "Error in config: port must be a number" );
+	int	first_valid_port = 1;
+	int	last_valid_port = 65535;
+	if ( port_long < first_valid_port || port_long > last_valid_port )
+		throw std::runtime_error( "Error in config: invalid port number. Must be in range 1-65535" );
+
 	current_server.setPort( static_cast<uint16_t>(port_long) );
 
 
@@ -223,7 +242,6 @@ void	ConfigParser::parseServerNameInServer() {
 		servers_list_.back().setServerName( token.getValue() );
 		token = lexer_.getNextToken();
 	}
-
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix server_name block");
 }
@@ -251,6 +269,37 @@ void	ConfigParser::parseIndexInServer() {
 
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix index block");
+}
+
+void	ConfigParser::parseErrorPageInServer() {
+	
+	//next token must be error number like 404
+	//
+	Token	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix error_page block");
+
+	char* end;
+	long error_nb = std::strtol( token.getValue().c_str(), &end, 10 );
+	if ( *end )
+		throw std::runtime_error( "Error in config: error_page needs a number of the error" );
+	int	first_valid_error = 100;
+	int	last_valid_error = 599;
+	if ( error_nb < first_valid_error || error_nb > last_valid_error )
+		throw std::runtime_error( "Error in config: invalid error number" );
+
+	//next token must be a page error
+	//
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix error_page block - error page is missing");
+
+	servers_list_.back().setErrorPage( error_nb, token.getValue() );
+	
+	
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_SEMICOLON )
+		throw std::runtime_error( "Error in config: fix error_page block - semicolon is missing");
 }
 
 void	ConfigParser::parseWordInLocation( const Token& token ) {
@@ -312,6 +361,11 @@ void	ConfigParser::printAll() {
 			for ( std::vector<std::string>::size_type in = 0; in < servers_list_[i].getIndex().size(); in++ ) {
 				std::cout << servers_list_[i].getIndex()[in] << " ";
 			}
+			std::cout << std::endl << "	Error page: " << std::endl;
+			for ( std::map<int, std::string>::const_iterator it = servers_list_[i].getErrorPage().begin(); it != servers_list_[i].getErrorPage().end(); it++ ) {
+				std::cout << "		" << it->first << " ---> " << it->second << std::endl;
+			}
+			
 //------------------------------------------------------------------------------------------------------------------------------
 			std::cout << std::endl << "	Location list: " << std::endl;
 		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {

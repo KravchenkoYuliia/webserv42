@@ -44,6 +44,7 @@ private:
 	void	parseServerNameInServer();
 	void	parseRootInServer();
 	void	parseIndexInServer();
+	void	parseErrorPageInServer();
 
 	void	parseWordInLocation( const Token& token );
 	void	parseRootInLocation();

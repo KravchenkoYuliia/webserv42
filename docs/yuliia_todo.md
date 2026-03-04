@@ -32,13 +32,24 @@
 
     has bigger priority than `default_server`
 
+[] add TOKEN new_line to stop loop for cases like
+    server_name bla bla1
+    root www;
 
+[] add a protection : multiple `listen` are impossible
+
+[] create templates for repeated functions like
+    parseServerNameInServer
+    parseIndexInServer
 
 ## listen
     only server
 ## server_name
     only server
 ## root
+    server
+    location
+## index
     server
     location
 

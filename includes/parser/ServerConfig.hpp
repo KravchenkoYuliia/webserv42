@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <inttypes.h> // uint16_t
+#include <map> 
 
 #include "LocationConfig.hpp"
 
@@ -30,7 +31,9 @@ public:
 	void	setServerName( const std::string& server_name );
 	void	setRoot( const std::string& root );
 	void	setIndex( const std::string& index );
+	void	setErrorPage( int error_nb, const std::string& error_page );
 
+//getters	
 	uint16_t			            getPort() const;
 	const std::string&			            getInterface() const;
 	bool		 		            getDefaultServer() const;
@@ -38,7 +41,7 @@ public:
 	const std::vector<std::string>&	    getServerName() const;
 	const std::string&	                    getRoot() const;
 	const std::vector<std::string>&	    getIndex() const;
-
+	const std::map<int, std::string>&	getErrorPage() const;	
 
 private:
 	uint16_t			        port_;
@@ -48,6 +51,7 @@ private:
 	std::vector<std::string>	server_name_;
 	std::string				    root_;
 	std::vector<std::string>	index_;
+	std::map<int, std::string>	error_page_;
 };
 
 #endif

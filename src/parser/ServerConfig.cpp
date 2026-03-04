@@ -18,6 +18,7 @@ ServerConfig&	ServerConfig::operator=(const ServerConfig& other) {
 		this->server_name_ = other.server_name_;
 		this->root_ = other.root_;
 		this->index_ = other.index_;
+		this->error_page_ = other.error_page_;
 	}
 
 	return *this;
@@ -55,6 +56,11 @@ void	ServerConfig::setIndex( const std::string& index ) {
 	index_.push_back( index );
 }
 
+void	ServerConfig::setErrorPage( int error_nb, const std::string& error_page ) {
+	error_page_[error_nb] = error_page;
+	//error_page_.insert( {error_nb, error_page} );
+}
+
 //
 //getters
 uint16_t	ServerConfig::getPort() const {
@@ -82,6 +88,10 @@ const std::string&	ServerConfig::getRoot() const {
 
 const std::vector<std::string>&	    ServerConfig::getIndex() const {
 	return index_;
+}
+
+const std::map<int, std::string>&	ServerConfig::getErrorPage() const {
+	return error_page_;
 }
 
 ServerConfig::~ServerConfig() {}
