@@ -251,7 +251,6 @@ void	ConfigParser::parseIndexInServer() {
 
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix index block");
-
 }
 
 void	ConfigParser::parseWordInLocation( const Token& token ) {
@@ -259,6 +258,10 @@ void	ConfigParser::parseWordInLocation( const Token& token ) {
 	if ( token.getValue() == "root" ) {
 		ConfigParser::parseRootInLocation();
 	}
+	else if ( token.getValue() == "index" ) {
+		ConfigParser::parseIndexInLocation();
+	}
+
 	//TODO
 	//if WORD is no one from the listed above -> error invalid input
 
@@ -275,6 +278,18 @@ void	ConfigParser::parseRootInLocation() {
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix root block in location");
+}
+
+void	ConfigParser::parseIndexInLocation() {
+
+	Token	token = lexer_.getNextToken();
+	while ( token.getType() == TOKEN_WORD ) {
+		servers_list_.back().getLocationList().back().setIndex( token.getValue() );
+		token = lexer_.getNextToken();
+	}
+
+	if ( token.getType() != TOKEN_SEMICOLON )
+		throw std::runtime_error( "Error in config: fix index block in location");
 }
 
 //
@@ -297,7 +312,7 @@ void	ConfigParser::printAll() {
 			for ( std::vector<std::string>::size_type in = 0; in < servers_list_[i].getIndex().size(); in++ ) {
 				std::cout << servers_list_[i].getIndex()[in] << " ";
 			}
-
+//------------------------------------------------------------------------------------------------------------------------------
 			std::cout << std::endl << "	Location list: " << std::endl;
 		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {
 
@@ -305,6 +320,13 @@ void	ConfigParser::printAll() {
 				<< servers_list_[i].getLocationList()[j].getPath() << std::endl;
 				if ( servers_list_[i].getLocationList()[j].getRoot() != "" )
 					std::cout << "				root: " << servers_list_[i].getLocationList()[j].getRoot() << std::endl;
+				if ( !servers_list_[i].getLocationList()[j].getIndex().empty() ) {
+					std::cout << "				index: ";
+					for ( std::vector<std::string>::size_type ind = 0; ind < servers_list_[i].getLocationList()[j].getIndex().size(); ind++ ) {
+				std::cout << servers_list_[i].getLocationList()[j].getIndex()[ind] << " ";
+					}
+					std::cout << std::endl;
+				}
 		}
 	}
 }

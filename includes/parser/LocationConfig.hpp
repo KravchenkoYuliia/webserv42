@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <vector> 
 
 #define kDefaultLoctaionPath "/"
 class LocationConfig {
@@ -17,19 +18,21 @@ public:
 
 //setters
 
-	void	setRoot( std::string root );
+	void	setRoot( const std::string& root );
+	void	setIndex( const std::string& index );
 
 //getters
 
-	const std::string&	getPath() const;
-	const std::string&	getRoot() const;
+	const std::string&		getPath() const;
+	const std::string&		getRoot() const;
+	const std::vector<std::string>&	getIndex() const;
 
 private:
 //	bool							autoindex_;
 	std::string						path_;
 	std::string						root_;
-/*	std::string						index_;
-	std::map< int, std::string >	error_page_;
+	std::vector<std::string>				index_;
+/*	std::map< int, std::string >	error_page_;
 	int								client_max_body_size_;
 	std::vector<std::string>		methods_;
 	std::map<int, std::string>		return_page_;

@@ -38,6 +38,7 @@ private:
 	void	parseWordServer();
 	void	parseWordLocation();
 	void	parseWords( const Token& token );
+
 	void	parseWordInServer( const Token& token );
 	void	parseListenInServer();
 	void	parseServerNameInServer();
@@ -46,6 +47,7 @@ private:
 
 	void	parseWordInLocation( const Token& token );
 	void	parseRootInLocation();
+	void	parseIndexInLocation();
 
 	//
 	//TODO remove this function
