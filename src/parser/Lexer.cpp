@@ -52,7 +52,7 @@ std::string	Lexer::parseWord() {
 			return "";
 
         current_ = static_cast<char>( getReturn );
-		if ( std::isspace( current_ ) || current_ == '{' ) {
+		if ( std::isspace( current_ ) || current_ == '{' || current_ == ';' ) {
 			stream_.unget();
 			if ( stream_.fail() ) {
 				throw std::runtime_error( "Error in config: ifstream fail during unget() call" );
