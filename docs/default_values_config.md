@@ -7,7 +7,7 @@ If no `listen` directive is specified, the server defaults to port **8080**.
 
 ## location
 
-If no 'location' directive is specified, the server defaults to the path **/**
+If no `location` directive is specified, the server defaults to the path **/**
 
 ## server_name
 
@@ -23,5 +23,7 @@ During execution of the request:
                             - take first server
 
 ## root
-If no 'root' directive is specified, the server defaults to the root sprecified by us **html**
+If no `root` directive is specified, the server defaults to the root specified by us **html**
 
+## index
+If no `index` directive is specified, the server defaults to the **index.html**

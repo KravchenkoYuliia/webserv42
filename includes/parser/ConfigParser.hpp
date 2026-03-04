@@ -28,34 +28,30 @@ public:
 
 private:
 
-	std::stack<ParserMode>	mode_;
+	std::stack<ParserMode>	    mode_;
 	std::vector<ServerConfig>	servers_list_;
 	Lexer						lexer_;
 
+	void	parseTokens( const Token& token );
+	void	parseRightBrace();
+	void	parseDirectiveWord( const Token& token );
+	void	parseWordServer();
+	void	parseWordLocation();
+	void	parseWords( const Token& token );
+	void	parseWordInServer( const Token& token );
+	void	parseListenInServer();
+	void	parseServerNameInServer();
+	void	parseRootInServer();
+	void	parseIndexInServer();
 
-	void				parseTokens( const Token& token );
-	void				parseRightBrace();
-	void				parseDirectiveWord( const Token& token );
-
-	void				parseWordServer();
-	void				parseWordLocation();
-	void				parseWords( const Token& token );
-
-
-	void				parseWordInServer( const Token& token );
-	void				parseListenInServer();
-	void				parseServerNameInServer();
-	void				parseRootInServer();
-
-
-
-	void			parseWordInLocation( const Token& token );
-	void			parseRootInLocation();
+	void	parseWordInLocation( const Token& token );
+	void	parseRootInLocation();
 
 	//
 	//TODO remove this function
 	//
 	void	printAll();
+
 	ConfigParser();
 	ConfigParser( const ConfigParser& other );
 	ConfigParser&	operator = ( const ConfigParser& other );

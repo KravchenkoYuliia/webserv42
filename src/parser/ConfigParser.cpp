@@ -24,6 +24,12 @@ ConfigParser::ConfigParser( char* config_file )
 		}
 	}
 
+	//check if there is server block that has no index
+	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
+		if ( servers_list_[i].getIndex().empty() ) {
+			servers_list_[i].setIndex( kDefaultIndex );
+		}
+	}
 	//
 	//TODO delete visualisation function
 	//
@@ -154,6 +160,9 @@ void	ConfigParser::parseWordInServer(const Token& token ) {
 	else if ( token.getValue() == "root" ) {
 		ConfigParser::parseRootInServer();
 	}
+	else if ( token.getValue() == "index" ) {
+		ConfigParser::parseIndexInServer();
+	}
 
 	//TODO
 	//if WORD is no one from the listed above -> error invalid input
@@ -232,6 +241,19 @@ void	ConfigParser::parseRootInServer() {
 		throw std::runtime_error( "Error in config: fix root block");
 }
 
+void	ConfigParser::parseIndexInServer() {
+
+	Token	token = lexer_.getNextToken();
+	while ( token.getType() == TOKEN_WORD ) {
+		servers_list_.back().setIndex( token.getValue() );
+		token = lexer_.getNextToken();
+	}
+
+	if ( token.getType() != TOKEN_SEMICOLON )
+		throw std::runtime_error( "Error in config: fix index block");
+
+}
+
 void	ConfigParser::parseWordInLocation( const Token& token ) {
 
 	if ( token.getValue() == "root" ) {
@@ -270,7 +292,12 @@ void	ConfigParser::printAll() {
 			for ( std::vector<std::string>::size_type s = 0; s < servers_list_[i].getServerName().size(); s++ ) {
 				std::cout << servers_list_[i].getServerName()[s] << " ";
 			}
-			std::cout << std::endl << "	Root: " << servers_list_[i].getRoot();
+			std::cout << std::endl << "	Root: " << servers_list_[i].getRoot() << std::endl
+				<< "	Index: ";
+			for ( std::vector<std::string>::size_type in = 0; in < servers_list_[i].getIndex().size(); in++ ) {
+				std::cout << servers_list_[i].getIndex()[in] << " ";
+			}
+
 			std::cout << std::endl << "	Location list: " << std::endl;
 		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {
 
