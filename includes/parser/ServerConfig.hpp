@@ -24,7 +24,7 @@ public:
 	void	setPort( uint16_t port );
 	void	setInterface( const std::string& interface );
 	void	setDefaultServer( bool default_server );
-	void	setLocationList( LocationConfig location_config );
+	void	setLocationList( const LocationConfig& location_config );
 	void	setServerName( std::string server_name );
 	void	setRoot( std::string root );
 

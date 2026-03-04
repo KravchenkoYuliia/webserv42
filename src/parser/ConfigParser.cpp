@@ -143,7 +143,7 @@ void	ConfigParser::parseWords( const Token& token ) {
 	}
 }
 
-void	ConfigParser::parseWordInServer( Token& token ) {
+void	ConfigParser::parseWordInServer(const Token& token ) {
 
 	if ( token.getValue() == "listen" ) {
 		ConfigParser::parseListenInServer();
@@ -187,6 +187,7 @@ void	ConfigParser::parseListenInServer() {
 	//
 	char* end;
 	long port_long = std::strtol( portValue.c_str(), &end, 10 );
+
 	if ( *end )
 		throw std::runtime_error( "Error in config: port must be a number" );
 	current_server.setPort( static_cast<uint16_t>(port_long) );
@@ -231,7 +232,7 @@ void	ConfigParser::parseRootInServer() {
 		throw std::runtime_error( "Error in config: fix root block");
 }
 
-void	ConfigParser::parseWordInLocation( Token token ) {
+void	ConfigParser::parseWordInLocation( const Token& token ) {
 
 	if ( token.getValue() == "root" ) {
 		ConfigParser::parseRootInLocation();

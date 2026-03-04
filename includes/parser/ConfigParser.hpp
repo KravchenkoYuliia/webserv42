@@ -33,23 +33,23 @@ private:
 	Lexer						lexer_;
 
 
-	void				parseTokens( Token& token );
+	void				parseTokens( const Token& token );
 	void				parseRightBrace();
-	void				parseDirectiveWord( Token& token );
+	void				parseDirectiveWord( const Token& token );
 
 	void				parseWordServer();
 	void				parseWordLocation();
-	void				parseWords( Token& token );
+	void				parseWords( const Token& token );
 
 
-	void				parseWordInServer( Token& token );
+	void				parseWordInServer( const Token& token );
 	void				parseListenInServer();
 	void				parseServerNameInServer();
 	void				parseRootInServer();
 
 
 
-	void			parseWordInLocation( Token token );
+	void			parseWordInLocation( const Token& token );
 	void			parseRootInLocation();
 
 	//
