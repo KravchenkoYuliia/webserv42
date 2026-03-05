@@ -398,7 +398,9 @@ void	ConfigParser::parseWordInLocation( const Token& token ) {
 	else if ( token.getValue() == "allowed_methods" ) {
 		ConfigParser::parseAllowedMethodsInLocation();
 	}
-
+	else if ( token.getValue() == "return" ) {
+		ConfigParser::parseReturnPageInLocation();
+	}
 	//TODO
 	//if WORD is no one from the listed above -> error invalid input
 
@@ -533,6 +535,37 @@ void	ConfigParser::parseAllowedMethodsInLocation() {
 
 }
 
+void	ConfigParser::parseReturnPageInLocation() {
+
+	//next token must be error number like 200
+	//
+	Token	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix return block in location - must have a return code");
+
+	char* end;
+	long code = std::strtol( token.getValue().c_str(), &end, 10 );
+	if ( *end )
+		throw std::runtime_error( "Error in config: fix return block in location- must have a return code");
+	int	first_valid_code = 100;
+	int	last_valid_code = 599;
+	if ( code < first_valid_code || code > last_valid_code )
+		throw std::runtime_error( "Error in config: invalid code after return in location" );
+
+	//next token must be a page error
+	//
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix return block in location - return page is missing");
+
+	servers_list_.back().getLocationList().back().setReturnPage( code, token.getValue() );
+
+
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_SEMICOLON )
+		throw std::runtime_error( "Error in config: fix return block in location - semicolon is missing");
+}
+
 void	ConfigParser::fillEmptyDirectives() {
 	//
 	//check if there is server block that has 0 location
@@ -645,7 +678,15 @@ void	ConfigParser::printAll() {
 					}
 					std::cout << std::endl;
 				}
+				if ( !servers_list_[i].getLocationList()[j].getReturnPage().empty() ) {
+					std::cout << "				return: " << std::endl;
+					for ( std::map<int, std::string>::const_iterator it = servers_list_[i].getLocationList()[j].getReturnPage().begin(); it != servers_list_[i].getLocationList()[j].getReturnPage().end(); it++ ) {
+						std::cout << "					" << it->first << " ---> " << it->second << std::endl;
+					}
+				}
 
+
+	
 
 		}
 	}
