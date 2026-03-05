@@ -1,7 +1,7 @@
 #include "ConfigParser.hpp"
 #include <algorithm>
 #include <iostream>
-
+#include <limits>
 ConfigParser::ConfigParser( char* config_file )
 	: lexer_(config_file) {
 
@@ -13,9 +13,9 @@ ConfigParser::ConfigParser( char* config_file )
 		ConfigParser::parseTokens( token );
 		token = lexer_.getNextToken();
 	}
-	
+
 	ConfigParser::fillEmptyDirectives();
-		
+
 
 
 	//TODO delete visualisation function
@@ -156,6 +156,9 @@ void	ConfigParser::parseWordInServer(const Token& token ) {
 	else if ( token.getValue() == "autoindex" ) {
 		ConfigParser::parseAutoindexInServer();
 	}
+	else if ( token.getValue() == "client_max_body_size" ) {
+		ConfigParser::parseMaxBodyInServer();
+	}
 
 
 	//TODO
@@ -190,7 +193,6 @@ void	ConfigParser::parseListenInServer() {
 	//
 	char* end;
 	long port_long = std::strtol( portValue.c_str(), &end, 10 );
-
 	if ( *end )
 		throw std::runtime_error( "Error in config: port must be a number" );
 	int	first_valid_port = 1;
@@ -252,7 +254,7 @@ void	ConfigParser::parseIndexInServer() {
 }
 
 void	ConfigParser::parseErrorPageInServer() {
-	
+
 	//next token must be error number like 404
 	//
 	Token	token = lexer_.getNextToken();
@@ -275,15 +277,15 @@ void	ConfigParser::parseErrorPageInServer() {
 		throw std::runtime_error( "Error in config: fix error_page block - error page is missing");
 
 	servers_list_.back().setErrorPage( error_nb, token.getValue() );
-	
-	
+
+
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix error_page block - semicolon is missing");
 }
 
 void	ConfigParser::parseAutoindexInServer() {
-	
+
 	Token	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_WORD )
 		throw std::runtime_error( "Error in config: fix autoindex block");
@@ -295,6 +297,50 @@ void	ConfigParser::parseAutoindexInServer() {
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix autoindex block - semicolon is missing");
+}
+
+void	ConfigParser::parseMaxBodyInServer() {
+
+	Token	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix max_body block");
+
+	for ( std::string::size_type i = 0; i < token.getValue().size(); i++ ) {
+		if ( !isdigit(  token.getValue()[0] ) )
+			throw std::runtime_error( "Error in config: max_body must be a number > 0 and < INT_MAX" );
+		while ( isdigit( token.getValue()[i] ) )
+			i++;
+		if ( !isdigit( token.getValue()[i] ) ) {
+			if ( token.getValue()[i + 1] )
+				throw std::runtime_error( "Error in config: max_body can be a number only with m/M, k/K, g/G" );
+		}
+	}
+
+	char* end;
+	long max_body = std::strtol( token.getValue().c_str(), &end, 10 );
+	if ( max_body < 1 || max_body > std::numeric_limits<int>::max() )
+		throw std::runtime_error( "Error in config: max_body must be a number > 0 and < INT_MAX" );
+	unsigned long client_max_body_size = max_body;
+	if ( *end ) {
+		char	letter = *end;
+		if ( letter == 'k' || letter == 'K' )
+			client_max_body_size *= 1024;
+		else if ( letter == 'm' || letter == 'M' ) {
+			client_max_body_size *= 1024;
+			client_max_body_size *= 1024;
+		}
+		else if ( letter == 'g' || letter == 'G' ) {
+			client_max_body_size *= 1024;
+			client_max_body_size *= 1024;
+			client_max_body_size *= 1024;
+		}
+	}
+
+	servers_list_.back().setClientMaxBodySize( client_max_body_size );
+
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_SEMICOLON )
+		throw std::runtime_error( "Error in config: fix max_body block - semicolon is missing");
 }
 
 void	ConfigParser::parseWordInLocation( const Token& token ) {
@@ -366,7 +412,7 @@ void	ConfigParser::parseErrorPageInLocation() {
 		throw std::runtime_error( "Error in config: fix error_page block in location - error page is missing");
 
 	servers_list_.back().getLocationList().back().setErrorPage( error_nb, token.getValue() );
-	
+
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix error_page block - semicolon is missing");
@@ -405,7 +451,7 @@ void	ConfigParser::fillEmptyDirectives() {
 	}
 	//
 	//check if there is server block that has 0 error page
-		
+
 	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
 		if ( servers_list_[i].getErrorPage().empty() ) {
 			servers_list_[i].setErrorPage( 404, "404.html" ); //TODO create a list of default error pages
@@ -442,8 +488,8 @@ void	ConfigParser::printAll() {
 				std::cout << "on" << std::endl;
 			else
 				std::cout << "off" << std::endl;
+			std::cout << "	Client_max_body_size: " << servers_list_[i].getClientMaxBodySize() << std::endl;
 
-			
 //------------------------------------------------------------------------------------------------------------------------------
 			std::cout << "	Location list: " << std::endl;
 		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {

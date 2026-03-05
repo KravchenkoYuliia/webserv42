@@ -5,7 +5,9 @@ ServerConfig::ServerConfig()
 	interface_( kDefaultServerInterface ),
 	default_server_( false ),
 	root_( kDefaultRoot ),
-	autoindex_( false ) {}
+	autoindex_( false ),
+	client_max_body_size_( kDefaultClientMaxBodySize )
+{}
 
 ServerConfig::ServerConfig(const ServerConfig& other) { *this = other; }
 
@@ -21,6 +23,7 @@ ServerConfig&	ServerConfig::operator=(const ServerConfig& other) {
 		this->index_ = other.index_;
 		this->error_page_ = other.error_page_;
 		this->autoindex_ = other.autoindex_;
+		this->client_max_body_size_ = other.client_max_body_size_;
 	}
 
 	return *this;
@@ -67,6 +70,10 @@ void	ServerConfig::setAutoindex( bool autoindex ) {
 	autoindex_ = autoindex;
 }
 
+void	ServerConfig::setClientMaxBodySize( unsigned long client_max_body_size ) {
+	client_max_body_size_ = client_max_body_size;
+}
+
 //
 //getters
 uint16_t	ServerConfig::getPort() const {
@@ -102,6 +109,10 @@ const std::map<int, std::string>&	ServerConfig::getErrorPage() const {
 
 bool	ServerConfig::getAutoindex() const {
 	return autoindex_;
+}
+
+unsigned long	ServerConfig::getClientMaxBodySize() const {
+	return client_max_body_size_;
 }
 
 ServerConfig::~ServerConfig() {}

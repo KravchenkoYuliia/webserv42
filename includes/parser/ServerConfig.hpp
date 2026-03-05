@@ -15,7 +15,7 @@ class ServerConfig {
 #define kDefaultServerInterface "0.0.0.0"
 #define kDefaultRoot "html"
 #define kDefaultIndex "index.html"
-
+#define kDefaultClientMaxBodySize 1024 * 1024 //equivalent to 1M
 
 public:
 	ServerConfig();
@@ -33,6 +33,7 @@ public:
 	void	setIndex( const std::string& index );
 	void	setErrorPage( int error_nb, const std::string& error_page );
 	void	setAutoindex( bool autoindex_ );
+	void	setClientMaxBodySize( unsigned long client_max_body_size );
 
 //getters	
 	uint16_t			            getPort() const;
@@ -44,6 +45,7 @@ public:
 	const std::vector<std::string>&	    getIndex() const;
 	const std::map<int, std::string>&	getErrorPage() const;	
 	bool		 		            getAutoindex() const;
+	unsigned long			getClientMaxBodySize() const ;
 
 private:
 	uint16_t			        port_;
@@ -55,6 +57,7 @@ private:
 	std::vector<std::string>	index_;
 	std::map<int, std::string>	error_page_;
 	bool				autoindex_;
+	unsigned long			client_max_body_size_;
 };
 
 #endif
