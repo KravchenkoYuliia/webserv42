@@ -34,7 +34,7 @@ public:
 	void	setErrorPage( int error_nb, const std::string& error_page );
 	void	setAutoindex( AutoindexType autoindex_ );
 	void	setClientMaxBodySize( unsigned long client_max_body_size );
-
+	void	setReturnPage( int return_code, const std::string& return_page );
 
 //getters
 	uint16_t			            getPort() const;
@@ -47,6 +47,7 @@ public:
 	const std::map<int, std::string>&	getErrorPage() const;
 	AutoindexType		 		            getAutoindex() const;
 	unsigned long			getClientMaxBodySize() const;
+	const std::map<int, std::string>&	getReturnPage() const;
 
 private:
 	uint16_t			        port_;
@@ -59,6 +60,7 @@ private:
 	std::map<int, std::string>	error_page_;
 	AutoindexType				autoindex_;
 	unsigned long			client_max_body_size_;
+	std::map<int, std::string>	return_page_;
 };
 
 #endif

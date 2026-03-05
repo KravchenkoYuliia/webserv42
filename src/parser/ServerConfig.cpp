@@ -24,6 +24,7 @@ ServerConfig&	ServerConfig::operator=(const ServerConfig& other) {
 		this->error_page_ = other.error_page_;
 		this->autoindex_ = other.autoindex_;
 		this->client_max_body_size_ = other.client_max_body_size_;
+		this->return_page_ = other.return_page_;
 	}
 
 	return *this;
@@ -75,6 +76,10 @@ void	ServerConfig::setClientMaxBodySize( unsigned long client_max_body_size ) {
 }
 
 
+void	ServerConfig::setReturnPage( int return_code, const std::string& return_page ) {
+	return_page_[return_code] = return_page;
+}
+
 //
 //getters
 uint16_t	ServerConfig::getPort() const {
@@ -114,6 +119,10 @@ AutoindexType	ServerConfig::getAutoindex() const {
 
 unsigned long	ServerConfig::getClientMaxBodySize() const {
 	return client_max_body_size_;
+}
+
+const std::map<int, std::string>&	ServerConfig::getReturnPage() const {
+	return return_page_;
 }
 
 ServerConfig::~ServerConfig() {}

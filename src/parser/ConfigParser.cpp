@@ -17,7 +17,6 @@ ConfigParser::ConfigParser( char* config_file )
 	ConfigParser::fillEmptyDirectives();
 
 
-
 	//TODO delete visualisation function
 	//
 	ConfigParser::printAll();
@@ -158,6 +157,9 @@ void	ConfigParser::parseWordInServer(const Token& token ) {
 	}
 	else if ( token.getValue() == "client_max_body_size" ) {
 		ConfigParser::parseMaxBodyInServer();
+	}
+	else if ( token.getValue() == "return" ) {
+		ConfigParser::parseReturnPageInServer();
 	}
 
 
@@ -343,6 +345,37 @@ void	ConfigParser::parseMaxBodyInServer() {
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix max_body block - semicolon is missing");
+}
+
+void	ConfigParser::parseReturnPageInServer() {
+
+	//next token must be error number like 200
+	//
+	Token	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix return block - must have a return code");
+
+	char* end;
+	long code = std::strtol( token.getValue().c_str(), &end, 10 );
+	if ( *end )
+		throw std::runtime_error( "Error in config: fix return block - must have a return code");
+	int	first_valid_code = 100;
+	int	last_valid_code = 599;
+	if ( code < first_valid_code || code > last_valid_code )
+		throw std::runtime_error( "Error in config: invalid code after return" );
+
+	//next token must be a page error
+	//
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix return block - return page is missing");
+
+	servers_list_.back().setReturnPage( code, token.getValue() );
+
+
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_SEMICOLON )
+		throw std::runtime_error( "Error in config: fix return block - semicolon is missing");
 }
 
 void	ConfigParser::parseWordInLocation( const Token& token ) {
@@ -567,6 +600,14 @@ void	ConfigParser::printAll() {
 			else
 				std::cout << "off" << std::endl;
 			std::cout << "	Client_max_body_size: " << servers_list_[i].getClientMaxBodySize() << std::endl;
+			if ( !servers_list_[i].getReturnPage().empty() ) {
+				std::cout << "	Return: " << std::endl;
+				for ( std::map<int, std::string>::const_iterator it = servers_list_[i].getReturnPage().begin(); it != servers_list_[i].getReturnPage().end(); it++ ) {
+					std::cout << "		" << it->first << " ---> " << it->second << std::endl;
+				}
+			}
+
+
 		//------------------------------------------------------------------------------------------------------------------------------
 			std::cout << "	Location list: " << std::endl;
 		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {

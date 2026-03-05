@@ -48,6 +48,7 @@ private:
 	void	parseErrorPageInServer();
 	void	parseAutoindexInServer();
 	void	parseMaxBodyInServer();
+	void	parseReturnPageInServer();
 
 	void	parseWordInLocation( const Token& token );
 	void	parseRootInLocation();
