@@ -52,4 +52,13 @@
 ## index
     server
     location
+## error page
+    server
+    location
+## autoindex
+    server
+    location
+## client_max_body_size
+server
+location
 

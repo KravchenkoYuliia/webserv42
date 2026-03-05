@@ -32,6 +32,7 @@ public:
 	void	setRoot( const std::string& root );
 	void	setIndex( const std::string& index );
 	void	setErrorPage( int error_nb, const std::string& error_page );
+	void	setAutoindex( bool autoindex_ );
 
 //getters	
 	uint16_t			            getPort() const;
@@ -42,6 +43,7 @@ public:
 	const std::string&	                    getRoot() const;
 	const std::vector<std::string>&	    getIndex() const;
 	const std::map<int, std::string>&	getErrorPage() const;	
+	bool		 		            getAutoindex() const;
 
 private:
 	uint16_t			        port_;
@@ -52,6 +54,7 @@ private:
 	std::string				    root_;
 	std::vector<std::string>	index_;
 	std::map<int, std::string>	error_page_;
+	bool				autoindex_;
 };
 
 #endif

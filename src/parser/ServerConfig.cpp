@@ -4,7 +4,8 @@ ServerConfig::ServerConfig()
 	: port_( kDefaultServerPort ),
 	interface_( kDefaultServerInterface ),
 	default_server_( false ),
-	root_( kDefaultRoot ) {}
+	root_( kDefaultRoot ),
+	autoindex_( false ) {}
 
 ServerConfig::ServerConfig(const ServerConfig& other) { *this = other; }
 
@@ -19,6 +20,7 @@ ServerConfig&	ServerConfig::operator=(const ServerConfig& other) {
 		this->root_ = other.root_;
 		this->index_ = other.index_;
 		this->error_page_ = other.error_page_;
+		this->autoindex_ = other.autoindex_;
 	}
 
 	return *this;
@@ -61,6 +63,10 @@ void	ServerConfig::setErrorPage( int error_nb, const std::string& error_page ) {
 	//error_page_.insert( {error_nb, error_page} );
 }
 
+void	ServerConfig::setAutoindex( bool autoindex ) {
+	autoindex_ = autoindex;
+}
+
 //
 //getters
 uint16_t	ServerConfig::getPort() const {
@@ -92,6 +98,10 @@ const std::vector<std::string>&	    ServerConfig::getIndex() const {
 
 const std::map<int, std::string>&	ServerConfig::getErrorPage() const {
 	return error_page_;
+}
+
+bool	ServerConfig::getAutoindex() const {
+	return autoindex_;
 }
 
 ServerConfig::~ServerConfig() {}

@@ -27,3 +27,12 @@ If no `root` directive is specified, the server defaults to the root specified b
 
 ## index
 If no `index` directive is specified, the server defaults to the **index.html**
+
+## error_page
+If no `error_page` directive is specified, the server defaults to his own map of error pages
+
+## autoindex
+by default false
+
+## client_max_body_size
+by default 1m

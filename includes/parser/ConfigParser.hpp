@@ -51,6 +51,8 @@ private:
 	void	parseRootInLocation();
 	void	parseIndexInLocation();
 	void	parseErrorPageInLocation();
+	void	parseAutoindexInServer();
+
 	//
 	//TODO remove this function
 	//
