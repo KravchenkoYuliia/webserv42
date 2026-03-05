@@ -523,7 +523,7 @@ void	ConfigParser::parseMaxBodyInLocation() {
 }
 
 void	ConfigParser::parseAllowedMethodsInLocation() {
-	
+
 	Token	token = lexer_.getNextToken();
 	while ( token.getType() == TOKEN_WORD ) {
 		servers_list_.back().getLocationList().back().setAllowedMethods( token.getValue() );
@@ -628,7 +628,7 @@ void	ConfigParser::printAll() {
 				std::cout << "		" << it->first << " ---> " << it->second << std::endl;
 			}
 			std::cout << "	Autoindex: ";
-			if ( servers_list_[i].getAutoindex() == true )
+			if ( servers_list_[i].getAutoindex() == AUTOINDEX_ON )
 				std::cout << "on" << std::endl;
 			else
 				std::cout << "off" << std::endl;
@@ -662,15 +662,15 @@ void	ConfigParser::printAll() {
 						std::cout << "					" << it->first << " ---> " << it->second << std::endl;
 					}
 				}
-				std::cout << "				autoindex: ";
-				if ( servers_list_[i].getLocationList()[j].getAutoindex() == true )
-					std::cout << "on" << std::endl;
-				else if ( servers_list_[i].getLocationList()[j].getAutoindex() == false )
-					std::cout << "off" << std::endl;
-				else
-					std::cout << std::endl;
+                if ( servers_list_[i].getLocationList()[j].getAutoindex() != AUTOINDEX_NOT_SPECIFIED ) {
+				    std::cout << "				autoindex: ";
+				    if ( servers_list_[i].getLocationList()[j].getAutoindex() == true )
+				    	std::cout << "on" << std::endl;
+				    else if ( servers_list_[i].getLocationList()[j].getAutoindex() == false )
+				    	std::cout << "off" << std::endl;
+                }
 				if ( servers_list_[i].getLocationList()[j].getClientMaxBodySize() != 0)
-					std::cout << "				client_max_body_size: " << servers_list_[i].getLocationList()[j].getClientMaxBodySize() << std::endl;	
+					std::cout << "				client_max_body_size: " << servers_list_[i].getLocationList()[j].getClientMaxBodySize() << std::endl;
 				if ( !servers_list_[i].getLocationList()[j].getAllowedMethods().empty() ) {
 					std::cout << "				allowed methods: ";
 					for ( std::vector<std::string>::size_type met = 0; met < servers_list_[i].getLocationList()[j].getAllowedMethods().size(); met++ ) {
@@ -686,7 +686,7 @@ void	ConfigParser::printAll() {
 				}
 
 
-	
+
 
 		}
 	}
