@@ -357,6 +357,10 @@ void	ConfigParser::parseWordInLocation( const Token& token ) {
 	else if ( token.getValue() == "autoindex" ) {
 		ConfigParser::parseAutoindexInLocation();
 	}
+	else if ( token.getValue() == "client_max_body_size" ) {
+		ConfigParser::parseMaxBodyInLocation();
+	}
+
 
 	//TODO
 	//if WORD is no one from the listed above -> error invalid input
@@ -431,6 +435,50 @@ void	ConfigParser::parseAutoindexInLocation() {
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix autoindex block in location- semicolon is missing");
+}
+
+void	ConfigParser::parseMaxBodyInLocation() {
+
+	Token	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix max_body block in location");
+
+	for ( std::string::size_type i = 0; i < token.getValue().size(); i++ ) {
+		if ( !isdigit(  token.getValue()[0] ) )
+			throw std::runtime_error( "Error in config: max_body in location must be a number > 0 and < INT_MAX" );
+		while ( isdigit( token.getValue()[i] ) )
+			i++;
+		if ( !isdigit( token.getValue()[i] ) ) {
+			if ( token.getValue()[i + 1] )
+				throw std::runtime_error( "Error in config: max_body in location can be a number only with m/M, k/K, g/G" );
+		}
+	}
+
+	char* end;
+	long max_body = std::strtol( token.getValue().c_str(), &end, 10 );
+	if ( max_body < 1 || max_body > std::numeric_limits<int>::max() )
+		throw std::runtime_error( "Error in config: max_body in location must be a number > 0 and < INT_MAX" );
+	unsigned long client_max_body_size = max_body;
+	if ( *end ) {
+		char	letter = *end;
+		if ( letter == 'k' || letter == 'K' )
+			client_max_body_size *= 1024;
+		else if ( letter == 'm' || letter == 'M' ) {
+			client_max_body_size *= 1024;
+			client_max_body_size *= 1024;
+		}
+		else if ( letter == 'g' || letter == 'G' ) {
+			client_max_body_size *= 1024;
+			client_max_body_size *= 1024;
+			client_max_body_size *= 1024;
+		}
+	}
+
+	servers_list_.back().getLocationList().back().setClientMaxBodySize( client_max_body_size );
+
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_SEMICOLON )
+		throw std::runtime_error( "Error in config: fix max_body in location block - semicolon is missing");
 }
 
 void	ConfigParser::fillEmptyDirectives() {
@@ -514,8 +562,12 @@ void	ConfigParser::printAll() {
 				std::cout << "				autoindex: ";
 				if ( servers_list_[i].getLocationList()[j].getAutoindex() == true )
 					std::cout << "on" << std::endl;
-				else
+				else if ( servers_list_[i].getLocationList()[j].getAutoindex() == false )
 					std::cout << "off" << std::endl;
+				else
+					std::cout << std::endl;
+				if ( servers_list_[i].getLocationList()[j].getClientMaxBodySize() != 0)
+					std::cout << "				client_max_body_size: " << servers_list_[i].getLocationList()[j].getClientMaxBodySize() << std::endl;
 
 		}
 	}

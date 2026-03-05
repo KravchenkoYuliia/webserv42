@@ -1,9 +1,13 @@
 #include "LocationConfig.hpp"
 
 LocationConfig::LocationConfig()
-			: path_(kDefaultLoctaionPath) {}
+			: path_(kDefaultLoctaionPath),
+			client_max_body_size_(0)
+{}
 LocationConfig::LocationConfig( const std::string& path )
-			: path_( path ) {}
+			: path_( path ),
+			client_max_body_size_(0)
+{}
 
 
 LocationConfig::LocationConfig(const LocationConfig& other) { *this = other; }
@@ -16,6 +20,7 @@ LocationConfig&	LocationConfig::operator=(const LocationConfig& other) {
 		this->index_ = other.index_;
 		this->error_page_ = other.error_page_;
 		this->autoindex_ = other.autoindex_;
+		this->client_max_body_size_ = other.client_max_body_size_;
 	}
 	return *this;
 }
@@ -37,6 +42,11 @@ void	LocationConfig::setAutoindex( bool autoindex ) {
 	autoindex_ = autoindex;
 }
 
+void	LocationConfig::setClientMaxBodySize( unsigned long client_max_body_size ) {
+	client_max_body_size_ = client_max_body_size;
+}
+
+
 //getters	
 const std::string&	LocationConfig::getPath() const {
 	return path_;
@@ -56,5 +66,10 @@ const std::map<int, std::string>&	LocationConfig::getErrorPage() const {
 bool	LocationConfig::getAutoindex() const {
 	return autoindex_;
 }
+
+unsigned long	LocationConfig::getClientMaxBodySize() const {
+	return client_max_body_size_;
+}
+
 
 LocationConfig::~LocationConfig() {}

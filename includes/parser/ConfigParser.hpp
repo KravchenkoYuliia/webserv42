@@ -54,6 +54,7 @@ private:
 	void	parseIndexInLocation();
 	void	parseErrorPageInLocation();
 	void	parseAutoindexInLocation();
+	void	parseMaxBodyInLocation();
 
 	//
 	//TODO remove this function

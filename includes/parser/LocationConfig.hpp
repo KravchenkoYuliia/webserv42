@@ -6,6 +6,13 @@
 #include <vector> 
 
 #define kDefaultLoctaionPath "/"
+/*
+typedef enum AutoindexValue {
+	OFF,
+	ON,
+	NOT_SPECIFIED
+}*/
+
 class LocationConfig {
 
 public:
@@ -22,6 +29,7 @@ public:
 	void	setIndex( const std::string& index );
 	void	setErrorPage( int error_nb, const std::string& error_page );
 	void	setAutoindex( bool autoindex_ );
+	void	setClientMaxBodySize( unsigned long client_max_body_size );
 
 //getters
 
@@ -30,6 +38,8 @@ public:
 	const std::vector<std::string>&	getIndex() const;
 	const std::map<int, std::string>&	getErrorPage() const;
 	bool					getAutoindex() const;
+	unsigned long			getClientMaxBodySize() const;
+
 
 private:
 	bool							autoindex_;
@@ -37,8 +47,8 @@ private:
 	std::string						root_;
 	std::vector<std::string>				index_;
 	std::map< int, std::string >	error_page_;
-/*	int								client_max_body_size_;
-	std::vector<std::string>		methods_;
+	unsigned long								client_max_body_size_;
+/*	std::vector<std::string>		methods_;
 	std::map<int, std::string>		return_page_;
 */
 
