@@ -32,7 +32,9 @@ If no `index` directive is specified, the server defaults to the **index.html**
 If no `error_page` directive is specified, the server defaults to his own map of error pages
 
 ## autoindex
-by default false
+by default false AUTOINDEX_OFF in server if not written at all
+
+in location : by default AUTOINDEX_NOT_SPECIFIED (because it can't be off by default) -> if no `autoindex` directive is sprecified in location -> look for `autoindex` directive in server
 
 ## client_max_body_size
 by default 1m

@@ -3,15 +3,15 @@
 
 #include <map>
 #include <string>
-#include <vector> 
+#include <vector>
 
 #define kDefaultLoctaionPath "/"
-/*
-typedef enum AutoindexValue {
-	OFF,
-	ON,
-	NOT_SPECIFIED
-}*/
+
+enum AutoindexType {
+	AUTOINDEX_OFF,
+	AUTOINDEX_ON,
+	AUTOINDEX_NOT_SPECIFIED
+};
 
 class LocationConfig {
 
@@ -28,7 +28,7 @@ public:
 	void	setRoot( const std::string& root );
 	void	setIndex( const std::string& index );
 	void	setErrorPage( int error_nb, const std::string& error_page );
-	void	setAutoindex( bool autoindex_ );
+	void	setAutoindex( AutoindexType autoindex_ );
 	void	setClientMaxBodySize( unsigned long client_max_body_size );
 
 //getters
@@ -37,12 +37,12 @@ public:
 	const std::string&		getRoot() const;
 	const std::vector<std::string>&	getIndex() const;
 	const std::map<int, std::string>&	getErrorPage() const;
-	bool					getAutoindex() const;
+	AutoindexType					getAutoindex() const;
 	unsigned long			getClientMaxBodySize() const;
 
 
 private:
-	bool							autoindex_;
+	AutoindexType					autoindex_;
 	std::string						path_;
 	std::string						root_;
 	std::vector<std::string>				index_;

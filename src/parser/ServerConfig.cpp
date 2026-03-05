@@ -5,7 +5,7 @@ ServerConfig::ServerConfig()
 	interface_( kDefaultServerInterface ),
 	default_server_( false ),
 	root_( kDefaultRoot ),
-	autoindex_( false ),
+	autoindex_( AUTOINDEX_OFF ),
 	client_max_body_size_( kDefaultClientMaxBodySize )
 {}
 
@@ -66,7 +66,7 @@ void	ServerConfig::setErrorPage( int error_nb, const std::string& error_page ) {
 	//error_page_.insert( {error_nb, error_page} );
 }
 
-void	ServerConfig::setAutoindex( bool autoindex ) {
+void	ServerConfig::setAutoindex( AutoindexType autoindex ) {
 	autoindex_ = autoindex;
 }
 
@@ -107,7 +107,7 @@ const std::map<int, std::string>&	ServerConfig::getErrorPage() const {
 	return error_page_;
 }
 
-bool	ServerConfig::getAutoindex() const {
+AutoindexType	ServerConfig::getAutoindex() const {
 	return autoindex_;
 }
 

@@ -290,8 +290,10 @@ void	ConfigParser::parseAutoindexInServer() {
 	if ( token.getType() != TOKEN_WORD )
 		throw std::runtime_error( "Error in config: fix autoindex block");
 	if ( token.getValue() == "on" )
-		servers_list_.back().setAutoindex( true );
-	else if ( token.getValue() != "off" )
+		servers_list_.back().setAutoindex( AUTOINDEX_ON );
+	else if ( token.getValue() == "off" )
+		servers_list_.back().setAutoindex( AUTOINDEX_OFF );
+	else
 		throw std::runtime_error( "Error in config: fix autoindex block - only on/off are allowed");
 
 	token = lexer_.getNextToken();
@@ -428,8 +430,10 @@ void	ConfigParser::parseAutoindexInLocation() {
 	if ( token.getType() != TOKEN_WORD )
 		throw std::runtime_error( "Error in config: fix autoindex block in location");
 	if ( token.getValue() == "on" )
-		servers_list_.back().getLocationList().back().setAutoindex( true );
-	else if ( token.getValue() != "off" )
+		servers_list_.back().getLocationList().back().setAutoindex( AUTOINDEX_ON );
+	else if ( token.getValue() == "off" )
+		servers_list_.back().getLocationList().back().setAutoindex( AUTOINDEX_OFF );
+	else
 		throw std::runtime_error( "Error in config: fix autoindex block in location- only on/off are allowed");
 
 	token = lexer_.getNextToken();

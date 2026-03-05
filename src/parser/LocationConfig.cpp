@@ -1,11 +1,13 @@
 #include "LocationConfig.hpp"
 
 LocationConfig::LocationConfig()
-			: path_(kDefaultLoctaionPath),
+			: autoindex_( AUTOINDEX_NOT_SPECIFIED ),
+			path_(kDefaultLoctaionPath),
 			client_max_body_size_(0)
 {}
 LocationConfig::LocationConfig( const std::string& path )
-			: path_( path ),
+			: autoindex_( AUTOINDEX_NOT_SPECIFIED ),
+			path_( path ),
 			client_max_body_size_(0)
 {}
 
@@ -38,7 +40,7 @@ void	LocationConfig::setErrorPage( int error_nb, const std::string& error_page )
 	error_page_[error_nb] = error_page;
 }
 
-void	LocationConfig::setAutoindex( bool autoindex ) {
+void	LocationConfig::setAutoindex( AutoindexType autoindex ) {
 	autoindex_ = autoindex;
 }
 
@@ -47,7 +49,7 @@ void	LocationConfig::setClientMaxBodySize( unsigned long client_max_body_size ) 
 }
 
 
-//getters	
+//getters
 const std::string&	LocationConfig::getPath() const {
 	return path_;
 }
@@ -63,7 +65,7 @@ const std::map<int, std::string>&	LocationConfig::getErrorPage() const {
 	return error_page_;
 }
 
-bool	LocationConfig::getAutoindex() const {
+AutoindexType	LocationConfig::getAutoindex() const {
 	return autoindex_;
 }
 

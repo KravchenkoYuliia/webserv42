@@ -32,7 +32,7 @@ public:
 	void	setRoot( const std::string& root );
 	void	setIndex( const std::string& index );
 	void	setErrorPage( int error_nb, const std::string& error_page );
-	void	setAutoindex( bool autoindex_ );
+	void	setAutoindex( AutoindexType autoindex_ );
 	void	setClientMaxBodySize( unsigned long client_max_body_size );
 
 //getters	
@@ -44,7 +44,7 @@ public:
 	const std::string&	                    getRoot() const;
 	const std::vector<std::string>&	    getIndex() const;
 	const std::map<int, std::string>&	getErrorPage() const;	
-	bool		 		            getAutoindex() const;
+	AutoindexType		 		            getAutoindex() const;
 	unsigned long			getClientMaxBodySize() const ;
 
 private:
@@ -56,7 +56,7 @@ private:
 	std::string				    root_;
 	std::vector<std::string>	index_;
 	std::map<int, std::string>	error_page_;
-	bool				autoindex_;
+	AutoindexType				autoindex_;
 	unsigned long			client_max_body_size_;
 };
 
