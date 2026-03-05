@@ -286,6 +286,9 @@ void	ConfigParser::parseWordInLocation( const Token& token ) {
 	else if ( token.getValue() == "index" ) {
 		ConfigParser::parseIndexInLocation();
 	}
+	else if ( token.getValue() == "error_page" ) {
+		ConfigParser::parseErrorPageInLocation();
+	}
 
 	//TODO
 	//if WORD is no one from the listed above -> error invalid input
@@ -315,6 +318,36 @@ void	ConfigParser::parseIndexInLocation() {
 
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix index block in location");
+}
+
+void	ConfigParser::parseErrorPageInLocation() {
+
+	//next token must be error number like 404
+	//
+	Token	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix error_page block in location" );
+
+	char* end;
+	long error_nb = std::strtol( token.getValue().c_str(), &end, 10 );
+	if ( *end )
+		throw std::runtime_error( "Error in config: error_page in location needs a number of the error" );
+	int	first_valid_error = 100;
+	int	last_valid_error = 599;
+	if ( error_nb < first_valid_error || error_nb > last_valid_error )
+		throw std::runtime_error( "Error in config: invalid error number" );
+
+	//next token must be a page error
+	//
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix error_page block in location - error page is missing");
+
+	servers_list_.back().getLocationList().back().setErrorPage( error_nb, token.getValue() );
+	
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_SEMICOLON )
+		throw std::runtime_error( "Error in config: fix error_page block - semicolon is missing");
 }
 
 void	ConfigParser::fillEmptyDirectives() {
@@ -369,7 +402,7 @@ void	ConfigParser::printAll() {
 			}
 			
 //------------------------------------------------------------------------------------------------------------------------------
-			std::cout << std::endl << "	Location list: " << std::endl;
+			std::cout << "	Location list: " << std::endl;
 		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {
 
 			std::cout << "		Location[" << j << "] has:" << std::endl << "				path: "
@@ -379,9 +412,15 @@ void	ConfigParser::printAll() {
 				if ( !servers_list_[i].getLocationList()[j].getIndex().empty() ) {
 					std::cout << "				index: ";
 					for ( std::vector<std::string>::size_type ind = 0; ind < servers_list_[i].getLocationList()[j].getIndex().size(); ind++ ) {
-				std::cout << servers_list_[i].getLocationList()[j].getIndex()[ind] << " ";
+						std::cout << servers_list_[i].getLocationList()[j].getIndex()[ind] << " ";
 					}
 					std::cout << std::endl;
+				}
+				if ( !servers_list_[i].getLocationList()[j].getErrorPage().empty() ) {
+					std::cout << "				error page: " << std::endl;
+					for ( std::map<int, std::string>::const_iterator it = servers_list_[i].getLocationList()[j].getErrorPage().begin(); it != servers_list_[i].getLocationList()[j].getErrorPage().end(); it++ ) {
+						std::cout << "					" << it->first << " ---> " << it->second << std::endl;
+					}
 				}
 		}
 	}

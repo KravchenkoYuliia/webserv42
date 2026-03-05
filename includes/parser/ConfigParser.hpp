@@ -50,7 +50,7 @@ private:
 	void	parseWordInLocation( const Token& token );
 	void	parseRootInLocation();
 	void	parseIndexInLocation();
-
+	void	parseErrorPageInLocation();
 	//
 	//TODO remove this function
 	//
