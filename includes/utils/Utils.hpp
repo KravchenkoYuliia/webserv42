@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 17:51:18 by jgossard          #+#    #+#             */
-/*   Updated: 2026/02/27 18:04:56 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/05 15:20:58 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,17 @@
 #define UTILS_HPP
 
 #include <string>
+#include <vector>
+#include "ServerConfig.hpp"
 
+class ServerConfig;
 class Utils {
 public:
     static void setNonBlocking(int fd);
+    static void printServersContent( std::vector<ServerConfig>& servers );
+
+private:
+    static void    printLocationBlock( std::vector<LocationConfig>& location_list );
 };
 
 #endif // UTILS_HPP

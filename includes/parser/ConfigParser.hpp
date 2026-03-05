@@ -59,11 +59,6 @@ private:
 	void	parseAllowedMethodsInLocation();
 	void	parseReturnPageInLocation();
 
-	//
-	//TODO remove this function
-	//
-	void	printAll();
-
 	ConfigParser();
 	ConfigParser( const ConfigParser& other );
 	ConfigParser&	operator = ( const ConfigParser& other );

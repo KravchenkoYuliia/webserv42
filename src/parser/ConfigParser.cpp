@@ -1,4 +1,5 @@
 #include "ConfigParser.hpp"
+#include "Utils.hpp"
 #include <algorithm>
 #include <iostream>
 #include <limits>
@@ -15,11 +16,7 @@ ConfigParser::ConfigParser( char* config_file )
 	}
 
 	ConfigParser::fillEmptyDirectives();
-
-
-	//TODO delete visualisation function
-	//
-	ConfigParser::printAll();
+	Utils::printServersContent( servers_list_ );
 }
 
 void	ConfigParser::parseTokens( const Token& token ) {
@@ -602,97 +599,6 @@ void	ConfigParser::fillEmptyDirectives() {
 	}
 
 }
-
-//
-//TODO delete visualisation function
-//
-void	ConfigParser::printAll() {
-
-	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
-		std::cout << "Server[" << i << "]" << "-> "<< &servers_list_[i] << " has: " << std::endl
-			<< "	Port: " << servers_list_[i].getPort() << std::endl
-			<< "	Interface: " << servers_list_[i].getInterface();
-			if ( servers_list_[i].getDefaultServer() == true )
-				std::cout << " default_server";
-			std::cout << std::endl << "	Server name: ";
-			for ( std::vector<std::string>::size_type s = 0; s < servers_list_[i].getServerName().size(); s++ ) {
-				std::cout << servers_list_[i].getServerName()[s] << " ";
-			}
-			std::cout << std::endl << "	Root: " << servers_list_[i].getRoot() << std::endl
-				<< "	Index: ";
-			for ( std::vector<std::string>::size_type in = 0; in < servers_list_[i].getIndex().size(); in++ ) {
-				std::cout << servers_list_[i].getIndex()[in] << " ";
-			}
-			std::cout << std::endl << "	Error page: " << std::endl;
-			for ( std::map<int, std::string>::const_iterator it = servers_list_[i].getErrorPage().begin(); it != servers_list_[i].getErrorPage().end(); it++ ) {
-				std::cout << "		" << it->first << " ---> " << it->second << std::endl;
-			}
-			std::cout << "	Autoindex: ";
-			if ( servers_list_[i].getAutoindex() == AUTOINDEX_ON )
-				std::cout << "on" << std::endl;
-			else
-				std::cout << "off" << std::endl;
-			std::cout << "	Client_max_body_size: " << servers_list_[i].getClientMaxBodySize() << std::endl;
-			if ( !servers_list_[i].getReturnPage().empty() ) {
-				std::cout << "	Return: " << std::endl;
-				for ( std::map<int, std::string>::const_iterator it = servers_list_[i].getReturnPage().begin(); it != servers_list_[i].getReturnPage().end(); it++ ) {
-					std::cout << "		" << it->first << " ---> " << it->second << std::endl;
-				}
-			}
-
-
-		//------------------------------------------------------------------------------------------------------------------------------
-			std::cout << "	Location list: " << std::endl;
-		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {
-
-			std::cout << "		Location[" << j << "] has:" << std::endl << "				path: "
-				<< servers_list_[i].getLocationList()[j].getPath() << std::endl;
-				if ( servers_list_[i].getLocationList()[j].getRoot() != "" )
-					std::cout << "				root: " << servers_list_[i].getLocationList()[j].getRoot() << std::endl;
-				if ( !servers_list_[i].getLocationList()[j].getIndex().empty() ) {
-					std::cout << "				index: ";
-					for ( std::vector<std::string>::size_type ind = 0; ind < servers_list_[i].getLocationList()[j].getIndex().size(); ind++ ) {
-						std::cout << servers_list_[i].getLocationList()[j].getIndex()[ind] << " ";
-					}
-					std::cout << std::endl;
-				}
-				if ( !servers_list_[i].getLocationList()[j].getErrorPage().empty() ) {
-					std::cout << "				error page: " << std::endl;
-					for ( std::map<int, std::string>::const_iterator it = servers_list_[i].getLocationList()[j].getErrorPage().begin(); it != servers_list_[i].getLocationList()[j].getErrorPage().end(); it++ ) {
-						std::cout << "					" << it->first << " ---> " << it->second << std::endl;
-					}
-				}
-                if ( servers_list_[i].getLocationList()[j].getAutoindex() != AUTOINDEX_NOT_SPECIFIED ) {
-				    std::cout << "				autoindex: ";
-				    if ( servers_list_[i].getLocationList()[j].getAutoindex() == true )
-				    	std::cout << "on" << std::endl;
-				    else if ( servers_list_[i].getLocationList()[j].getAutoindex() == false )
-				    	std::cout << "off" << std::endl;
-                }
-				if ( servers_list_[i].getLocationList()[j].getClientMaxBodySize() != 0)
-					std::cout << "				client_max_body_size: " << servers_list_[i].getLocationList()[j].getClientMaxBodySize() << std::endl;
-				if ( !servers_list_[i].getLocationList()[j].getAllowedMethods().empty() ) {
-					std::cout << "				allowed methods: ";
-					for ( std::vector<std::string>::size_type met = 0; met < servers_list_[i].getLocationList()[j].getAllowedMethods().size(); met++ ) {
-						std::cout << servers_list_[i].getLocationList()[j].getAllowedMethods()[met] << " ";
-					}
-					std::cout << std::endl;
-				}
-				if ( !servers_list_[i].getLocationList()[j].getReturnPage().empty() ) {
-					std::cout << "				return: " << std::endl;
-					for ( std::map<int, std::string>::const_iterator it = servers_list_[i].getLocationList()[j].getReturnPage().begin(); it != servers_list_[i].getLocationList()[j].getReturnPage().end(); it++ ) {
-						std::cout << "					" << it->first << " ---> " << it->second << std::endl;
-					}
-				}
-
-
-
-
-		}
-	}
-}
-
-
 
 ConfigParser::ConfigParser() {}
 ConfigParser::ConfigParser(const ConfigParser& other) { *this = other; }
