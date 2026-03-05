@@ -30,6 +30,7 @@ public:
 	void	setErrorPage( int error_nb, const std::string& error_page );
 	void	setAutoindex( AutoindexType autoindex_ );
 	void	setClientMaxBodySize( unsigned long client_max_body_size );
+	void	setAllowedMethods( const std::string& allowed_methods );
 
 //getters
 
@@ -39,6 +40,7 @@ public:
 	const std::map<int, std::string>&	getErrorPage() const;
 	AutoindexType					getAutoindex() const;
 	unsigned long			getClientMaxBodySize() const;
+	std::vector<std::string>	getAllowedMethods() const;
 
 
 private:
@@ -48,6 +50,7 @@ private:
 	std::vector<std::string>				index_;
 	std::map< int, std::string >	error_page_;
 	unsigned long								client_max_body_size_;
+	std::vector<std::string>	allowed_methods_;
 /*	std::vector<std::string>		methods_;
 	std::map<int, std::string>		return_page_;
 */

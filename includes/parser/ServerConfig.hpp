@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <inttypes.h> // uint16_t
-#include <map> 
+#include <map>
 
 #include "LocationConfig.hpp"
 
@@ -35,7 +35,8 @@ public:
 	void	setAutoindex( AutoindexType autoindex_ );
 	void	setClientMaxBodySize( unsigned long client_max_body_size );
 
-//getters	
+
+//getters
 	uint16_t			            getPort() const;
 	const std::string&			            getInterface() const;
 	bool		 		            getDefaultServer() const;
@@ -43,9 +44,9 @@ public:
 	const std::vector<std::string>&	    getServerName() const;
 	const std::string&	                    getRoot() const;
 	const std::vector<std::string>&	    getIndex() const;
-	const std::map<int, std::string>&	getErrorPage() const;	
+	const std::map<int, std::string>&	getErrorPage() const;
 	AutoindexType		 		            getAutoindex() const;
-	unsigned long			getClientMaxBodySize() const ;
+	unsigned long			getClientMaxBodySize() const;
 
 private:
 	uint16_t			        port_;

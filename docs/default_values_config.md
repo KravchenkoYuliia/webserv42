@@ -38,3 +38,9 @@ in location : by default AUTOINDEX_NOT_SPECIFIED (because it can't be off by def
 
 ## client_max_body_size
 by default 1m
+
+## allowed_methods
+if there is no directive `allowed_methods` all methods are autorized -->
+GET POST DELETE
+## return
+stays empty

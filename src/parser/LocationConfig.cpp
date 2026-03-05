@@ -23,6 +23,7 @@ LocationConfig&	LocationConfig::operator=(const LocationConfig& other) {
 		this->error_page_ = other.error_page_;
 		this->autoindex_ = other.autoindex_;
 		this->client_max_body_size_ = other.client_max_body_size_;
+		this->allowed_methods_ = other.allowed_methods_;
 	}
 	return *this;
 }
@@ -48,6 +49,9 @@ void	LocationConfig::setClientMaxBodySize( unsigned long client_max_body_size ) 
 	client_max_body_size_ = client_max_body_size;
 }
 
+void	LocationConfig::setAllowedMethods( const std::string& allowed_methods ) {
+	allowed_methods_.push_back( allowed_methods );
+}
 
 //getters
 const std::string&	LocationConfig::getPath() const {
@@ -73,5 +77,8 @@ unsigned long	LocationConfig::getClientMaxBodySize() const {
 	return client_max_body_size_;
 }
 
+std::vector<std::string>	LocationConfig::getAllowedMethods() const {
+	return allowed_methods_;
+}
 
 LocationConfig::~LocationConfig() {}

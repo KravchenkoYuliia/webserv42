@@ -41,6 +41,8 @@
 [] create templates for repeated functions like
     parseServerNameInServer
     parseIndexInServer
+[] Location class should inherit from Server Class???
+[] protect cases like listen inside location block 
 
 ## listen
     only server
@@ -62,3 +64,8 @@
 server
 location
 
+## allowed_methods
+    location
+## return
+    location
+    server

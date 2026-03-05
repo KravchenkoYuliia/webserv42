@@ -362,7 +362,9 @@ void	ConfigParser::parseWordInLocation( const Token& token ) {
 	else if ( token.getValue() == "client_max_body_size" ) {
 		ConfigParser::parseMaxBodyInLocation();
 	}
-
+	else if ( token.getValue() == "allowed_methods" ) {
+		ConfigParser::parseAllowedMethodsInLocation();
+	}
 
 	//TODO
 	//if WORD is no one from the listed above -> error invalid input
@@ -485,6 +487,19 @@ void	ConfigParser::parseMaxBodyInLocation() {
 		throw std::runtime_error( "Error in config: fix max_body in location block - semicolon is missing");
 }
 
+void	ConfigParser::parseAllowedMethodsInLocation() {
+	
+	Token	token = lexer_.getNextToken();
+	while ( token.getType() == TOKEN_WORD ) {
+		servers_list_.back().getLocationList().back().setAllowedMethods( token.getValue() );
+		token = lexer_.getNextToken();
+	}
+
+	if ( token.getType() != TOKEN_SEMICOLON )
+		throw std::runtime_error( "Error in config: fix allowed_methods block");
+
+}
+
 void	ConfigParser::fillEmptyDirectives() {
 	//
 	//check if there is server block that has 0 location
@@ -509,6 +524,17 @@ void	ConfigParser::fillEmptyDirectives() {
 			servers_list_[i].setErrorPage( 404, "404.html" ); //TODO create a list of default error pages
 		}
 	}
+	//allowed methods
+	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
+		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {
+			if ( servers_list_[i].getLocationList()[j].getAllowedMethods().empty() ) {
+ 				servers_list_[i].getLocationList()[j].setAllowedMethods( "GET" );
+ 				servers_list_[i].getLocationList()[j].setAllowedMethods( "POST" );
+ 				servers_list_[i].getLocationList()[j].setAllowedMethods( "DELETE" );
+			}
+		}
+	}
+
 }
 
 //
@@ -541,8 +567,7 @@ void	ConfigParser::printAll() {
 			else
 				std::cout << "off" << std::endl;
 			std::cout << "	Client_max_body_size: " << servers_list_[i].getClientMaxBodySize() << std::endl;
-
-//------------------------------------------------------------------------------------------------------------------------------
+		//------------------------------------------------------------------------------------------------------------------------------
 			std::cout << "	Location list: " << std::endl;
 		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {
 
@@ -571,12 +596,19 @@ void	ConfigParser::printAll() {
 				else
 					std::cout << std::endl;
 				if ( servers_list_[i].getLocationList()[j].getClientMaxBodySize() != 0)
-					std::cout << "				client_max_body_size: " << servers_list_[i].getLocationList()[j].getClientMaxBodySize() << std::endl;
+					std::cout << "				client_max_body_size: " << servers_list_[i].getLocationList()[j].getClientMaxBodySize() << std::endl;	
+				if ( !servers_list_[i].getLocationList()[j].getAllowedMethods().empty() ) {
+					std::cout << "				allowed methods: ";
+					for ( std::vector<std::string>::size_type met = 0; met < servers_list_[i].getLocationList()[j].getAllowedMethods().size(); met++ ) {
+						std::cout << servers_list_[i].getLocationList()[j].getAllowedMethods()[met] << " ";
+					}
+					std::cout << std::endl;
+				}
+
 
 		}
 	}
 }
-
 
 
 
