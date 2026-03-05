@@ -15,6 +15,7 @@ LocationConfig&	LocationConfig::operator=(const LocationConfig& other) {
 		this->root_ = other.root_;
 		this->index_ = other.index_;
 		this->error_page_ = other.error_page_;
+		this->autoindex_ = other.autoindex_;
 	}
 	return *this;
 }
@@ -32,6 +33,9 @@ void	LocationConfig::setErrorPage( int error_nb, const std::string& error_page )
 	error_page_[error_nb] = error_page;
 }
 
+void	LocationConfig::setAutoindex( bool autoindex ) {
+	autoindex_ = autoindex;
+}
 
 //getters	
 const std::string&	LocationConfig::getPath() const {
@@ -47,6 +51,10 @@ const std::vector<std::string>&		LocationConfig::getIndex() const {
 
 const std::map<int, std::string>&	LocationConfig::getErrorPage() const {
 	return error_page_;
+}
+
+bool	LocationConfig::getAutoindex() const {
+	return autoindex_;
 }
 
 LocationConfig::~LocationConfig() {}

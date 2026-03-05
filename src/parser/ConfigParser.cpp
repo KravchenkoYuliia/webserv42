@@ -308,6 +308,9 @@ void	ConfigParser::parseWordInLocation( const Token& token ) {
 	else if ( token.getValue() == "error_page" ) {
 		ConfigParser::parseErrorPageInLocation();
 	}
+	else if ( token.getValue() == "autoindex" ) {
+		ConfigParser::parseAutoindexInLocation();
+	}
 
 	//TODO
 	//if WORD is no one from the listed above -> error invalid input
@@ -367,6 +370,21 @@ void	ConfigParser::parseErrorPageInLocation() {
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix error_page block - semicolon is missing");
+}
+
+void	ConfigParser::parseAutoindexInLocation() {
+
+	Token	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix autoindex block in location");
+	if ( token.getValue() == "on" )
+		servers_list_.back().getLocationList().back().setAutoindex( true );
+	else if ( token.getValue() != "off" )
+		throw std::runtime_error( "Error in config: fix autoindex block in location- only on/off are allowed");
+
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_SEMICOLON )
+		throw std::runtime_error( "Error in config: fix autoindex block in location- semicolon is missing");
 }
 
 void	ConfigParser::fillEmptyDirectives() {
@@ -447,6 +465,12 @@ void	ConfigParser::printAll() {
 						std::cout << "					" << it->first << " ---> " << it->second << std::endl;
 					}
 				}
+				std::cout << "				autoindex: ";
+				if ( servers_list_[i].getLocationList()[j].getAutoindex() == true )
+					std::cout << "on" << std::endl;
+				else
+					std::cout << "off" << std::endl;
+
 		}
 	}
 }

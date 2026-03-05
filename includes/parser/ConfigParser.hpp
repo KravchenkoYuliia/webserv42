@@ -46,12 +46,13 @@ private:
 	void	parseRootInServer();
 	void	parseIndexInServer();
 	void	parseErrorPageInServer();
+	void	parseAutoindexInServer();
 
 	void	parseWordInLocation( const Token& token );
 	void	parseRootInLocation();
 	void	parseIndexInLocation();
 	void	parseErrorPageInLocation();
-	void	parseAutoindexInServer();
+	void	parseAutoindexInLocation();
 
 	//
 	//TODO remove this function

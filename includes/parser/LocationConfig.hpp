@@ -21,6 +21,7 @@ public:
 	void	setRoot( const std::string& root );
 	void	setIndex( const std::string& index );
 	void	setErrorPage( int error_nb, const std::string& error_page );
+	void	setAutoindex( bool autoindex_ );
 
 //getters
 
@@ -28,9 +29,10 @@ public:
 	const std::string&		getRoot() const;
 	const std::vector<std::string>&	getIndex() const;
 	const std::map<int, std::string>&	getErrorPage() const;
+	bool					getAutoindex() const;
 
 private:
-//	bool							autoindex_;
+	bool							autoindex_;
 	std::string						path_;
 	std::string						root_;
 	std::vector<std::string>				index_;
