@@ -20,21 +20,18 @@ ConfigParser::ConfigParser( char* config_file )
 }
 
 void	ConfigParser::parseTokens( const Token& token ) {
-
-	if ( token.getType() == TOKEN_LEFTBRACE ) {
-		throw std::runtime_error( "Error in config: unexpected '{' outside server or location block");
+	
+	if ( token.getType() == TOKEN_WORD ) {
+		ConfigParser::parseDirectiveWord( token );
 	}
-
 	else if ( token.getType() == TOKEN_RIGHTBRACE ) {
 		ConfigParser::parseRightBrace();
 	}
-
-	else if ( token.getType() == TOKEN_WORD ) {
-		ConfigParser::parseDirectiveWord( token );
+	else if ( token.getType() == TOKEN_LEFTBRACE ) {
+		throw std::runtime_error( "Error in config: unexpected '{' outside server or location block");
 	}
 	else if ( token.getType() == TOKEN_SEMICOLON ) {
-		//TODO
-		//does it useless this condition or semicilon only can be after key words like listen ip:port;
+		throw std::runtime_error( "Error in config: unexpected ';'");
 	}
 }
 
@@ -210,9 +207,15 @@ void	ConfigParser::parseListenInServer() {
 
 	if ( token.getValue() == "default_server" ) {
 		servers_list_.back().setDefaultServer( true );
+		token = lexer_.getNextToken(); //must be semicolon
+		if ( token.getType() == TOKEN_SEMICOLON )
+			return ;
+		else
+			throw std::runtime_error( "Error in config: semicolon after port is missing" );
 	}
 	else {
-		ConfigParser::parseDirectiveWord( token );
+		throw std::runtime_error( "Error in config: invalid word after port" );
+		//ConfigParser::parseDirectiveWord( token );
 	}
 }
 
