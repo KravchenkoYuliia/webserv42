@@ -40,7 +40,13 @@
 
 [+] add a protection : multiple `listen` are impossible
 
-[] set default error pages
+[] set default error pages -> for now it's
+    400
+    403
+    404
+    405
+    413
+    500
 
 ## listen
     only server

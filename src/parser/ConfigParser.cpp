@@ -447,7 +447,12 @@ void	ConfigParser::fillEmptyDirectives() {
 
 	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
 		if ( servers_list_[i].getErrorPage().empty() ) {
-			servers_list_[i].setErrorPage( 404, "404.html" ); //TODO create a list of default error pages
+			servers_list_[i].setErrorPage( 400, "400.html" );
+			servers_list_[i].setErrorPage( 403, "403.html" );
+			servers_list_[i].setErrorPage( 404, "404.html" );
+			servers_list_[i].setErrorPage( 405, "405.html" );
+			servers_list_[i].setErrorPage( 413, "413.html" );
+			servers_list_[i].setErrorPage( 500, "500.html" );
 		}
 	}
 	//allowed methods
