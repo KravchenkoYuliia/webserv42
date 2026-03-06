@@ -38,7 +38,7 @@
         4242 default_server --->>> OK
     check after parsing
 
-[] add a protection : multiple `listen` are impossible
+[+] add a protection : multiple `listen` are impossible
 
 
 ## listen
