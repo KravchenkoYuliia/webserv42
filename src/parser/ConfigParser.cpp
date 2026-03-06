@@ -20,7 +20,7 @@ ConfigParser::ConfigParser( char* config_file )
 }
 
 void	ConfigParser::parseTokens( const Token& token ) {
-	
+
 	if ( token.getType() == TOKEN_WORD ) {
 		ConfigParser::parseDirectiveWord( token );
 	}
@@ -28,7 +28,7 @@ void	ConfigParser::parseTokens( const Token& token ) {
 		ConfigParser::parseRightBrace();
 	}
 	else if ( token.getType() == TOKEN_LEFTBRACE ) {
-		throw std::runtime_error( "Error in config: unexpected '{' outside server or location block");
+		throw std::runtime_error( "Error in config: unexpected '{'");
 	}
 	else if ( token.getType() == TOKEN_SEMICOLON ) {
 		throw std::runtime_error( "Error in config: unexpected ';'");
@@ -41,7 +41,7 @@ void	ConfigParser::parseTokens( const Token& token ) {
 void	ConfigParser::parseRightBrace() {
 
 	if ( mode_.top() == MODE_GLOBAL )
-			throw std::runtime_error( "Error in config: unexpected '}' outside server or location block" );
+			throw std::runtime_error( "Error in config: unexpected '}'" );
 	if ( mode_.size() > 1 ) {
 		mode_.pop();
 	}
@@ -53,19 +53,17 @@ void	ConfigParser::parseDirectiveWord( const Token& token ) {
 	const std::string&	current_word = token.getValue();
 
 	if ( current_word == "server" ) {
-		ConfigParser::parseWordServer();
+		ConfigParser::parseDirectiveServer();
 	}
-
 	else if ( current_word == "location" ) {
-		ConfigParser::parseWordLocation();
+		ConfigParser::parseDirectiveLocation();
 	}
-
 	else {
 		ConfigParser::parseWords( token );
 	}
 }
 
-void	ConfigParser::parseWordServer() {
+void	ConfigParser::parseDirectiveServer() {
 
 	if ( mode_.top() != MODE_GLOBAL )
 		throw std::runtime_error( "Error in config: server block must be declared at the top level" );
@@ -79,7 +77,7 @@ void	ConfigParser::parseWordServer() {
 	servers_list_.push_back( server_config );
 }
 
-void	ConfigParser::parseWordLocation() {
+void	ConfigParser::parseDirectiveLocation() {
 
 	if ( mode_.top() != MODE_SERVER )
 		throw std::runtime_error( "Error in config: location block must be declared inside server block" );
@@ -123,44 +121,39 @@ void	ConfigParser::parseWords( const Token& token ) {
 	if ( mode_.top() == MODE_GLOBAL ) {
 		throw std::runtime_error( "Error in config: no data outside SERVER braces is allowed");
 	}
-	else if ( mode_.top() == MODE_SERVER ) {
-		ConfigParser::parseWordInServer( token );
-	}
-	else if ( mode_.top() == MODE_LOCATION ){
-		ConfigParser::parseWordInLocation( token );
 
-	}
-}
 
-void	ConfigParser::parseWordInServer(const Token& token ) {
-
-	if ( token.getValue() == "listen" ) {
-		ConfigParser::parseListenInServer();
+	if ( token.getValue() == "listen" ) {  //
+		ConfigParser::parseListenInServer();// only server's directive
 	}
-	else if ( token.getValue() == "server_name" ) {
-		ConfigParser::parseServerNameInServer();
+	else if ( token.getValue() == "server_name" ) { //
+		ConfigParser::parseServerNameInServer();// only server's directive
 	}
 	else if ( token.getValue() == "root" ) {
-		ConfigParser::parseRootInServer();
+		ConfigParser::parseRoot();
 	}
 	else if ( token.getValue() == "index" ) {
-		ConfigParser::parseIndexInServer();
+		ConfigParser::parseIndex();
 	}
 	else if ( token.getValue() == "error_page" ) {
-		ConfigParser::parseErrorPageInServer();
+		ConfigParser::parseErrorPage();
 	}
 	else if ( token.getValue() == "autoindex" ) {
-		ConfigParser::parseAutoindexInServer();
+		ConfigParser::parseAutoindex();
 	}
 	else if ( token.getValue() == "client_max_body_size" ) {
-		ConfigParser::parseMaxBodyInServer();
+		ConfigParser::parseClientMaxBodySize();
 	}
 	else if ( token.getValue() == "return" ) {
-		ConfigParser::parseReturnPageInServer();
+		ConfigParser::parseReturnPage();
+	}
+	else if ( token.getValue() == "allowed_methods" ) { //
+		ConfigParser::parseAllowedMethodsInLocation();//only location's directive
 	}
 	else {
-		throw std::runtime_error( "Error in config: invalid directive in server block");
+		throw std::runtime_error( "Error in config: invalid directive");
 	}
+
 }
 
 void	ConfigParser::parseListenInServer() {
@@ -246,26 +239,16 @@ void	ConfigParser::parseServerNameInServer() {
 		throw std::runtime_error( "Error in config: fix server_name block - semicolon is missing");
 }
 
-void	ConfigParser::parseRootInServer() {
-
-	Token	token = lexer_.getNextToken();
-	if ( token.getType() != TOKEN_WORD )
-		throw std::runtime_error( "Error in config: fix root block - directive does not provide any value");
-
-	servers_list_.back().setRoot( token.getValue() );
-
-	token = lexer_.getNextToken();
-	if ( token.getType() != TOKEN_SEMICOLON )
-		throw std::runtime_error( "Error in config: fix root block - semicolon is missing");
-}
-
-void	ConfigParser::parseIndexInServer() {
+void	ConfigParser::parseIndex() {
 
 	Token	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_WORD )
 		throw std::runtime_error( "Error in config: fix index block - directive does not provide any value");
 	while ( token.getType() == TOKEN_WORD ) {
-		servers_list_.back().setIndex( token.getValue() );
+		if ( mode_.top() == MODE_SERVER )
+			servers_list_.back().setIndex( token.getValue() );
+		else if ( mode_.top() == MODE_LOCATION )
+			servers_list_.back().getLocationList().back().setIndex( token.getValue() );
 		token = lexer_.getNextToken();
 	}
 
@@ -273,7 +256,23 @@ void	ConfigParser::parseIndexInServer() {
 		throw std::runtime_error( "Error in config: fix index block - semicolon is missing");
 }
 
-void	ConfigParser::parseErrorPageInServer() {
+void	ConfigParser::parseRoot() {
+
+	Token	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix root block - directive does not provide any value");
+
+	if ( mode_.top() == MODE_SERVER )
+		servers_list_.back().setRoot( token.getValue() );
+	else if ( mode_.top() == MODE_LOCATION )
+		servers_list_.back().getLocationList().back().setRoot( token.getValue() );
+
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_SEMICOLON )
+		throw std::runtime_error( "Error in config: fix root block - semicolon is missing");
+}
+
+void	ConfigParser::parseErrorPage() {
 
 	//next token must be error number like 404
 	//
@@ -296,23 +295,33 @@ void	ConfigParser::parseErrorPageInServer() {
 	if ( token.getType() != TOKEN_WORD )
 		throw std::runtime_error( "Error in config: fix error_page block - error page is missing");
 
-	servers_list_.back().setErrorPage( error_nb, token.getValue() );
-
+    if ( mode_.top() == MODE_SERVER )
+	    servers_list_.back().setErrorPage( error_nb, token.getValue() );
+    else if ( mode_.top() == MODE_LOCATION )
+	    servers_list_.back().getLocationList().back().setErrorPage( error_nb, token.getValue() );
 
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix error_page block - semicolon is missing");
 }
 
-void	ConfigParser::parseAutoindexInServer() {
+void	ConfigParser::parseAutoindex() {
 
 	Token	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_WORD )
 		throw std::runtime_error( "Error in config: fix autoindex block - directive does not provide any value");
-	if ( token.getValue() == "on" )
-		servers_list_.back().setAutoindex( AUTOINDEX_ON );
-	else if ( token.getValue() == "off" )
-		servers_list_.back().setAutoindex( AUTOINDEX_OFF );
+	if ( token.getValue() == "on" ) {
+        if ( mode_.top() == MODE_SERVER )
+		    servers_list_.back().setAutoindex( AUTOINDEX_ON );
+        else if ( mode_.top() == MODE_LOCATION )
+    	    servers_list_.back().getLocationList().back().setAutoindex( AUTOINDEX_ON );
+    }
+	else if ( token.getValue() == "off" ) {
+        if ( mode_.top() == MODE_SERVER )
+		    servers_list_.back().setAutoindex( AUTOINDEX_OFF );
+        else if ( mode_.top() == MODE_LOCATION )
+    	    servers_list_.back().getLocationList().back().setAutoindex( AUTOINDEX_OFF );
+    }
 	else
 		throw std::runtime_error( "Error in config: fix autoindex block - only on/off are allowed");
 
@@ -321,7 +330,7 @@ void	ConfigParser::parseAutoindexInServer() {
 		throw std::runtime_error( "Error in config: fix autoindex block - semicolon is missing");
 }
 
-void	ConfigParser::parseMaxBodyInServer() {
+void	ConfigParser::parseClientMaxBodySize() {
 
 	Token	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_WORD )
@@ -357,15 +366,17 @@ void	ConfigParser::parseMaxBodyInServer() {
 			client_max_body_size *= 1024;
 		}
 	}
+    if ( mode_.top() == MODE_SERVER )
+    	servers_list_.back().setClientMaxBodySize( client_max_body_size );
+    else if ( mode_.top() == MODE_LOCATION )
+        servers_list_.back().getLocationList().back().setClientMaxBodySize( client_max_body_size );
 
-	servers_list_.back().setClientMaxBodySize( client_max_body_size );
-
-	token = lexer_.getNextToken();
+    token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix client_max_body_size block - semicolon is missing");
 }
 
-void	ConfigParser::parseReturnPageInServer() {
+void	ConfigParser::parseReturnPage() {
 
 	//next token must be error number like 200
 	//
@@ -387,160 +398,20 @@ void	ConfigParser::parseReturnPageInServer() {
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_WORD )
 		throw std::runtime_error( "Error in config: fix return block - return page is missing");
-	servers_list_.back().setReturnPage( code, token.getValue() );
+	if ( mode_.top() == MODE_SERVER )
+        servers_list_.back().setReturnPage( code, token.getValue() );
+	else if ( mode_.top() == MODE_LOCATION )
+        servers_list_.back().getLocationList().back().setReturnPage( code, token.getValue() );
 
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix return block - semicolon is missing");
 }
 
-void	ConfigParser::parseWordInLocation( const Token& token ) {
-
-	if ( token.getValue() == "root" ) {
-		ConfigParser::parseRootInLocation();
-	}
-	else if ( token.getValue() == "index" ) {
-		ConfigParser::parseIndexInLocation();
-	}
-	else if ( token.getValue() == "error_page" ) {
-		ConfigParser::parseErrorPageInLocation();
-	}
-	else if ( token.getValue() == "autoindex" ) {
-		ConfigParser::parseAutoindexInLocation();
-	}
-	else if ( token.getValue() == "client_max_body_size" ) {
-		ConfigParser::parseMaxBodyInLocation();
-	}
-	else if ( token.getValue() == "allowed_methods" ) {
-		ConfigParser::parseAllowedMethodsInLocation();
-	}
-	else if ( token.getValue() == "return" ) {
-		ConfigParser::parseReturnPageInLocation();
-	}
-	else {
-		throw std::runtime_error( "Error in config: invalid directive in location block");
-	}
-}
-
-void	ConfigParser::parseRootInLocation() {
-
-	Token	token = lexer_.getNextToken();
-	if ( token.getType() != TOKEN_WORD )
-		throw std::runtime_error( "Error in config: fix root block in location directive does not provide any value");
-
-	servers_list_.back().getLocationList().back().setRoot( token.getValue() );
-
-	token = lexer_.getNextToken();
-	if ( token.getType() != TOKEN_SEMICOLON )
-		throw std::runtime_error( "Error in config: fix root block in location - semicolon is missing");
-}
-
-void	ConfigParser::parseIndexInLocation() {
-
-	Token	token = lexer_.getNextToken();
-	if ( token.getType() != TOKEN_WORD )
-		throw std::runtime_error( "Error in config: fix index block in location - directive does not provide any value");
-	while ( token.getType() == TOKEN_WORD ) {
-		servers_list_.back().getLocationList().back().setIndex( token.getValue() );
-		token = lexer_.getNextToken();
-	}
-
-	if ( token.getType() != TOKEN_SEMICOLON )
-		throw std::runtime_error( "Error in config: fix index block in location - semicolon is missing");
-}
-
-void	ConfigParser::parseErrorPageInLocation() {
-
-	//next token must be error number like 404
-	//
-	Token	token = lexer_.getNextToken();
-	if ( token.getType() != TOKEN_WORD )
-		throw std::runtime_error( "Error in config: fix error_page block in location - directive does not provide any value");
-
-	char* end;
-	long error_nb = std::strtol( token.getValue().c_str(), &end, 10 );
-	if ( *end )
-		throw std::runtime_error( "Error in config: error_page in location needs a code of the error" );
-	int	first_valid_error = 100;
-	int	last_valid_error = 599;
-	if ( error_nb < first_valid_error || error_nb > last_valid_error )
-		throw std::runtime_error( "Error in config: invalid error number" );
-
-	//next token must be a page error
-	//
-	token = lexer_.getNextToken();
-	if ( token.getType() != TOKEN_WORD )
-		throw std::runtime_error( "Error in config: fix error_page block in location - error page is missing");
-
-	servers_list_.back().getLocationList().back().setErrorPage( error_nb, token.getValue() );
-
-	token = lexer_.getNextToken();
-	if ( token.getType() != TOKEN_SEMICOLON )
-		throw std::runtime_error( "Error in config: fix error_page block in location - semicolon is missing");
-}
-
-void	ConfigParser::parseAutoindexInLocation() {
-
-	Token	token = lexer_.getNextToken();
-	if ( token.getType() != TOKEN_WORD )
-		throw std::runtime_error( "Error in config: fix autoindex block in location - directive does not provide any value");
-	if ( token.getValue() == "on" )
-		servers_list_.back().getLocationList().back().setAutoindex( AUTOINDEX_ON );
-	else if ( token.getValue() == "off" )
-		servers_list_.back().getLocationList().back().setAutoindex( AUTOINDEX_OFF );
-	else
-		throw std::runtime_error( "Error in config: fix autoindex block in location- only on/off are allowed");
-
-	token = lexer_.getNextToken();
-	if ( token.getType() != TOKEN_SEMICOLON )
-		throw std::runtime_error( "Error in config: fix autoindex block in location- semicolon is missing");
-}
-
-void	ConfigParser::parseMaxBodyInLocation() {
-
-	Token	token = lexer_.getNextToken();
-	if ( token.getType() != TOKEN_WORD )
-		throw std::runtime_error( "Error in config: fix client_max_body_size block in location - directive does not provide any value");
-
-	for ( std::string::size_type i = 0; i < token.getValue().size(); i++ ) {
-		if ( !isdigit(  token.getValue()[0] ) )
-			throw std::runtime_error( "Error in config: fix client_max_body_size in location must be a number > 0 and < INT_MAX" );
-		while ( isdigit( token.getValue()[i] ) )
-			i++;
-		if ( !isdigit( token.getValue()[i] ) ) {
-			if ( token.getValue()[i + 1] )
-				throw std::runtime_error( "Error in config: fix client_max_body_size in location can be a number only with m/M, k/K, g/G" );
-		}
-	}
-
-	char* end;
-	long max_body = std::strtol( token.getValue().c_str(), &end, 10 );
-	if ( max_body < 1 || max_body > std::numeric_limits<int>::max() )
-		throw std::runtime_error( "Error in config: client_max_body_size in location must be a number > 0 and < INT_MAX" );
-	unsigned long client_max_body_size = max_body;
-	if ( *end ) {
-		char	letter = *end;
-		if ( letter == 'k' || letter == 'K' )
-			client_max_body_size *= 1024;
-		else if ( letter == 'm' || letter == 'M' ) {
-			client_max_body_size *= 1024;
-			client_max_body_size *= 1024;
-		}
-		else if ( letter == 'g' || letter == 'G' ) {
-			client_max_body_size *= 1024;
-			client_max_body_size *= 1024;
-			client_max_body_size *= 1024;
-		}
-	}
-
-	servers_list_.back().getLocationList().back().setClientMaxBodySize( client_max_body_size );
-
-	token = lexer_.getNextToken();
-	if ( token.getType() != TOKEN_SEMICOLON )
-		throw std::runtime_error( "Error in config: fix client_max_body_size in location block - semicolon is missing");
-}
-
 void	ConfigParser::parseAllowedMethodsInLocation() {
+
+	if ( mode_.top() != MODE_LOCATION )
+		throw std::runtime_error( "Error in config: directive `allowed_methods` only is possible inside location block" );
 
 	Token	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_WORD )
@@ -553,37 +424,6 @@ void	ConfigParser::parseAllowedMethodsInLocation() {
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix allowed_methods block - semicolon is missing");
 
-}
-
-void	ConfigParser::parseReturnPageInLocation() {
-
-	//next token must be error number like 200
-	//
-	Token	token = lexer_.getNextToken();
-	if ( token.getType() != TOKEN_WORD )
-		throw std::runtime_error( "Error in config: fix return block - directive does not provide any return code");
-
-	char* end;
-	long code = std::strtol( token.getValue().c_str(), &end, 10 );
-	if ( *end )
-		throw std::runtime_error( "Error in config: fix return block in location- must have a return code");
-	int	first_valid_code = 100;
-	int	last_valid_code = 599;
-	if ( code < first_valid_code || code > last_valid_code )
-		throw std::runtime_error( "Error in config: invalid code after return in location" );
-
-	//next token must be a page error
-	//
-	token = lexer_.getNextToken();
-	if ( token.getType() != TOKEN_WORD )
-		throw std::runtime_error( "Error in config: fix return block in location - return page is missing");
-
-	servers_list_.back().getLocationList().back().setReturnPage( code, token.getValue() );
-
-
-	token = lexer_.getNextToken();
-	if ( token.getType() != TOKEN_SEMICOLON )
-		throw std::runtime_error( "Error in config: fix return block in location - semicolon is missing");
 }
 
 void	ConfigParser::fillEmptyDirectives() {

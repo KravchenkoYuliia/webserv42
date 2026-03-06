@@ -35,29 +35,24 @@ private:
 	void	parseTokens( const Token& token );
 	void	parseRightBrace();
 	void	parseDirectiveWord( const Token& token );
-	void	parseWordServer();
-	void	parseWordLocation();
+	void	parseDirectiveServer();
+	void	parseDirectiveLocation();
 	void	parseWords( const Token& token );
 	void	fillEmptyDirectives();
 
 	void	parseWordInServer( const Token& token );
 	void	parseListenInServer();
 	void	parseServerNameInServer();
-	void	parseRootInServer();
-	void	parseIndexInServer();
-	void	parseErrorPageInServer();
-	void	parseAutoindexInServer();
-	void	parseMaxBodyInServer();
-	void	parseReturnPageInServer();
 
 	void	parseWordInLocation( const Token& token );
-	void	parseRootInLocation();
-	void	parseIndexInLocation();
-	void	parseErrorPageInLocation();
-	void	parseAutoindexInLocation();
-	void	parseMaxBodyInLocation();
 	void	parseAllowedMethodsInLocation();
-	void	parseReturnPageInLocation();
+
+	void	parseRoot();
+	void	parseIndex();
+	void	parseErrorPage();
+	void	parseAutoindex();
+	void	parseClientMaxBodySize();
+	void	parseReturnPage();
 
 	ConfigParser();
 	ConfigParser( const ConfigParser& other );
