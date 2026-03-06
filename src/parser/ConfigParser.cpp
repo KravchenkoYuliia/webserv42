@@ -620,7 +620,6 @@ void	ConfigParser::fillEmptyDirectives() {
 			}
 		}
 	}
-
 }
 
 ConfigParser::ConfigParser() {}

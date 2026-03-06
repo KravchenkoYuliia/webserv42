@@ -3,8 +3,10 @@
 Lexer::Lexer() {}
 
 
-Lexer::Lexer( char* file) {
-	stream_.open( file );
+Lexer::Lexer( char* config_file) {
+
+	Lexer::checkExtension( config_file );
+	stream_.open( config_file );
 	if ( stream_.fail() || !stream_.is_open() )
 		throw std::runtime_error( "Error: can't open configuration file" );
 }
@@ -95,6 +97,14 @@ char    Lexer::getCharWithoutWhitespaces() {
 	}
 
     return current_;
+}
+void	Lexer::checkExtension( std::string config_file ) {
+
+	std::string	extention = ".conf";
+	if ( config_file.size() < extention.size() + 1 ||
+		config_file.find(".conf") == config_file.npos ||
+			config_file.substr( config_file.size() - 5, 5 ) != extention )
+		throw std::runtime_error( "Error in config: wrong extension of config file");
 }
 
 Lexer::Lexer(const Lexer& other) { *this = other; }

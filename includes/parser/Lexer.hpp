@@ -8,7 +8,7 @@ class Lexer {
 
 public:
 	Lexer();
-	Lexer( char* file);
+	Lexer( char* config_file);
 	~Lexer();
 
 	Token	getNextToken();
@@ -17,6 +17,7 @@ private:
 	std::ifstream	stream_;
 	char		current_;
 
+	void	checkExtension( std::string config_file );
 
 	char		getCharWithoutWhitespaces();
 	char    	parseComment();
