@@ -27,6 +27,7 @@ public:
 	void	setPort( uint16_t port );
 	void	setInterface( const std::string& interface );
 	void	setDefaultServer( bool default_server );
+	void	setHasListen();
 	void	setLocationList( const LocationConfig& location_config );
 	void	setServerName( const std::string& server_name );
 	void	setRoot( const std::string& root );
@@ -39,7 +40,8 @@ public:
 //getters
 	uint16_t			            getPort() const;
 	const std::string&			            getInterface() const;
-	bool		 		            getDefaultServer() const;
+	bool					getDefaultServer() const;
+	bool					getHasListen() const;
 	std::vector<LocationConfig>&	getLocationList();
 	const std::vector<std::string>&	    getServerName() const;
 	const std::string&	                    getRoot() const;
@@ -53,6 +55,7 @@ private:
 	uint16_t			        port_;
 	std::string			        interface_;
 	bool				        default_server_;
+	bool					has_listen_;
 	std::vector<LocationConfig> location_list_;
 	std::vector<std::string>	server_name_;
 	std::string				    root_;

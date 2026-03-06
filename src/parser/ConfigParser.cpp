@@ -165,6 +165,9 @@ void	ConfigParser::parseWordInServer(const Token& token ) {
 
 void	ConfigParser::parseListenInServer() {
 
+	if ( servers_list_.back().getHasListen() == true )
+		throw std::runtime_error( "Error in config: only one `listen` is allowed in the same server" );
+	servers_list_.back().setHasListen();
 	Token token = lexer_.getNextToken(); // this token must have port( numbers ) and can also have interface
 	if ( token.getType() != TOKEN_WORD )
 		throw std::runtime_error( "Error in config: listen require port or interface:port" );

@@ -4,6 +4,7 @@ ServerConfig::ServerConfig()
 	: port_( kDefaultServerPort ),
 	interface_( kDefaultServerInterface ),
 	default_server_( false ),
+	has_listen_( false ),
 	root_( kDefaultRoot ),
 	autoindex_( AUTOINDEX_OFF ),
 	client_max_body_size_( kDefaultClientMaxBodySize )
@@ -17,6 +18,7 @@ ServerConfig&	ServerConfig::operator=(const ServerConfig& other) {
 		this->interface_ = other.interface_;
 		this->port_= other.port_;
 		this->default_server_ = other.default_server_;
+		this->has_listen_ = other.has_listen_;
 		this->location_list_ = other.location_list_;
 		this->server_name_ = other.server_name_;
 		this->root_ = other.root_;
@@ -80,6 +82,11 @@ void	ServerConfig::setReturnPage( int return_code, const std::string& return_pag
 	return_page_[return_code] = return_page;
 }
 
+void	ServerConfig::setHasListen() {
+	has_listen_ = true;
+}
+
+
 //
 //getters
 uint16_t	ServerConfig::getPort() const {
@@ -91,6 +98,10 @@ const std::string&	ServerConfig::getInterface() const {
 
 bool	ServerConfig::getDefaultServer() const {
 	return default_server_;
+}
+
+bool	ServerConfig::getHasListen() const {
+	return has_listen_;
 }
 
 std::vector<LocationConfig>&	ServerConfig::getLocationList() {
