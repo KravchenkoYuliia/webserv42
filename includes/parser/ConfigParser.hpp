@@ -40,11 +40,9 @@ private:
 	void	parseWords( const Token& token );
 	void	fillEmptyDirectives();
 
-	void	parseWordInServer( const Token& token );
 	void	parseListenInServer();
 	void	parseServerNameInServer();
 
-	void	parseWordInLocation( const Token& token );
 	void	parseAllowedMethodsInLocation();
 
 	void	parseRoot();

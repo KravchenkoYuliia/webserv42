@@ -40,6 +40,7 @@
 
 [+] add a protection : multiple `listen` are impossible
 
+[] set default error pages
 
 ## listen
     only server
@@ -66,3 +67,20 @@ location
 ## return
     location
     server
+
+
+Pull request message
+## Upgrade error checking for server directives :
+- listen
+- server_name
+
+## Add location directive :
+- allowed_methods
+
+## Add server and location directives (can be in both)  :
+- client_max_body_size
+- index
+- root
+- error_page
+- autoindex
+- return
