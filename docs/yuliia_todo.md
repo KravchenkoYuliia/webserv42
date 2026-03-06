@@ -11,7 +11,26 @@
     12.0.0.1:port
     localhost:port
 
-[] same pairs interface:port can only have once `default_server`
+[+] no Host in request -> server_name is useless - is ignored
+    server 8080
+
+    server 8080
+
+    first server is considered as default except is there is `default_server` for other one
+
+[+] there is Host in request -> choose server accordingly to server_name
+
+    has bigger priority than `default_server`
+
+[+] add TOKEN new_line to stop loop for cases like
+    server_name bla bla1
+    root www;
+
+[+] protect cases like listen inside location block
+
+
+
+[+] same pairs interface:port can only have once `default_server`
         80 default_server
         80 default_server --->>> error
 
@@ -19,30 +38,8 @@
         4242 default_server --->>> OK
     check after parsing
 
-
-
-[] no Host in request -> server_name is useless - is ignored
-    server 8080
-
-    server 8080
-
-    first server is considered as default except is there is `default_server` for other one
-
-[] there is Host in request -> choose server accordingly to server_name
-
-    has bigger priority than `default_server`
-
-[] add TOKEN new_line to stop loop for cases like
-    server_name bla bla1
-    root www;
-
 [] add a protection : multiple `listen` are impossible
 
-[] create templates for repeated functions like
-    parseServerNameInServer
-    parseIndexInServer
-[] Location class should inherit from Server Class???
-[] protect cases like listen inside location block 
 
 ## listen
     only server

@@ -208,6 +208,15 @@ void	ConfigParser::parseListenInServer() {
 		throw std::runtime_error( "Error in config: fix server block" );
 
 	if ( token.getValue() == "default_server" ) {
+		//check if there is no server with the same port that is also `default_server`
+
+		for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
+			if ( servers_list_[i].getPort() == port_long ) {
+				if ( servers_list_[i].getDefaultServer() == true )
+					throw std::runtime_error( "Error in config: servers with the same port only can have 1 default_server");
+			}
+		}
+
 		servers_list_.back().setDefaultServer( true );
 		token = lexer_.getNextToken(); //must be semicolon
 		if ( token.getType() == TOKEN_SEMICOLON )
