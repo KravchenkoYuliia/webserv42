@@ -33,6 +33,9 @@ void	ConfigParser::parseTokens( const Token& token ) {
 	else if ( token.getType() == TOKEN_SEMICOLON ) {
 		throw std::runtime_error( "Error in config: unexpected ';'");
 	}
+	else if ( token.getType() == TOKEN_NEWLINE ) {
+		return ;
+	}
 }
 
 void	ConfigParser::parseRightBrace() {
@@ -227,20 +230,20 @@ void	ConfigParser::parseServerNameInServer() {
 		token = lexer_.getNextToken();
 	}
 	if ( token.getType() != TOKEN_SEMICOLON )
-		throw std::runtime_error( "Error in config: fix server_name block");
+		throw std::runtime_error( "Error in config: fix server_name block - semicolon is missing");
 }
 
 void	ConfigParser::parseRootInServer() {
 
 	Token	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_WORD )
-		throw std::runtime_error( "Error in config: fix root block");
+		throw std::runtime_error( "Error in config: fix root block - semicolon is missing");
 
 	servers_list_.back().setRoot( token.getValue() );
 
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
-		throw std::runtime_error( "Error in config: fix root block");
+		throw std::runtime_error( "Error in config: fix root block - semicolon is missing");
 }
 
 void	ConfigParser::parseIndexInServer() {
@@ -252,7 +255,7 @@ void	ConfigParser::parseIndexInServer() {
 	}
 
 	if ( token.getType() != TOKEN_SEMICOLON )
-		throw std::runtime_error( "Error in config: fix index block");
+		throw std::runtime_error( "Error in config: fix index block - semicolon is missing");
 }
 
 void	ConfigParser::parseErrorPageInServer() {
@@ -416,7 +419,7 @@ void	ConfigParser::parseRootInLocation() {
 
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
-		throw std::runtime_error( "Error in config: fix root block in location");
+		throw std::runtime_error( "Error in config: fix root block in location - semicolon is missing");
 }
 
 void	ConfigParser::parseIndexInLocation() {
@@ -428,7 +431,7 @@ void	ConfigParser::parseIndexInLocation() {
 	}
 
 	if ( token.getType() != TOKEN_SEMICOLON )
-		throw std::runtime_error( "Error in config: fix index block in location");
+		throw std::runtime_error( "Error in config: fix index block in location - semicolon is missing");
 }
 
 void	ConfigParser::parseErrorPageInLocation() {
@@ -458,7 +461,7 @@ void	ConfigParser::parseErrorPageInLocation() {
 
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
-		throw std::runtime_error( "Error in config: fix error_page block - semicolon is missing");
+		throw std::runtime_error( "Error in config: fix error_page block in location - semicolon is missing");
 }
 
 void	ConfigParser::parseAutoindexInLocation() {

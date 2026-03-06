@@ -25,9 +25,12 @@ Token	Lexer::getNextToken() {
 	else if ( current_ == '}' ) {
 		return Token( TOKEN_RIGHTBRACE, "}" );
 	}
-	else if ( current_ == ';' )
+	else if ( current_ == ';' ) {
 		return Token( TOKEN_SEMICOLON, ";" );
-
+	}
+	else if  ( current_ == '\n' ) {
+		return Token( TOKEN_NEWLINE, "\n" );
+	}
 	else {
 
 		std::string	word = Lexer::parseWord();
@@ -83,7 +86,7 @@ char    Lexer::getCharWithoutWhitespaces() {
 
     int	getReturn;
     current_ = ' ';
-	while ( std::isspace( current_ ) ) {
+	while ( current_ == ' ' || current_ == '\t' ) { //std::isspace( current_ ) ) {
 
 		getReturn = stream_.get();
 		if ( getReturn == -1 )
