@@ -51,6 +51,7 @@ private:
 	void	parseAutoindex();
 	void	parseClientMaxBodySize();
 	void	parseReturnPage();
+	void	checkIfOnlyOneReturn();
 
 	ConfigParser();
 	ConfigParser( const ConfigParser& other );

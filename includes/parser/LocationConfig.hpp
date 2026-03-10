@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#define kDefaultLoctaionPath "/"
+static const std::string kDefaultLocationPath = "/";
 
 enum AutoindexType {
 	AUTOINDEX_OFF,
@@ -32,6 +32,7 @@ public:
 	void	setClientMaxBodySize( unsigned long client_max_body_size );
 	void	setAllowedMethods( const std::string& allowed_methods );
 	void	setReturnPage( int return_code, const std::string& return_page );
+    void    setHasReturn();
 
 
 //getters
@@ -44,16 +45,18 @@ public:
 	unsigned long			getClientMaxBodySize() const;
 	std::vector<std::string>	getAllowedMethods() const;
 	const std::map<int, std::string>&	getReturnPage() const;
+    bool                                getHasReturn() const;
 
 private:
 	AutoindexType					autoindex_;
 	std::string						path_;
 	std::string						root_;
 	std::vector<std::string>				index_;
-	std::map< int, std::string >	error_page_;
+	std::map< int, std::string >    error_page_;
 	unsigned long								client_max_body_size_;
-	std::vector<std::string>	allowed_methods_;
+	std::vector<std::string>	    allowed_methods_;
 	std::map<int, std::string>		return_page_;
+    bool                            has_return_;
 };
 
 #endif

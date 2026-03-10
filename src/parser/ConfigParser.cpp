@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iostream>
 #include <limits>
+
 ConfigParser::ConfigParser( char* config_file )
 	: lexer_(config_file) {
 
@@ -378,6 +379,8 @@ void	ConfigParser::parseClientMaxBodySize() {
 
 void	ConfigParser::parseReturnPage() {
 
+    ConfigParser::checkIfOnlyOneReturn();
+
 	//next token must be error number like 200
 	//
 	Token	token = lexer_.getNextToken();
@@ -406,6 +409,20 @@ void	ConfigParser::parseReturnPage() {
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix return block - semicolon is missing");
+}
+
+void	ConfigParser::checkIfOnlyOneReturn() {
+
+	if ( mode_.top() == MODE_SERVER ) {
+		if ( servers_list_.back().getHasReturn() == true )
+			throw std::runtime_error( "Error in config: only one `return` is allowed in the same block" );
+        servers_list_.back().setHasReturn();
+	}
+	else if ( mode_.top() == MODE_LOCATION ) {
+		if ( servers_list_.back().getLocationList().back().getHasReturn() == true )
+			throw std::runtime_error( "Error in config: only one `return` is allowed in the same block" );
+        servers_list_.back().getLocationList().back().setHasReturn();
+	}
 }
 
 void	ConfigParser::parseAllowedMethodsInLocation() {

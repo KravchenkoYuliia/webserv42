@@ -2,13 +2,15 @@
 
 LocationConfig::LocationConfig()
 			: autoindex_( AUTOINDEX_NOT_SPECIFIED ),
-			path_(kDefaultLoctaionPath),
-			client_max_body_size_(0)
+			path_(kDefaultLocationPath),
+			client_max_body_size_(0),
+            has_return_( false )
 {}
 LocationConfig::LocationConfig( const std::string& path )
 			: autoindex_( AUTOINDEX_NOT_SPECIFIED ),
 			path_( path ),
-			client_max_body_size_(0)
+			client_max_body_size_(0),
+            has_return_( false )
 {}
 
 
@@ -25,6 +27,7 @@ LocationConfig&	LocationConfig::operator=(const LocationConfig& other) {
 		this->client_max_body_size_ = other.client_max_body_size_;
 		this->allowed_methods_ = other.allowed_methods_;
 		this->return_page_ = other.return_page_;
+        this->has_return_ = other.has_return_;
 	}
 	return *this;
 }
@@ -58,6 +61,10 @@ void	LocationConfig::setReturnPage( int return_code, const std::string& return_p
 	return_page_[return_code] = return_page;
 }
 
+void	LocationConfig::setHasReturn() {
+	has_return_ = true;
+}
+
 //getters
 const std::string&	LocationConfig::getPath() const {
 	return path_;
@@ -88,6 +95,10 @@ std::vector<std::string>	LocationConfig::getAllowedMethods() const {
 
 const std::map<int, std::string>&	LocationConfig::getReturnPage() const {
 	return return_page_;
+}
+
+bool	LocationConfig::getHasReturn() const {
+	return has_return_;
 }
 
 LocationConfig::~LocationConfig() {}

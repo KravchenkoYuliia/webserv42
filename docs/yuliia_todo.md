@@ -40,13 +40,21 @@
 
 [+] add a protection : multiple `listen` are impossible
 
-[] set default error pages -> for now it's
+[+] set default error pages -> for now it's
     400
     403
     404
     405
     413
     500
+
+[] check that it only is 1 return in scope
+[] return not only code+page
+    code 200 does not return page:
+    return 200;
+    return 200 'Ok';
+
+[] print location with operator<< (maybe server too)
 
 ## listen
     only server

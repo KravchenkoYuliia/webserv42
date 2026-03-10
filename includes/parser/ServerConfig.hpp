@@ -8,14 +8,14 @@
 
 #include "LocationConfig.hpp"
 
+static const int kDefaultServerPort = 8080;
+static const std::string kDefaultServerInterface = "0.0.0.0";
+static const std::string kDefaultRoot = "html";
+static const std::string kDefaultIndex = "index.html";
+static const int kDefaultClientMaxBodySize = 1024 * 1024; //equivalent to 1M
+
 class LocationConfig;
 class ServerConfig {
-
-#define kDefaultServerPort 8080
-#define kDefaultServerInterface "0.0.0.0"
-#define kDefaultRoot "html"
-#define kDefaultIndex "index.html"
-#define kDefaultClientMaxBodySize 1024 * 1024 //equivalent to 1M
 
 public:
 	ServerConfig();
@@ -36,6 +36,7 @@ public:
 	void	setAutoindex( AutoindexType autoindex_ );
 	void	setClientMaxBodySize( unsigned long client_max_body_size );
 	void	setReturnPage( int return_code, const std::string& return_page );
+    void	setHasReturn();
 
 //getters
 	uint16_t			            getPort() const;
@@ -50,12 +51,14 @@ public:
 	AutoindexType		 		            getAutoindex() const;
 	unsigned long			getClientMaxBodySize() const;
 	const std::map<int, std::string>&	getReturnPage() const;
+    bool					getHasReturn() const;
 
 private:
 	uint16_t			        port_;
 	std::string			        interface_;
 	bool				        default_server_;
 	bool					has_listen_;
+    bool                    has_return_;
 	std::vector<LocationConfig> location_list_;
 	std::vector<std::string>	server_name_;
 	std::string				    root_;

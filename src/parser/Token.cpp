@@ -1,9 +1,5 @@
 #include "Token.hpp"
 
-Token::Token()
-	: type_(TOKEN_WORD),
-	value_("default") {}
-
 Token::Token( TokenType type, std::string value )
 					: type_(type),
 					  value_(value) {}

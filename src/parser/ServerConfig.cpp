@@ -5,6 +5,7 @@ ServerConfig::ServerConfig()
 	interface_( kDefaultServerInterface ),
 	default_server_( false ),
 	has_listen_( false ),
+    has_return_( false ),
 	root_( kDefaultRoot ),
 	autoindex_( AUTOINDEX_OFF ),
 	client_max_body_size_( kDefaultClientMaxBodySize )
@@ -19,6 +20,7 @@ ServerConfig&	ServerConfig::operator=(const ServerConfig& other) {
 		this->port_= other.port_;
 		this->default_server_ = other.default_server_;
 		this->has_listen_ = other.has_listen_;
+        this->has_return_ = other.has_return_;
 		this->location_list_ = other.location_list_;
 		this->server_name_ = other.server_name_;
 		this->root_ = other.root_;
@@ -49,7 +51,6 @@ void	ServerConfig::setDefaultServer( bool default_server ) {
 
 void	ServerConfig::setLocationList( const LocationConfig& location_config ) {
 	location_list_.push_back( location_config );
-	//std::cout << "adress of location list is " << &location_list_ << std::endl;
 }
 
 void	ServerConfig::setServerName( const std::string& server_name ) {
@@ -66,7 +67,6 @@ void	ServerConfig::setIndex( const std::string& index ) {
 
 void	ServerConfig::setErrorPage( int error_nb, const std::string& error_page ) {
 	error_page_[error_nb] = error_page;
-	//error_page_.insert( {error_nb, error_page} );
 }
 
 void	ServerConfig::setAutoindex( AutoindexType autoindex ) {
@@ -86,6 +86,9 @@ void	ServerConfig::setHasListen() {
 	has_listen_ = true;
 }
 
+void	ServerConfig::setHasReturn() {
+	has_return_ = true;
+}
 
 //
 //getters
@@ -100,9 +103,6 @@ bool	ServerConfig::getDefaultServer() const {
 	return default_server_;
 }
 
-bool	ServerConfig::getHasListen() const {
-	return has_listen_;
-}
 
 std::vector<LocationConfig>&	ServerConfig::getLocationList() {
 	return location_list_;
@@ -134,6 +134,14 @@ unsigned long	ServerConfig::getClientMaxBodySize() const {
 
 const std::map<int, std::string>&	ServerConfig::getReturnPage() const {
 	return return_page_;
+}
+
+bool	ServerConfig::getHasListen() const {
+	return has_listen_;
+}
+
+bool	ServerConfig::getHasReturn() const {
+	return has_return_;
 }
 
 ServerConfig::~ServerConfig() {}
