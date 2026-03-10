@@ -50,7 +50,8 @@ private:
 	void	parseErrorPage();
 	void	parseAutoindex();
 	void	parseClientMaxBodySize();
-	void	parseReturnPage();
+	void	parseReturn();
+    void    setReturn( int code, std::string value );
 	void	checkIfOnlyOneReturn();
 
 	ConfigParser();

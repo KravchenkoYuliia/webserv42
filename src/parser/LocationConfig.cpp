@@ -26,7 +26,7 @@ LocationConfig&	LocationConfig::operator=(const LocationConfig& other) {
 		this->autoindex_ = other.autoindex_;
 		this->client_max_body_size_ = other.client_max_body_size_;
 		this->allowed_methods_ = other.allowed_methods_;
-		this->return_page_ = other.return_page_;
+		this->return_code_ = other.return_code_;
         this->has_return_ = other.has_return_;
 	}
 	return *this;
@@ -57,8 +57,8 @@ void	LocationConfig::setAllowedMethods( const std::string& allowed_methods ) {
 	allowed_methods_.push_back( allowed_methods );
 }
 
-void	LocationConfig::setReturnPage( int return_code, const std::string& return_page ) {
-	return_page_[return_code] = return_page;
+void	LocationConfig::setReturn( int return_code, const std::string& return_page ) {
+	return_code_[return_code] = return_page;
 }
 
 void	LocationConfig::setHasReturn() {
@@ -93,8 +93,8 @@ std::vector<std::string>	LocationConfig::getAllowedMethods() const {
 	return allowed_methods_;
 }
 
-const std::map<int, std::string>&	LocationConfig::getReturnPage() const {
-	return return_page_;
+const std::map<int, std::string>&	LocationConfig::getReturn() const {
+	return return_code_;
 }
 
 bool	LocationConfig::getHasReturn() const {

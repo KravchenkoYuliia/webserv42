@@ -31,7 +31,7 @@ public:
 	void	setAutoindex( AutoindexType autoindex_ );
 	void	setClientMaxBodySize( unsigned long client_max_body_size );
 	void	setAllowedMethods( const std::string& allowed_methods );
-	void	setReturnPage( int return_code, const std::string& return_page );
+	void	setReturn( int return_code, const std::string& return_page );
     void    setHasReturn();
 
 
@@ -44,7 +44,7 @@ public:
 	AutoindexType					getAutoindex() const;
 	unsigned long			getClientMaxBodySize() const;
 	std::vector<std::string>	getAllowedMethods() const;
-	const std::map<int, std::string>&	getReturnPage() const;
+	const std::map<int, std::string>&	getReturn() const;
     bool                                getHasReturn() const;
 
 private:
@@ -55,7 +55,7 @@ private:
 	std::map< int, std::string >    error_page_;
 	unsigned long								client_max_body_size_;
 	std::vector<std::string>	    allowed_methods_;
-	std::map<int, std::string>		return_page_;
+	std::map<int, std::string>		return_code_;
     bool                            has_return_;
 };
 

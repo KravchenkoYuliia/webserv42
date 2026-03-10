@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 17:54:23 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/10 13:54:08 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/10 15:35:10 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,9 +51,9 @@ void Utils::printServersContent( std::vector<ServerConfig>& servers ) {
 			else
 				std::cout << "off" << std::endl;
 			std::cout << "\tClient_max_body_size: " << servers[i].getClientMaxBodySize() << std::endl;
-			if ( !servers[i].getReturnPage().empty() ) {
+			if ( !servers[i].getReturn().empty() ) {
 				std::cout << "\tReturn: " << std::endl;
-				for ( std::map<int, std::string>::const_iterator it = servers[i].getReturnPage().begin(); it != servers[i].getReturnPage().end(); it++ ) {
+				for ( std::map<int, std::string>::const_iterator it = servers[i].getReturn().begin(); it != servers[i].getReturn().end(); it++ ) {
 					std::cout << "\t\t" << it->first << " ---> " << it->second << std::endl;
 				}
 			}
@@ -100,9 +100,9 @@ void    Utils::printLocationBlock( std::vector<LocationConfig>& location_list ) 
 				}
 				std::cout << std::endl;
 			}
-			if ( !location_list[j].getReturnPage().empty() ) {
+			if ( !location_list[j].getReturn().empty() ) {
 				std::cout << "\t\t\t\treturn: " << std::endl;
-				for ( std::map<int, std::string>::const_iterator it = location_list[j].getReturnPage().begin(); it != location_list[j].getReturnPage().end(); it++ ) {
+				for ( std::map<int, std::string>::const_iterator it = location_list[j].getReturn().begin(); it != location_list[j].getReturn().end(); it++ ) {
 					std::cout << "\t\t\t\t\t" << it->first << " ---> " << it->second << std::endl;
 				}
 			}

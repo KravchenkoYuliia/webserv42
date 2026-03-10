@@ -1,3 +1,4 @@
+
 #include "ConfigParser.hpp"
 #include "Utils.hpp"
 #include <algorithm>
@@ -146,7 +147,7 @@ void	ConfigParser::parseWords( const Token& token ) {
 		ConfigParser::parseClientMaxBodySize();
 	}
 	else if ( token.getValue() == "return" ) {
-		ConfigParser::parseReturnPage();
+		ConfigParser::parseReturn();
 	}
 	else if ( token.getValue() == "allowed_methods" ) { //
 		ConfigParser::parseAllowedMethodsInLocation();//only location's directive
@@ -377,11 +378,11 @@ void	ConfigParser::parseClientMaxBodySize() {
 		throw std::runtime_error( "Error in config: fix client_max_body_size block - semicolon is missing");
 }
 
-void	ConfigParser::parseReturnPage() {
+void	ConfigParser::parseReturn() {
 
     ConfigParser::checkIfOnlyOneReturn();
 
-	//next token must be error number like 200
+	//next token must be a number like 200
 	//
 	Token	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_WORD )
@@ -396,19 +397,29 @@ void	ConfigParser::parseReturnPage() {
 	if ( code < first_valid_code || code > last_valid_code )
 		throw std::runtime_error( "Error in config: invalid code after return" );
 
-	//next token must be a page error
+	//next token can be a page / text / nothing
 	//
 	token = lexer_.getNextToken();
+	if ( token.getType() == TOKEN_SEMICOLON ) {
+		ConfigParser::setReturn( code, "" );
+		return ;
+	}
 	if ( token.getType() != TOKEN_WORD )
-		throw std::runtime_error( "Error in config: fix return block - return page is missing");
-	if ( mode_.top() == MODE_SERVER )
-        servers_list_.back().setReturnPage( code, token.getValue() );
-	else if ( mode_.top() == MODE_LOCATION )
-        servers_list_.back().getLocationList().back().setReturnPage( code, token.getValue() );
+		throw std::runtime_error( "Error in config: fix return block");
+
+	ConfigParser::setReturn( code, token.getValue() );
 
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix return block - semicolon is missing");
+}
+
+void	ConfigParser::setReturn( int code, std::string value ) {
+
+	if ( mode_.top() == MODE_SERVER )
+	        servers_list_.back().setReturn( code, value );
+	else if ( mode_.top() == MODE_LOCATION )
+        	servers_list_.back().getLocationList().back().setReturn( code, value );
 }
 
 void	ConfigParser::checkIfOnlyOneReturn() {

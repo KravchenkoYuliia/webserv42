@@ -28,7 +28,7 @@ ServerConfig&	ServerConfig::operator=(const ServerConfig& other) {
 		this->error_page_ = other.error_page_;
 		this->autoindex_ = other.autoindex_;
 		this->client_max_body_size_ = other.client_max_body_size_;
-		this->return_page_ = other.return_page_;
+		this->return_code_ = other.return_code_;
 	}
 
 	return *this;
@@ -78,8 +78,8 @@ void	ServerConfig::setClientMaxBodySize( unsigned long client_max_body_size ) {
 }
 
 
-void	ServerConfig::setReturnPage( int return_code, const std::string& return_page ) {
-	return_page_[return_code] = return_page;
+void	ServerConfig::setReturn( int return_code, const std::string& return_page ) {
+	return_code_[return_code] = return_page;
 }
 
 void	ServerConfig::setHasListen() {
@@ -132,8 +132,8 @@ unsigned long	ServerConfig::getClientMaxBodySize() const {
 	return client_max_body_size_;
 }
 
-const std::map<int, std::string>&	ServerConfig::getReturnPage() const {
-	return return_page_;
+const std::map<int, std::string>&	ServerConfig::getReturn() const {
+	return return_code_;
 }
 
 bool	ServerConfig::getHasListen() const {
