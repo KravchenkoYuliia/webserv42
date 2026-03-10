@@ -54,7 +54,7 @@
     return 200;
     return 200 'Ok';
 
-[] print location with operator<< (maybe server too)
+[+] print location with operator<< (maybe server too)
 
 ## listen
     only server
