@@ -69,4 +69,7 @@ private:
 	std::map<int, std::string>	return_code_;
 };
 
+std::ostream&	operator<<( std::ostream& out, ServerConfig& s );
+
+
 #endif

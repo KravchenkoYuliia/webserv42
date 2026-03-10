@@ -144,4 +144,47 @@ bool	ServerConfig::getHasReturn() const {
 	return has_return_;
 }
 
+std::ostream&	operator<<( std::ostream& out, ServerConfig& s ) {
+
+    out << "\tPort: " << s.getPort() << std::endl
+			<< "\tInterface: " << s.getInterface();
+			if ( s.getDefaultServer() == true )
+				out << " default_server";
+		    out << std::endl << "\tServer name: ";
+			for ( std::vector<std::string>::size_type i = 0; i < s.getServerName().size(); i++ ) {
+				out << s.getServerName()[i] << " ";
+			}
+			out << std::endl << "\tRoot: " << s.getRoot() << std::endl
+				<< "\tIndex: ";
+			for ( std::vector<std::string>::size_type in = 0; in < s.getIndex().size(); in++ ) {
+				out << s.getIndex()[in] << " ";
+			}
+			out << std::endl << "\tError page: " << std::endl;
+			for ( std::map<int, std::string>::const_iterator it = s.getErrorPage().begin(); it != s.getErrorPage().end(); it++ ) {
+				out << "\t\t" << it->first << " ---> " << it->second << std::endl;
+			}
+			out << "\tAutoindex: ";
+			if ( s.getAutoindex() == AUTOINDEX_ON )
+				out << "on" << std::endl;
+			else
+				out << "off" << std::endl;
+			out << "\tClient_max_body_size: " << s.getClientMaxBodySize() << std::endl;
+			if ( !s.getReturn().empty() ) {
+				out << "\tReturn: " << std::endl;
+				for ( std::map<int, std::string>::const_iterator it = s.getReturn().begin(); it != s.getReturn().end(); it++ ) {
+					out << "\t\t" << it->first << " ---> " << it->second << std::endl;
+				}
+			}
+            out << "\tLocation list: " << std::endl;
+		    for ( std::vector<LocationConfig>::size_type j = 0; j < s.getLocationList().size(); j++ ) {
+
+		    	out << "\t\tLocation[" << j << "] has:" << std::endl;
+		    	out << s.getLocationList()[j];
+
+		    }
+
+    return out;
+}
+
+
 ServerConfig::~ServerConfig() {}

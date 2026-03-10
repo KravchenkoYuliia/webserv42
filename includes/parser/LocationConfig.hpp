@@ -1,6 +1,7 @@
 #ifndef LOCATIONCONFIG_HPP
 #define LOCATIONCONFIG_HPP
 
+#include <iostream> 
 #include <map>
 #include <string>
 #include <vector>
@@ -58,5 +59,7 @@ private:
 	std::map<int, std::string>		return_code_;
     bool                            has_return_;
 };
+
+std::ostream&	operator<<( std::ostream& out, const LocationConfig& l );
 
 #endif

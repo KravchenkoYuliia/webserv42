@@ -101,4 +101,48 @@ bool	LocationConfig::getHasReturn() const {
 	return has_return_;
 }
 
+std::ostream&	operator<<( std::ostream& out, const LocationConfig& l ) {
+	    out << "\t\t\t\tpath: "
+			<< l.getPath() << std::endl;
+		if ( l.getRoot() != "" )
+			out << "\t\t\t\troot: " << l.getRoot() << std::endl;
+		if ( !l.getIndex().empty() ) {
+			out << "\t\t\t\tindex: ";
+			for ( std::vector<std::string>::size_type ind = 0; ind < l.getIndex().size(); ind++ ) {
+				out << l.getIndex()[ind] << " ";
+			}
+			out << std::endl;
+		}
+		if ( !l.getErrorPage().empty() ) {
+			out << "\t\t\t\terror page: " << std::endl;
+			for ( std::map<int, std::string>::const_iterator it = l.getErrorPage().begin(); it != l.getErrorPage().end(); it++ ) {
+				out << "\t\t\t\t\t" << it->first << " ---> " << it->second << std::endl;
+			}
+		}
+    if ( l.getAutoindex() != AUTOINDEX_NOT_SPECIFIED ) {
+			out << "\t\t\t\tautoindex: ";
+		if ( l.getAutoindex() == true )
+			out << "on" << std::endl;
+		else if ( l.getAutoindex() == false )
+			out << "off" << std::endl;
+    }
+		if ( l.getClientMaxBodySize() != 0)
+			out << "\t\t\t\tclient_max_body_size: " << l.getClientMaxBodySize() << std::endl;
+		if ( !l.getAllowedMethods().empty() ) {
+			out << "\t\t\t\tallowed methods: ";
+			for ( std::vector<std::string>::size_type met = 0; met < l.getAllowedMethods().size(); met++ ) {
+				out << l.getAllowedMethods()[met] << " ";
+			}
+			std::cout << std::endl;
+		}
+		if ( !l.getReturn().empty() ) {
+			out << "\t\t\t\treturn: " << std::endl;
+			for ( std::map<int, std::string>::const_iterator it = l.getReturn().begin(); it != l.getReturn().end(); it++ ) {
+				out << "\t\t\t\t\t" << it->first << " ---> " << it->second << std::endl;
+			}
+		}
+
+	return out;
+}
+
 LocationConfig::~LocationConfig() {}
