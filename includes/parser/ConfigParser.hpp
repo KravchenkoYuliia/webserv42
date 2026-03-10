@@ -25,6 +25,7 @@ public:
 	ConfigParser( char* config_file );
 	~ConfigParser();
 
+	std::vector<ServerConfig>&	getServers();
 
 private:
 

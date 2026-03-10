@@ -13,17 +13,11 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-#include <string>
-#include <vector>
 #include "ServerConfig.hpp"
 
 class Utils {
 public:
     static void setNonBlocking(int fd);
-    static void printServersContent( std::vector<ServerConfig>& servers );
-
-private:
-    static void    printLocationBlock( std::vector<LocationConfig>& location_list );
 };
 
 #endif // UTILS_HPP

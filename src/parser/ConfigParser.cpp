@@ -18,7 +18,10 @@ ConfigParser::ConfigParser( char* config_file )
 	}
 
 	ConfigParser::fillEmptyDirectives();
-	Utils::printServersContent( servers_list_ );
+}
+
+std::vector<ServerConfig>&	ConfigParser::getServers() {
+	return servers_list_;
 }
 
 void	ConfigParser::parseTokens( const Token& token ) {

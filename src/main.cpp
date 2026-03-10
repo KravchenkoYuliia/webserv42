@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/24 12:08:39 by yukravch          #+#    #+#             */
-/*   Updated: 2026/03/05 14:45:30 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/10 16:34:21 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,13 @@ int main(int argc, char **argv)
     }
 
     try {
-        (void)argv; // TODO: delete line
-        //ConfigParser configParser( argv[1] );
+        ConfigParser configParser( argv[1] );
+        std::vector<ServerConfig>&  servers = configParser.getServers();
+        //print what each server has
+        for ( std::vector<ServerConfig>::size_type i = 0; i < servers.size(); i++ ) {
+		std::cout << "Server[" << i << "] has:" << std::endl
+			<< servers[i];
+	    }
         server_manager.init(8080);
         server_manager.run();
     } catch (const std::exception& e)
