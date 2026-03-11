@@ -25,13 +25,15 @@ public:
 	ConfigParser( char* config_file );
 	~ConfigParser();
 
-	std::vector<ServerConfig>&	getServers();
+	std::vector<ServerConfig>&			getServers();
+	std::map< uint16_t, std::vector<ServerConfig> >&	getMapOfPortWithServers();
 
 private:
 
-	std::stack<ParserMode>	    mode_;
-	std::vector<ServerConfig>	servers_list_;
-	Lexer						lexer_;
+	std::stack<ParserMode>	    				mode_;
+	std::vector<ServerConfig>				servers_list_;
+	Lexer							lexer_;
+	std::map< uint16_t, std::vector<ServerConfig> >	map_;
 
 	void	parseTokens( const Token& token );
 	void	parseRightBrace();
@@ -45,6 +47,9 @@ private:
 	void	parseServerNameInServer();
 
 	void	parseAllowedMethodsInLocation();
+	void	parseUploadAllowedInLocation();
+	void	parseUploadLocationInLocation();
+	void	checkUpload();
 
 	void	parseRoot();
 	void	parseIndex();
@@ -52,12 +57,14 @@ private:
 	void	parseAutoindex();
 	void	parseClientMaxBodySize();
 	void	parseReturn();
-    void    setReturn( int code, std::string value );
+	void    setReturn( int code, std::string value );
 	void	checkIfOnlyOneReturn();
 
 	ConfigParser();
 	ConfigParser( const ConfigParser& other );
 	ConfigParser&	operator = ( const ConfigParser& other );
 };
+
+std::ostream&	operator<<( std::ostream& out, std::map<uint16_t, std::vector<ServerConfig> >& m );
 
 #endif

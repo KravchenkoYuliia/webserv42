@@ -3,14 +3,20 @@
 LocationConfig::LocationConfig()
 			: autoindex_( AUTOINDEX_NOT_SPECIFIED ),
 			path_(kDefaultLocationPath),
-			client_max_body_size_(0),
-            has_return_( false )
+			root_( "" ),
+			client_max_body_size_(kNotSpecified),
+			has_return_( false ),
+			upload_allowed_( false ),
+			upload_location_( "" )
 {}
 LocationConfig::LocationConfig( const std::string& path )
 			: autoindex_( AUTOINDEX_NOT_SPECIFIED ),
 			path_( path ),
-			client_max_body_size_(0),
-            has_return_( false )
+			root_( "" ),
+			client_max_body_size_(kNotSpecified),
+			has_return_( false ),
+			upload_allowed_( false ),
+			upload_location_( "" )
 {}
 
 
@@ -27,7 +33,9 @@ LocationConfig&	LocationConfig::operator=(const LocationConfig& other) {
 		this->client_max_body_size_ = other.client_max_body_size_;
 		this->allowed_methods_ = other.allowed_methods_;
 		this->return_code_ = other.return_code_;
-        this->has_return_ = other.has_return_;
+		this->has_return_ = other.has_return_;
+		this->upload_allowed_ = other.upload_allowed_;
+		this->upload_location_ = other.upload_location_;
 	}
 	return *this;
 }
@@ -49,7 +57,7 @@ void	LocationConfig::setAutoindex( AutoindexType autoindex ) {
 	autoindex_ = autoindex;
 }
 
-void	LocationConfig::setClientMaxBodySize( unsigned long client_max_body_size ) {
+void	LocationConfig::setClientMaxBodySize( long long client_max_body_size ) {
 	client_max_body_size_ = client_max_body_size;
 }
 
@@ -63,6 +71,14 @@ void	LocationConfig::setReturn( int return_code, const std::string& return_page 
 
 void	LocationConfig::setHasReturn() {
 	has_return_ = true;
+}
+
+void	LocationConfig::setUploadAllowed() {
+	upload_allowed_ = true;
+}
+
+void	LocationConfig::setUploadLocation( const std::string& upload_location ) {
+	upload_location_ = upload_location;
 }
 
 //getters
@@ -85,7 +101,7 @@ AutoindexType	LocationConfig::getAutoindex() const {
 	return autoindex_;
 }
 
-unsigned long	LocationConfig::getClientMaxBodySize() const {
+long long	LocationConfig::getClientMaxBodySize() const {
 	return client_max_body_size_;
 }
 
@@ -100,6 +116,15 @@ const std::map<int, std::string>&	LocationConfig::getReturn() const {
 bool	LocationConfig::getHasReturn() const {
 	return has_return_;
 }
+
+bool	LocationConfig::getUploadAllowed() const {
+	return upload_allowed_;
+}
+
+const std::string&	LocationConfig::getUploadLocation() const {
+	return upload_location_;
+}
+
 
 std::ostream&	operator<<( std::ostream& out, const LocationConfig& l ) {
 	    out << "\t\t\t\tpath: "
@@ -141,6 +166,12 @@ std::ostream&	operator<<( std::ostream& out, const LocationConfig& l ) {
 				out << "\t\t\t\t\t" << it->first << " ---> " << it->second << std::endl;
 			}
 		}
+		out << "\t\t\t\tupload allowed: ";
+		if ( l.getUploadAllowed() == true ) {
+			out << "YES" << std::endl << "\t\t\t\tupload_location: " << l.getUploadLocation() << std::endl;
+		}
+		else
+			out << "NO" << std::endl;
 
 	return out;
 }

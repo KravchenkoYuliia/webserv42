@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/24 12:08:39 by yukravch          #+#    #+#             */
-/*   Updated: 2026/03/10 16:34:21 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/12 12:43:04 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,21 +38,19 @@ int main(int argc, char **argv)
     }
 
     ServerManager server_manager;
-
-    if ( argc != 2 )
-    {
-        std::cerr << "Usage: ./webserv <config_file> " << std::endl;
-        return 1;
-    }
-
     try {
         ConfigParser configParser( argv[1] );
+        std::map<uint16_t, std::vector<ServerConfig> >& map = configParser.getMapOfPortWithServers();
+        std::cout << map << std::endl; //print map's content
+
         std::vector<ServerConfig>&  servers = configParser.getServers();
-        //print what each server has
-        for ( std::vector<ServerConfig>::size_type i = 0; i < servers.size(); i++ ) {
+        (void)servers;
+
+        //print server's content
+        /*for ( std::vector<ServerConfig>::size_type i = 0; i < servers.size(); i++ ) {
 		std::cout << "Server[" << i << "] has:" << std::endl
 			<< servers[i];
-	    }
+	    }*/
         server_manager.init(8080);
         server_manager.run();
     } catch (const std::exception& e)

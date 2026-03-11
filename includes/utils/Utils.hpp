@@ -13,8 +13,6 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-#include "ServerConfig.hpp"
-
 class Utils {
 public:
     static void setNonBlocking(int fd);

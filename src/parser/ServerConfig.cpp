@@ -5,7 +5,7 @@ ServerConfig::ServerConfig()
 	interface_( kDefaultServerInterface ),
 	default_server_( false ),
 	has_listen_( false ),
-    has_return_( false ),
+    	has_return_( false ),
 	root_( kDefaultRoot ),
 	autoindex_( AUTOINDEX_OFF ),
 	client_max_body_size_( kDefaultClientMaxBodySize )
@@ -20,7 +20,7 @@ ServerConfig&	ServerConfig::operator=(const ServerConfig& other) {
 		this->port_= other.port_;
 		this->default_server_ = other.default_server_;
 		this->has_listen_ = other.has_listen_;
-        this->has_return_ = other.has_return_;
+        	this->has_return_ = other.has_return_;
 		this->location_list_ = other.location_list_;
 		this->server_name_ = other.server_name_;
 		this->root_ = other.root_;
@@ -73,7 +73,7 @@ void	ServerConfig::setAutoindex( AutoindexType autoindex ) {
 	autoindex_ = autoindex;
 }
 
-void	ServerConfig::setClientMaxBodySize( unsigned long client_max_body_size ) {
+void	ServerConfig::setClientMaxBodySize( long long client_max_body_size ) {
 	client_max_body_size_ = client_max_body_size;
 }
 
@@ -128,7 +128,7 @@ AutoindexType	ServerConfig::getAutoindex() const {
 	return autoindex_;
 }
 
-unsigned long	ServerConfig::getClientMaxBodySize() const {
+long long	ServerConfig::getClientMaxBodySize() const {
 	return client_max_body_size_;
 }
 

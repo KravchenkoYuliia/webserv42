@@ -11,17 +11,33 @@ ConfigParser::ConfigParser( char* config_file )
 	mode_.push( MODE_GLOBAL );
 
 	Token	token = lexer_.getNextToken();
+    if ( token.getType() == TOKEN_ENDFILE )
+		throw std::runtime_error( "Error in config: empty file" );
+
 	while ( token.getType() != TOKEN_ENDFILE ) {
 
 		ConfigParser::parseTokens( token );
 		token = lexer_.getNextToken();
 	}
 
+    if ( servers_list_.empty() )
+		throw std::runtime_error( "Error in config: empty file" );
+
 	ConfigParser::fillEmptyDirectives();
+	ConfigParser::checkUpload();
 }
 
 std::vector<ServerConfig>&	ConfigParser::getServers() {
 	return servers_list_;
+}
+
+std::map< uint16_t, std::vector<ServerConfig> >& ConfigParser::getMapOfPortWithServers() {
+
+	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
+		map_[servers_list_[i].getPort()].push_back( servers_list_[i] );
+	}
+
+	return map_;
 }
 
 void	ConfigParser::parseTokens( const Token& token ) {
@@ -155,6 +171,12 @@ void	ConfigParser::parseWords( const Token& token ) {
 	else if ( token.getValue() == "allowed_methods" ) { //
 		ConfigParser::parseAllowedMethodsInLocation();//only location's directive
 	}
+	else if ( token.getValue() == "upload_allowed" ) { //
+		ConfigParser::parseUploadAllowedInLocation();//only location's directive
+	}
+	else if ( token.getValue() == "upload_location" ) { //
+		ConfigParser::parseUploadLocationInLocation();//only location's directive
+	}
 	else {
 		throw std::runtime_error( "Error in config: invalid directive");
 	}
@@ -162,6 +184,9 @@ void	ConfigParser::parseWords( const Token& token ) {
 }
 
 void	ConfigParser::parseListenInServer() {
+
+    if ( mode_.top() != MODE_SERVER )
+		throw std::runtime_error( "Error in config: directive `listen` only is possible inside server block" );
 
 	if ( servers_list_.back().getHasListen() == true )
 		throw std::runtime_error( "Error in config: only one `listen` is allowed in the same server" );
@@ -232,6 +257,9 @@ void	ConfigParser::parseListenInServer() {
 }
 
 void	ConfigParser::parseServerNameInServer() {
+
+    if ( mode_.top() != MODE_SERVER )
+		throw std::runtime_error( "Error in config: directive `server_name` only is possible inside server block" );
 
 	Token	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_WORD )
@@ -346,7 +374,7 @@ void	ConfigParser::parseClientMaxBodySize() {
 			throw std::runtime_error( "Error in config: client_max_body_size must be a number > 0 and < INT_MAX" );
 		while ( isdigit( token.getValue()[i] ) )
 			i++;
-		if ( !isdigit( token.getValue()[i] ) ) {
+		if ( token.getValue()[i] && !isdigit( token.getValue()[i] ) ) {
 			if ( token.getValue()[i + 1] )
 				throw std::runtime_error( "Error in config: client_max_body_size can be a number only with m/M, k/K, g/G" );
 		}
@@ -370,6 +398,9 @@ void	ConfigParser::parseClientMaxBodySize() {
 			client_max_body_size *= 1024;
 			client_max_body_size *= 1024;
 		}
+        else
+    		throw std::runtime_error( "Error in config: fix client_max_body_size block - invalid input");
+
 	}
     if ( mode_.top() == MODE_SERVER )
     	servers_list_.back().setClientMaxBodySize( client_max_body_size );
@@ -444,10 +475,19 @@ void	ConfigParser::parseAllowedMethodsInLocation() {
 	if ( mode_.top() != MODE_LOCATION )
 		throw std::runtime_error( "Error in config: directive `allowed_methods` only is possible inside location block" );
 
+    int count_methods = 0;
 	Token	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_WORD )
 		throw std::runtime_error( "Error in config: fix allowed_methods block in location - directive does not provide any value " );
 	while ( token.getType() == TOKEN_WORD ) {
+
+		if ( token.getValue() != "GET" && token.getValue() != "POST" && token.getValue() != "DELETE" )
+			throw std::runtime_error( "Error in config: fix allowed_methods block - invalid method");
+
+		count_methods += 1;
+		if ( count_methods > 3 )
+			throw std::runtime_error( "Error in config: fix allowed_methods block - maximum 3 methods are allowed (GET, POST, DELETE)");
+
 		servers_list_.back().getLocationList().back().setAllowedMethods( token.getValue() );
 		token = lexer_.getNextToken();
 	}
@@ -455,6 +495,50 @@ void	ConfigParser::parseAllowedMethodsInLocation() {
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix allowed_methods block - semicolon is missing");
 
+}
+
+void	ConfigParser::parseUploadAllowedInLocation() {
+
+	if ( mode_.top() != MODE_LOCATION )
+		throw std::runtime_error( "Error in config: directive `upload_allowed` only is possible inside location block" );
+
+	Token	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_WORD )
+		throw std::runtime_error( "Error in config: fix upload_allowed block - directive does not provide any value");
+	
+	if ( token.getValue() == "on" )
+		servers_list_.back().getLocationList().back().setUploadAllowed();
+	else if ( token.getValue() != "off" )
+		throw std::runtime_error( "Error in config: fix upload_allowed block - only \"on\" \"off\" are possible");
+
+	token = lexer_.getNextToken();
+	if ( token.getType() != TOKEN_SEMICOLON )
+		throw std::runtime_error( "Error in config: fix upload_allowed block - semicolon is missing");
+}
+
+void	ConfigParser::parseUploadLocationInLocation() {
+	
+	if ( mode_.top() != MODE_LOCATION )
+		throw std::runtime_error( "Error in config: directive `upload_location` only is possible inside location block" );
+	if ( servers_list_.back().getLocationList().back().getUploadAllowed() == true ) {
+
+		Token	token = lexer_.getNextToken();
+		if ( token.getType() != TOKEN_WORD )
+			throw std::runtime_error( "Error in config: fix upload_location block - directive does not provide any value");
+		servers_list_.back().getLocationList().back().setUploadLocation( token.getValue() );
+
+		token = lexer_.getNextToken();
+		if ( token.getType() != TOKEN_SEMICOLON )
+			throw std::runtime_error( "Error in config: fix upload_location block - semicolon is missing");
+	}
+	else { 
+		Token	token = lexer_.getNextToken();
+		std::cout << "Token after upload_location " << token.getValue() << std::endl;
+		if ( token.getType() == TOKEN_WORD ) {
+			std::cout << "Token after word after upload_location is " << token.getValue() << std::endl;
+			token = lexer_.getNextToken();
+		}
+	}	
 }
 
 void	ConfigParser::fillEmptyDirectives() {
@@ -497,6 +581,38 @@ void	ConfigParser::fillEmptyDirectives() {
 		}
 	}
 }
+
+void	ConfigParser::checkUpload() {
+
+	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
+		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {
+
+			if ( servers_list_[i].getLocationList()[j].getUploadAllowed() == true 
+					&& servers_list_[i].getLocationList()[j].getUploadLocation() == "" ) {
+				throw std::runtime_error( "Error in config: upload_allowed is ON but no upload_location is provided");
+			}
+		}
+	}
+}
+
+std::ostream&	operator<<( std::ostream& out, std::map<uint16_t, std::vector<ServerConfig> >& m ) {
+
+	out << "--------------------------------------------------" << std::endl
+		<< "\e[1;92m" <<  "Map< port, vector of Server > :" << std::endl;
+	for ( std::map<uint16_t, std::vector<ServerConfig> >::iterator it = m.begin(); it != m.end(); it++ ) {
+		out << "\e[1;92m" << "Port [" << it->first << "] is in " << it->second.size() << " servers" << std::endl << "\033[0m";
+		
+		for ( std::vector<ServerConfig>::size_type i = 0; i < it->second.size(); i++ ) {
+			out << "\t" << "\e[4;37m" << "Server["<< i << "] has" << std::endl
+				<< it->second[i];
+		}
+		out << "\033[0m";
+	}
+	out << "-------------------------------------------------";
+
+	return out;
+}
+
 
 ConfigParser::ConfigParser() {}
 ConfigParser::ConfigParser(const ConfigParser& other) { *this = other; }

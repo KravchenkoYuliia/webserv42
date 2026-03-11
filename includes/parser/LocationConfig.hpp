@@ -1,12 +1,13 @@
 #ifndef LOCATIONCONFIG_HPP
 #define LOCATIONCONFIG_HPP
 
-#include <iostream> 
+#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
 
 static const std::string kDefaultLocationPath = "/";
+static const int kNotSpecified = -1;
 
 enum AutoindexType {
 	AUTOINDEX_OFF,
@@ -30,10 +31,12 @@ public:
 	void	setIndex( const std::string& index );
 	void	setErrorPage( int error_nb, const std::string& error_page );
 	void	setAutoindex( AutoindexType autoindex_ );
-	void	setClientMaxBodySize( unsigned long client_max_body_size );
+	void	setClientMaxBodySize( long long client_max_body_size );
 	void	setAllowedMethods( const std::string& allowed_methods );
 	void	setReturn( int return_code, const std::string& return_page );
-    void    setHasReturn();
+	void	setHasReturn();
+	void	setUploadAllowed();
+	void	setUploadLocation( const std::string& upload_location );
 
 
 //getters
@@ -43,10 +46,12 @@ public:
 	const std::vector<std::string>&	getIndex() const;
 	const std::map<int, std::string>&	getErrorPage() const;
 	AutoindexType					getAutoindex() const;
-	unsigned long			getClientMaxBodySize() const;
+	long long			getClientMaxBodySize() const;
 	std::vector<std::string>	getAllowedMethods() const;
 	const std::map<int, std::string>&	getReturn() const;
-    bool                                getHasReturn() const;
+	bool                                getHasReturn() const;
+	bool				getUploadAllowed() const;
+	const std::string&		getUploadLocation() const;
 
 private:
 	AutoindexType					autoindex_;
@@ -54,10 +59,12 @@ private:
 	std::string						root_;
 	std::vector<std::string>				index_;
 	std::map< int, std::string >    error_page_;
-	unsigned long								client_max_body_size_;
+	long long								client_max_body_size_;
 	std::vector<std::string>	    allowed_methods_;
 	std::map<int, std::string>		return_code_;
-    bool                            has_return_;
+	bool                            	has_return_;
+	bool					upload_allowed_;
+	std::string				upload_location_;
 };
 
 std::ostream&	operator<<( std::ostream& out, const LocationConfig& l );

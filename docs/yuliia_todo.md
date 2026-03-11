@@ -1,36 +1,36 @@
-[+] accept only port
-[+] accept localhost
-[+] server{} is valid
-[+] if no location in server -> after parsing check
+[x] accept only port
+[x] accept localhost
+[x] server{} is valid
+[x] if no location in server -> after parsing check
     if location.empty()
         location is "/"
 
-[+] if twice the same location -> error
-[+] listen can be
+[x] if twice the same location -> error
+[x] listen can be
     port
     12.0.0.1:port
     localhost:port
 
-[+] no Host in request -> server_name is useless - is ignored
+[x] no Host in request -> server_name is useless - is ignored
     server 8080
 
     server 8080
 
     first server is considered as default except is there is `default_server` for other one
 
-[+] there is Host in request -> choose server accordingly to server_name
+[x] there is Host in request -> choose server accordingly to server_name
 
     has bigger priority than `default_server`
 
-[+] add TOKEN new_line to stop loop for cases like
+[x] add TOKEN new_line to stop loop for cases like
     server_name bla bla1
     root www;
 
-[+] protect cases like listen inside location block
+[x] protect cases like listen inside location block
 
 
 
-[+] same pairs interface:port can only have once `default_server`
+[x] same pairs interface:port can only have once `default_server`
         80 default_server
         80 default_server --->>> error
 
@@ -38,9 +38,9 @@
         4242 default_server --->>> OK
     check after parsing
 
-[+] add a protection : multiple `listen` are impossible
+[x] add a protection : multiple `listen` are impossible
 
-[+] set default error pages -> for now it's
+[x] set default error pages -> for now it's
     400
     403
     404
@@ -48,13 +48,34 @@
     413
     500
 
-[+] check that it only is 1 return in scope
-[+] return not only code+page
+[x] check that it only is 1 return in scope
+[x] return not only code+page
     code 200 does not return page:
     return 200;
     return 200 'Ok';
 
 [+] print location with operator<< (maybe server too)
+[x] create a list of priority to response ( index in location > index of server/ return / path etc)
+[x] protect client_max_body_size 50a;
+[x] fix valgrind error
+    values not initialized for server {
+    client_nax_body_size 50;
+    listen 123;
+    location /123 {}
+}
+
+[x] fix default value of client_max_body_size in location
+    must be NOT_SPECIFIED(-1) instead of 0
+[x] check if empty file --> error
+[x] protect invalid methods (accept only GET POST DELETE)
+
+[x] fix : server_name is not possible in location -> must be error
+    check with listen as well
+
+
+[x] add upload_allowed
+[x] add upload_location
+
 
 ## listen
     only server
@@ -81,17 +102,21 @@ location
 ## return
     location
     server
+## upload_allowed and upload_location
+    location
 
 
-Pull request message
-## Upgrade error checking for server directives :
+
+## Server:
 - listen
 - server_name
 
-## Add location directive :
+## Location :
 - allowed_methods
+- upload_allowed
+- upload_location
 
-## Add server and location directives (can be in both)  :
+## Server and location (can be in both)  :
 - client_max_body_size
 - index
 - root
