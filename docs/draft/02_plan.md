@@ -174,33 +174,33 @@ Class is responsible to convert config file into tokens.
 ## HTTP
 ### HttpRequest
 Structured representation of a parsed HTTP request.
-- [] method
-- [] uri
-- [] version
-- [] headers map
-- [] body
+- [x] method
+- [x] uri
+- [x] version
+- [x] headers map
+- [x] body
 - [] qury string
 - [] parsed path
 
 ### HttpResponse
 Structured representation of a parsed HTTP request.
-- [] status code
-- [] reason phrase
-- [] headers
-- [] body
+- [x] status code
+- [x] reason phrase
+- [x] headers
+- [x] body
 
 
 ### Request Parser
 Class is responsible to extracts data from readBuffer
-- [] Parse HTTP headers
+- [x] Parse HTTP headers
 - [] Parse body
-- [] Detect end of request `\r\n\r\n`
-- [] Parse Methods
-- [] Parse URI
-- [] Parse HTTP version
+- [x] Detect end of request `\r\n\r\n`
+- [x] Parse Methods
+- [x] Parse URI
+- [x] Parse HTTP version
 - [] Detect malformed syntax
 - [] support partial reads
-- [] Return parse result (INCOMPLETE / COMPLETE / ERROR)
+- [x] Return parse result (INCOMPLETE / COMPLETE / ERROR)
 
 Potential edge cases to handle:
 - [] Malformed headers

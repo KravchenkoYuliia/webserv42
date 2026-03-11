@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:50:43 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/02 12:39:01 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/10 15:19:41 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define CONNECTION_HANDLER_HPP
 
 #include <string>
+#include "http/RequestParser.hpp"
 #include "reactor/Reactor.hpp"
 #include "reactor/IEventHandler.hpp"
 
@@ -59,8 +60,12 @@ protected:
 
 private:
     // ---------- Private Data members -------------------------
-    int         fd_;
-    Reactor&    reactor_;
+    int                         fd_;
+    Reactor&                    reactor_;
+    RequestParser               request_parser_;
+    ConnectionState             state_;
+    int                         bytes_sent_;
+    std::string                 serialized_response_;
 
 
     ConnectionHandler& operator=(const ConnectionHandler& copy);

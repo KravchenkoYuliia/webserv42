@@ -10,7 +10,11 @@ LIBS =
 
 ###############################     INCLUDE      ###############################
 
-IFLAGS = -Iincludes -Iincludes/core -Iincludes/server -Iincludes/parser -Iincludes/utils
+IFLAGS =	-I$(INCLUDE_DIR) \
+			-I$(INCLUDE_DIR)/core \
+			-I$(INCLUDE_DIR)/http \
+			-I$(INCLUDE_DIR)/parser \
+			-I$(INCLUDE_DIR)/utils \
 
 ############################### COMPILER & FLAGS ###############################
 

@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:54:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/03 19:00:02 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/11 11:13:28 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,13 +28,10 @@ Reactor::Reactor(void)
 
 Reactor::~Reactor(void)
 {
-    // TODO: not sure if Reactor really own handlers_ or not, to clarify after implementation of ServerManager
-
-    // delete handlers_ if Reactor owns handlers
+    // delete handlers_ because Reactor owns handlers
     for (std::vector<IEventHandler*>::iterator it = handlers_.begin(); it < handlers_.end(); ++it)
         delete *it;
     handlers_.clear();
-    // close fd // TODO: remove this comment
     if (epoll_fd_ != -1)
         close(epoll_fd_);
 }
@@ -44,6 +41,10 @@ void Reactor::addHandler( IEventHandler *handler, uint32_t epoll_event_type )
     if (handler == NULL)
         throw std::invalid_argument("handler is NULL");
 
+    // if push_back failed and throw a bad_alloc
+    //-> handler will be freed by the catch statement in ServerManager::init()
+    handlers_.push_back(handler);
+
     int fd = handler->getFd();
 
     struct epoll_event event;
@@ -51,8 +52,12 @@ void Reactor::addHandler( IEventHandler *handler, uint32_t epoll_event_type )
     event.data.ptr = handler;
 
     if (epoll_ctl( epoll_fd_, EPOLL_CTL_ADD, fd, &event) == -1)
+    {
+        // remove handler from handlers_ if epoll_ctl fails
+        //-> handler will be freed by the catch statement in ServerManager::init() since Reactor does not own the handler
+        handlers_.pop_back();
         throw std::runtime_error("epoll_ctl ADD failed");
-    handlers_.push_back(handler);
+    }
 }
 
 void Reactor::updateHandler( IEventHandler *handler, uint32_t epoll_event_type)
@@ -84,8 +89,8 @@ void Reactor::deleteHandler( int fd )
 
 void Reactor::run()
 {
-    int kMaxReadyEventsBatchSize = 1024;
-	struct epoll_event ready_events_list[kMaxReadyEventsBatchSize];
+    const int kMaxReadyEventsBatchSize = 1024;
+    struct epoll_event ready_events_list[kMaxReadyEventsBatchSize];
 
     while (true)
     {
@@ -99,12 +104,17 @@ void Reactor::run()
         for (int i = 0; i < num_fds_ready; ++i)
         {
             IEventHandler *handler = static_cast<IEventHandler *>(ready_events_list[i].data.ptr);
-            if (ready_events_list[i].events & EPOLLIN)
-                handler->handleRead();
-            if (ready_events_list[i].events & EPOLLOUT)
-                handler->handleWrite();
             if (ready_events_list[i].events & (EPOLLERR | EPOLLHUP))
+            {
                 handler->handleError();
+                continue; // skip read / write if error
+                // TODO: mark the events as "deactivate" and add a safe deletion after the for loop
+            }
+            if (ready_events_list[i].events & EPOLLIN) //  TODO: should add EPOLLET here?
+                handler->handleRead();
+            if (ready_events_list[i].events & EPOLLOUT) // TODO: should add EPOLLET here?
+                handler->handleWrite();
         }
+        // TODO: safe delete  all the deactivate handler
     }
 }

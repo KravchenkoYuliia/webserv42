@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 16:54:38 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/04 14:16:05 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/06 16:59:45 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ Socket::~Socket(void)
 Socket& Socket::operator=(const Socket& copy)
 {
     if (this != &copy) {
-        fd_ = copy.fd_;
+        fd_ = copy.fd_; // TODO: issue with 2 potential fd pointing to the same address => fix this by using dup
         bind_port_ = copy.bind_port_;
     }
     return (*this);
@@ -90,6 +90,7 @@ int Socket::accept()
     int new_fd = ::accept(fd_, NULL, NULL);
     if (new_fd < 0)
     {
+        // TODO: remove this check?
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             return (-1);
         throw std::runtime_error(std::string("accept failed! ") + std::strerror(errno));

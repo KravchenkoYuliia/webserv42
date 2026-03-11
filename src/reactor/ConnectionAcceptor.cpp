@@ -46,6 +46,6 @@ void ConnectionAcceptor::handleRead()
             break ;
         Utils::setNonBlocking(client_fd);
         ConnectionHandler *connection_handler = new ConnectionHandler( client_fd, reactor_); // TODO: how to free memory if exception is throwing?
-        reactor_.addHandler(connection_handler, EPOLLIN);
+        reactor_.addHandler(connection_handler, EPOLLIN | EPOLLET); // TODO: EPOLLET to indicate that we use Edge-Triggered Mode
     }
 }
