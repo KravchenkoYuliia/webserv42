@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 18:51:35 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/03 18:56:25 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/11 18:29:15 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ void ServerManager::init( uint16_t port)
 
     ConnectionAcceptor *acceptor = new ConnectionAcceptor(&server_socket_, reactor_);
     try {
-        reactor_.addHandler(acceptor, EPOLLIN);
+        reactor_.addHandler(acceptor);
     }
     catch (const std::exception& e)
     {

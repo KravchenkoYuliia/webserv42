@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:42:02 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 10:54:03 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/11 18:03:21 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,8 @@
 // ------------------------- Destructor / Constructor -------------------------
 
 ConnectionHandler::ConnectionHandler(int client_fd, Reactor& reactor)
-    :   fd_(client_fd),
+    :   BaseEventHandler(BaseEventHandler::CONNECTION),
+        fd_(client_fd),
         reactor_(reactor),
         request_parser_()
 {
@@ -109,7 +110,9 @@ void ConnectionHandler::handleRead()
 
                         serialized_response_ = response.serialize();
                         bytes_sent_ = 0;
-                        reactor_.updateHandler(this, EPOLLOUT | EPOLLET); // TODO: not sure about EPOLLET
+                        setWantWrite(true);
+                        // setWantRead(false); // TODO: should i disable the EPOLLIN here?
+                        reactor_.updateHandler(this);
                         return ;
                     }
                 }
@@ -126,6 +129,8 @@ void ConnectionHandler::handleWrite()
     // TODO these logs
     std::cout << "EPOLLOUT case" << std::endl;
 
+    if (serialized_response_.empty())
+        return ;
     while (bytes_sent_ < static_cast<int>(serialized_response_.length()))
     {
         ssize_t bytes = send(
@@ -140,8 +145,7 @@ void ConnectionHandler::handleWrite()
             reactor_.deleteHandler(fd_);
             return ;
         }
-        else if (bytes > 0)
-            bytes_sent_ += bytes;
+        bytes_sent_ += bytes;
     }
 
     // Done sending → close connection
@@ -154,9 +158,10 @@ void ConnectionHandler::handleWrite()
                 - [] reset request_parser_
         */
         bytes_sent_ = 0;
-
+        // setWantRead(true); // TODO: uncomment this line is setWantRead(false) is kept in handleWrite
+        setWantWrite(false);
         // finish to write, update state from EPOLLOUT to EPOLLIN
-        reactor_.updateHandler(this, EPOLLIN | EPOLLET);
+        reactor_.updateHandler(this);
     }
     reactor_.deleteHandler(fd_);
 }
@@ -164,5 +169,4 @@ void ConnectionHandler::handleWrite()
 void ConnectionHandler::handleError()
 {
     reactor_.deleteHandler(fd_);
-
 }

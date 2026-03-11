@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:19:32 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/03 18:09:30 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/11 18:10:36 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <string>
 #include <vector>
+#include <inttypes.h> // uint32_t
 #include "reactor/IEventHandler.hpp"
 
 /*
@@ -47,10 +48,14 @@ public:
 
     // ---------- Member Methods -----------------------
 
-    void    addHandler( IEventHandler *handler, uint32_t epoll_event_type);
-    void    updateHandler( IEventHandler *handler, uint32_t epoll_event_type );
-    void    deleteHandler( int fd );
-    void    run(); // TODO: should it be renamed to handleEvent?
+    void        addHandler( IEventHandler *handler );
+    void        updateHandler( IEventHandler *handler );
+    void        deleteHandler( int fd );
+    void        removeDeactivatedHandler();
+    void        enableWrite(IEventHandler *handler);
+    void        disableWrite(IEventHandler *handler);
+    void        run(); // TODO: should it be renamed to handleEvent?
+    uint32_t    computeEvents(IEventHandler *handler);
 
 protected:
     // ---------- Protected Data Members ---------------------

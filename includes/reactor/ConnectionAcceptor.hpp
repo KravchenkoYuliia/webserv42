@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 10:15:54 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/02 10:18:12 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/11 18:00:53 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #define ACCEPTOR_HPP
 
 #include "core/Socket.hpp"
-#include "reactor/IEventHandler.hpp"
+#include "reactor/BaseEventHandler.hpp"
 #include "reactor/Reactor.hpp"
 
 /*
@@ -27,7 +27,7 @@
     - EPOLLIN on server socket
 */
 
-class ConnectionAcceptor : public IEventHandler {
+class ConnectionAcceptor : public BaseEventHandler {
 public:
     // ---------- Constructors / Destructor ----------
 
@@ -39,7 +39,7 @@ public:
 
     // ---------- Getter and Setter Methods ------------
 
-    // ---------- Member Methods -----------------------
+    // ---------- Inherited Member Methods -----------------------
     virtual void handleRead();
     virtual void handleWrite();
     virtual void handleError();

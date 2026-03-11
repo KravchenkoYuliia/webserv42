@@ -18,7 +18,8 @@
 #include "utils/Utils.hpp"
 
 ConnectionAcceptor::ConnectionAcceptor(Socket *server_socket, Reactor& reactor)
-    :   server_socket_(server_socket),
+    :   BaseEventHandler(BaseEventHandler::ACCEPTOR),
+        server_socket_(server_socket),
         reactor_(reactor)
 {
     std::cout << "ConnectionAcceptor parametized constructor called" << std::endl;
@@ -45,7 +46,13 @@ void ConnectionAcceptor::handleRead()
         if (client_fd == -1)
             break ;
         Utils::setNonBlocking(client_fd);
-        ConnectionHandler *connection_handler = new ConnectionHandler( client_fd, reactor_); // TODO: how to free memory if exception is throwing?
-        reactor_.addHandler(connection_handler, EPOLLIN | EPOLLET); // TODO: EPOLLET to indicate that we use Edge-Triggered Mode
+        ConnectionHandler *connection_handler = new ConnectionHandler( client_fd, reactor_);
+        try {
+            reactor_.addHandler(connection_handler);
+        } catch (const std::exception& e)
+        {
+            delete connection_handler;
+            throw; // rethrow the exeception after cleanup
+        }
     }
 }

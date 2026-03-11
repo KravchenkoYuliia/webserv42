@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:54:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 11:13:28 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/11 18:38:34 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ Reactor::~Reactor(void)
         close(epoll_fd_);
 }
 
-void Reactor::addHandler( IEventHandler *handler, uint32_t epoll_event_type )
+void Reactor::addHandler( IEventHandler *handler )
 {
     if (handler == NULL)
         throw std::invalid_argument("handler is NULL");
@@ -48,7 +48,7 @@ void Reactor::addHandler( IEventHandler *handler, uint32_t epoll_event_type )
     int fd = handler->getFd();
 
     struct epoll_event event;
-    event.events = epoll_event_type;
+    event.events = computeEvents(handler);
     event.data.ptr = handler;
 
     if (epoll_ctl( epoll_fd_, EPOLL_CTL_ADD, fd, &event) == -1)
@@ -60,12 +60,12 @@ void Reactor::addHandler( IEventHandler *handler, uint32_t epoll_event_type )
     }
 }
 
-void Reactor::updateHandler( IEventHandler *handler, uint32_t epoll_event_type)
+void Reactor::updateHandler( IEventHandler *handler )
 {
     int fd = handler->getFd();
 
     struct epoll_event event;
-    event.events = epoll_event_type;
+    event.events = computeEvents(handler);
     event.data.ptr = handler;
 
     if (epoll_ctl( epoll_fd_, EPOLL_CTL_MOD, fd, &event) == -1)
@@ -80,11 +80,37 @@ void Reactor::deleteHandler( int fd )
     {
         if ((*it)->getFd() == fd)
         {
-            delete *it;
-            handlers_.erase(it);
+            (*it)->deactivate();
             break;
         }
     }
+}
+
+void Reactor::removeDeactivatedHandler()
+{
+    for (std::vector<IEventHandler *>::iterator it = handlers_.begin(); it != handlers_.end(); )
+    {
+        if ((*it)->isInactive())
+        {
+            delete *it;
+            // erase reallocate the vector leading to iterator invalidation
+            // => need to reallocate iterator by the returning iterator pointer
+            it = handlers_.erase(it);
+        }
+        else
+            ++it;
+    }
+}
+
+uint32_t    Reactor::computeEvents(IEventHandler *handler)
+{
+    uint32_t events = EPOLLET;
+
+    if (handler->wantRead())
+        events |= EPOLLIN;
+
+    if (handler->wantWrite())
+        events |= EPOLLOUT;
 }
 
 void Reactor::run()
@@ -97,24 +123,27 @@ void Reactor::run()
         int num_fds_ready = epoll_wait(epoll_fd_, ready_events_list, kMaxReadyEventsBatchSize, -1);
         if (num_fds_ready == -1)
         {
-            if (errno == EINTR) // TODO: check in which case we can hit this check
+            if (errno == EINTR) // TODO: check in which case we can hit this check/ can we keep it?
                 continue;
             throw std::runtime_error("epoll_wait failed");
         }
         for (int i = 0; i < num_fds_ready; ++i)
         {
-            IEventHandler *handler = static_cast<IEventHandler *>(ready_events_list[i].data.ptr);
-            if (ready_events_list[i].events & (EPOLLERR | EPOLLHUP))
+            const epoll_event &ev = ready_events_list[i];
+            IEventHandler *handler = static_cast<IEventHandler *>(ev.data.ptr);
+            if (handler->isInactive())
+                continue;
+            if (ev.events & (EPOLLERR | EPOLLHUP))
             {
                 handler->handleError();
                 continue; // skip read / write if error
-                // TODO: mark the events as "deactivate" and add a safe deletion after the for loop
             }
-            if (ready_events_list[i].events & EPOLLIN) //  TODO: should add EPOLLET here?
+            if (ev.events & EPOLLIN)
                 handler->handleRead();
-            if (ready_events_list[i].events & EPOLLOUT) // TODO: should add EPOLLET here?
+            if ((ev.events & EPOLLOUT) && !handler->isInactive())
                 handler->handleWrite();
         }
-        // TODO: safe delete  all the deactivate handler
+        // safe deletion of all the inactived handler
+        removeDeactivatedHandler();
     }
 }

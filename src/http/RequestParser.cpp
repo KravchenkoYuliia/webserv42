@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:07 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 11:02:53 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/11 18:04:16 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,6 @@ RequestParser::~RequestParser(void)
 {
     std::cout << "RequestParser destructor called" << std::endl;
 }
-
 
 // --------------------------- Public Getter Methods ---------------------------
 
@@ -165,7 +164,7 @@ RequestParser::ResultType       RequestParser::parseHeaders()
 
 bool RequestParser::validateHeaderSet()
 {
-    // 1: Check presence of HTTP metion + version
+    // 1: Check presence of HTTP mention + version
 
     if (request_.getVersion() == Http::Protocol::HTTP_VERSION_1_1)
     {

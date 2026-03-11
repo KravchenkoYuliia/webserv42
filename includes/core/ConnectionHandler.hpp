@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:50:43 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/10 15:19:41 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/11 18:01:49 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,9 @@
 
 #include <string>
 #include "http/RequestParser.hpp"
-#include "reactor/Reactor.hpp"
+#include "reactor/BaseEventHandler.hpp"
 #include "reactor/IEventHandler.hpp"
+#include "reactor/Reactor.hpp"
 
 
 /*
@@ -37,7 +38,7 @@ enum State {
 };
 */
 
-class ConnectionHandler : public IEventHandler {
+class ConnectionHandler : public BaseEventHandler {
 public:
     // ---------- Constructors / Destructor ----------
 
@@ -49,7 +50,7 @@ public:
 
     // ---------- Getter and Setter Methods ------------
 
-    // ---------- Member Methods -----------------------
+    // ---------- Inherited Member Methods -----------------------
     int     getFd() const;
     void    handleRead();
     void    handleWrite();
@@ -63,7 +64,6 @@ private:
     int                         fd_;
     Reactor&                    reactor_;
     RequestParser               request_parser_;
-    ConnectionState             state_;
     int                         bytes_sent_;
     std::string                 serialized_response_;
 
