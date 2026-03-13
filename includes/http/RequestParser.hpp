@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:28:58 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/10 14:48:08 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 12:51:09 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,10 +53,12 @@ public:
 
     // ---------- Getter and Setter Methods ------------
 
-    const HttpRequest&     getRequest() const;
+    const HttpRequest&      getRequest() const;
+    std::string             getHeader( const std::string& key ) const;
+    const std::string&      getUri() const;
 
     // ---------- Member Methods -----------------------
-    void            appendData(const char *data, size_t len);
+    void            appendData( const char *data, size_t len );
     bool            parseRequest( const std::string& ); // or parseRequestBytes or process
     ResultType      parseNext(); // or parseRequestBytes or process
     bool            isComplete() const;

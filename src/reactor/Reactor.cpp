@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:54:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 18:38:34 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 12:47:09 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@ Reactor::Reactor(void)
 
 Reactor::~Reactor(void)
 {
-    // delete handlers_ because Reactor owns handlers
     for (std::vector<IEventHandler*>::iterator it = handlers_.begin(); it < handlers_.end(); ++it)
         delete *it;
     handlers_.clear();
@@ -41,6 +40,7 @@ void Reactor::addHandler( IEventHandler *handler )
     if (handler == NULL)
         throw std::invalid_argument("handler is NULL");
 
+    // TODO: remove these logs
     // if push_back failed and throw a bad_alloc
     //-> handler will be freed by the catch statement in ServerManager::init()
     handlers_.push_back(handler);
@@ -53,6 +53,7 @@ void Reactor::addHandler( IEventHandler *handler )
 
     if (epoll_ctl( epoll_fd_, EPOLL_CTL_ADD, fd, &event) == -1)
     {
+        // TODO: remove these logs
         // remove handler from handlers_ if epoll_ctl fails
         //-> handler will be freed by the catch statement in ServerManager::init() since Reactor does not own the handler
         handlers_.pop_back();
@@ -111,6 +112,7 @@ uint32_t    Reactor::computeEvents(IEventHandler *handler)
 
     if (handler->wantWrite())
         events |= EPOLLOUT;
+    return (events);
 }
 
 void Reactor::run()

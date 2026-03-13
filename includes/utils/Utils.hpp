@@ -6,12 +6,14 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 17:51:18 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 10:43:27 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 12:44:39 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef UTILS_HPP
 #define UTILS_HPP
+
+#include <string>
 
 class Utils {
 public:

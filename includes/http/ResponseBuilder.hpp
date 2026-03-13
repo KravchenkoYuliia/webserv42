@@ -6,13 +6,14 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 16:46:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 11:09:58 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 12:53:28 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef RESPONSE_BUILDER_HPP
 #define RESPONSE_BUILDER_HPP
 
+#include <string>
 #include "http/HttpResponse.hpp"
 #include "http/HttpRequest.hpp"
 
@@ -32,8 +33,9 @@ public:
 
     // ---------- Member Methods -----------------------
 
-    HttpResponse     build(const HttpRequest& request);
-    
+    HttpResponse     build( const HttpRequest& request );
+    HttpResponse     build( const HttpRequest& request, const std::string &server, const std::string &uri );
+
 protected:
     // ---------- Protected Data Members ---------------------
 

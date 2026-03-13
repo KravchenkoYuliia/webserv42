@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 17:50:45 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 11:03:31 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 12:48:27 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <string>
 #include <map>
+#include <inttypes.h>
 
 class HttpRequest {
 public:

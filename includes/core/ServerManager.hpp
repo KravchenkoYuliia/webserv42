@@ -6,44 +6,44 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/24 17:42:38 by jgossard          #+#    #+#             */
-/*   Updated: 2026/02/27 19:01:38 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 12:06:16 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_MANAGER_HPP
 #define SERVER_MANAGER_HPP
 
-// #include <vector>
+#include <map>
+#include <vector>
 #include <inttypes.h> // uint16_t
-#include "reactor/Reactor.hpp"
 #include "core/Socket.hpp"
-
-// class ServerConfig; // TODO: to keep it as forward declaration or as an include?
+#include "parser/ServerConfig.hpp"
+#include "reactor/Reactor.hpp"
 
 class ServerManager {
 public:
     // ---------- Constructors / Destructor ----------
 
     ServerManager(void);
-    ServerManager(const ServerManager& copy);
     ~ServerManager(void);
 
     // ---------- Overloading Operators Methods -------
 
-    ServerManager& operator=(const ServerManager& copy);
-
     // ---------- Getter and Setter Methods ------------
 
     // ---------- Member Methods -----------------------
-    // void init( std::vector<ServerConfig> );
-    void init( uint16_t port );
+
+    void init( const std::map<uint16_t , std::vector<ServerConfig> >& servers_by_port );
     void run();
 
 protected:
 
 private:
-    Reactor reactor_;
-    Socket  server_socket_;
+    Reactor                 reactor_;
+    std::vector<Socket*>    listening_sockets_;
+
+    ServerManager(const ServerManager& copy);
+    ServerManager& operator=(const ServerManager& copy);
 };
 
 #endif // SERVER_MANAGER_HPP

@@ -17,10 +17,16 @@
 #include "reactor/ConnectionAcceptor.hpp"
 #include "utils/Utils.hpp"
 
-ConnectionAcceptor::ConnectionAcceptor(Socket *server_socket, Reactor& reactor)
-    :   BaseEventHandler(BaseEventHandler::ACCEPTOR),
-        server_socket_(server_socket),
-        reactor_(reactor)
+ConnectionAcceptor::ConnectionAcceptor(
+    Socket *server_socket,
+    Reactor& reactor,
+    uint16_t port,
+    const std::vector<ServerConfig>& servers
+):  BaseEventHandler(BaseEventHandler::ACCEPTOR),
+    server_socket_(server_socket),
+    reactor_(reactor),
+    port_(port),
+    servers_(servers)
 {
     std::cout << "ConnectionAcceptor parametized constructor called" << std::endl;
 }
@@ -46,7 +52,7 @@ void ConnectionAcceptor::handleRead()
         if (client_fd == -1)
             break ;
         Utils::setNonBlocking(client_fd);
-        ConnectionHandler *connection_handler = new ConnectionHandler( client_fd, reactor_);
+        ConnectionHandler *connection_handler = new ConnectionHandler( client_fd, reactor_, port_, servers_ );
         try {
             reactor_.addHandler(connection_handler);
         } catch (const std::exception& e)

@@ -6,14 +6,17 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:50:43 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 18:01:49 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 12:43:44 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CONNECTION_HANDLER_HPP
 #define CONNECTION_HANDLER_HPP
 
+#include <vector>
 #include <string>
+#include <inttypes.h>   // uint16_t
+#include "parser/ServerConfig.hpp"
 #include "http/RequestParser.hpp"
 #include "reactor/BaseEventHandler.hpp"
 #include "reactor/IEventHandler.hpp"
@@ -42,7 +45,12 @@ class ConnectionHandler : public BaseEventHandler {
 public:
     // ---------- Constructors / Destructor ----------
 
-    ConnectionHandler(int client_fd, Reactor& reactor);
+    ConnectionHandler(
+        int client_fd,
+        Reactor& reactor,
+        uint16_t port,
+        const std::vector<ServerConfig>& servers
+    );
     ~ConnectionHandler(void);
 
     // ---------- Overloading Operators Methods -------
@@ -66,6 +74,8 @@ private:
     RequestParser               request_parser_;
     int                         bytes_sent_;
     std::string                 serialized_response_;
+    uint16_t                    port_;
+    const                       std::vector<ServerConfig>& servers_;
 
 
     ConnectionHandler& operator=(const ConnectionHandler& copy);

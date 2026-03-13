@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/24 12:08:39 by yukravch          #+#    #+#             */
-/*   Updated: 2026/03/12 12:43:04 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/13 13:17:42 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,21 +37,11 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    ServerManager server_manager;
     try {
+        ServerManager server_manager;
         ConfigParser configParser( argv[1] );
         std::map<uint16_t, std::vector<ServerConfig> >& map = configParser.getMapOfPortWithServers();
-        std::cout << map << std::endl; //print map's content
-
-        std::vector<ServerConfig>&  servers = configParser.getServers();
-        (void)servers;
-
-        //print server's content
-        /*for ( std::vector<ServerConfig>::size_type i = 0; i < servers.size(); i++ ) {
-		std::cout << "Server[" << i << "] has:" << std::endl
-			<< servers[i];
-	    }*/
-        server_manager.init(8080);
+        server_manager.init(map);
         server_manager.run();
     } catch (const std::exception& e)
     {

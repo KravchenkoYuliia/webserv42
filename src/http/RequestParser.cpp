@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:07 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 18:04:16 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 13:22:42 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,16 @@ RequestParser::~RequestParser(void)
 const HttpRequest&     RequestParser::getRequest() const
 {
     return (request_);
+}
+
+std::string  RequestParser::getHeader( const std::string& key ) const
+{
+    return (request_.getHeader(key));
+}
+
+const std::string&  RequestParser::getUri() const
+{
+    return (request_.getUri());
 }
 
 // --------------------------- Public Member Methods ---------------------------
@@ -289,6 +299,7 @@ bool RequestParser::parseRequestLineFields( const std::string& line )
         return (false);
     request_.setMethod(tokens_list[0]);
     // TODO: add check on URI et Version??
+    // TODO: only allow http 1.1 and http 1.0
     request_.setUri(tokens_list[1]);
     request_.setVersion(tokens_list[2]);
     return (true);

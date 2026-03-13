@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:42:02 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 18:03:21 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 12:27:51 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <sys/socket.h>     // recv
 #include <errno.h>          // errno, EAGAIN, EWOULDBLOCK
 #include "core/ConnectionHandler.hpp"
+#include "http/HttpConstants.hpp"
 #include "http/ResponseBuilder.hpp"
 #include "utils/Utils.hpp"
 
@@ -23,11 +24,16 @@
 
 // ------------------------- Destructor / Constructor -------------------------
 
-ConnectionHandler::ConnectionHandler(int client_fd, Reactor& reactor)
-    :   BaseEventHandler(BaseEventHandler::CONNECTION),
-        fd_(client_fd),
-        reactor_(reactor),
-        request_parser_()
+ConnectionHandler::ConnectionHandler(int client_fd,
+    Reactor& reactor,
+    uint16_t port,
+    const std::vector<ServerConfig>& servers
+):  BaseEventHandler(BaseEventHandler::CONNECTION),
+    fd_(client_fd),
+    reactor_(reactor),
+    request_parser_(),
+    port_(port),
+    servers_(servers)
 {
     // TODO: delete this log
     std::cout << "ConnectionHandler default constructor called" << std::endl;
@@ -106,6 +112,12 @@ void ConnectionHandler::handleRead()
                         // TODO: remove this log
                         std::cout << "request_.isComplete bloc" << std::endl;
                         ResponseBuilder     builder;
+                        // TODO: integrate the server, host like the following in the response_builder object
+
+                        // ServerConfig        selected_server = ServerMatcher.matchServer(servers_, request_parser_.getHeader(Http::Headers::HOST), port_);
+                        // LocationConfig      selected_location = LocationMatcher.matchLocation(selected_server, request_parser_.getUri());
+                        // HttpResponse response = builder.build(request, selected_server, selected_location);
+
                         HttpResponse        response = builder.build(request_parser_.getRequest());
 
                         serialized_response_ = response.serialize();

@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 11:09:28 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 12:54:51 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,16 @@ ResponseBuilder::~ResponseBuilder(void)
     // TODO: Delete this log
 
     std::cout << "ResponseBuilder destructor called" << std::endl;
+}
+
+HttpResponse    ResponseBuilder::build( const HttpRequest& request, const std::string &server, const std::string &uri )
+{
+    HttpResponse    response;
+
+    (void)request;
+    (void)server;
+    (void)uri;
+    return (response);
 }
 
 // TODO: Delete this example used to hard-code the build skeleton
