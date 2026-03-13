@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:54:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/13 12:47:09 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 16:09:10 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <unistd.h>         // close
 #include <stdexcept>
 #include <errno.h>
+#include "core/SignalHandler.hpp"
 #include "reactor/Reactor.hpp"
 
 Reactor::Reactor(void)
@@ -117,10 +118,13 @@ uint32_t    Reactor::computeEvents(IEventHandler *handler)
 
 void Reactor::run()
 {
+    if (!g_running)
+        return ;
+
     const int kMaxReadyEventsBatchSize = 1024;
     struct epoll_event ready_events_list[kMaxReadyEventsBatchSize];
 
-    while (true)
+    while (g_running)
     {
         int num_fds_ready = epoll_wait(epoll_fd_, ready_events_list, kMaxReadyEventsBatchSize, -1);
         if (num_fds_ready == -1)

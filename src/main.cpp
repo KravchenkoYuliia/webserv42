@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/24 12:08:39 by yukravch          #+#    #+#             */
-/*   Updated: 2026/03/13 13:17:42 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 16:10:22 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 #include <exception>
 #include "ConfigParser.hpp"
 #include "core/Socket.hpp"
+#include "core/SignalHandler.hpp"
 #include "utils/Utils.hpp"
 #include "core/ServerManager.hpp"
 
@@ -38,6 +39,7 @@ int main(int argc, char **argv)
     }
 
     try {
+        std::signal(SIGINT, handle_sigint);
         ServerManager server_manager;
         ConfigParser configParser( argv[1] );
         std::map<uint16_t, std::vector<ServerConfig> >& map = configParser.getMapOfPortWithServers();
