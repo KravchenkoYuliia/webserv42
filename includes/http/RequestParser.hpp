@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:28:58 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/13 12:51:09 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/16 10:36:37 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ private:
     HttpResponse            response_;
     std::string             raw_buffer_; // store the accumulated bytes receive by recv
     ParserState::Type       state_;
+    int                     error_code_;
 
     // ---------------------- Private Member Methods ----------------------
     ResultType            parseRequestLine();
@@ -96,6 +97,10 @@ private:
 
     // Utility
     size_t          findCRLF() const;
+    bool            isValidMethod( const std::string& method );
+    bool            isValidUriFormat( const std::string& uri );
+    bool            isValidHttpProtocolVersion( const std::string& protocol_version );
+
 };
 
 #endif // REQUEST_PARSER_HPP

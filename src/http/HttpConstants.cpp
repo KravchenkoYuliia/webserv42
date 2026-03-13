@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 11:46:46 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/10 16:18:54 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 16:49:22 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,13 @@
 
 const std::string Http::Protocol::HTTP_VERSION_1_0 = "HTTP/1.0";
 const std::string Http::Protocol::HTTP_VERSION_1_1 = "HTTP/1.1";
+
+// ------------------------- Struct Method -------------------------
+
+const std::string Http::Method::GET = "GET";
+const std::string Http::Method::POST = "POST";
+const std::string Http::Method::DELETE = "DELETE";
+const std::string Http::Method::UNKNOWN = "UNKNOWN";
 
 // ------------------------- Struct Headers -------------------------
 

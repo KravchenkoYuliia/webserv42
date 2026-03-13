@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 11:44:57 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/10 16:19:17 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 16:49:22 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,13 @@ struct Http
     struct Protocol {
         static const std::string HTTP_VERSION_1_0;
         static const std::string HTTP_VERSION_1_1;
+    };
+
+    struct Method {
+        static const std::string GET;
+        static const std::string POST;
+        static const std::string DELETE;
+        static const std::string UNKNOWN;
     };
 
     struct Headers {

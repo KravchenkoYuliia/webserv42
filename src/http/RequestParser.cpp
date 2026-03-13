@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:07 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/13 13:22:42 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/19 11:01:22 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ const std::string&  RequestParser::getUri() const
 
 // --------------------------- Public Member Methods ---------------------------
 
-void    RequestParser::appendData(const char *data, size_t len)
+void    RequestParser::appendData( const char *data, size_t len )
 {
     raw_buffer_.append(data, len);
 }
@@ -92,7 +92,7 @@ bool    RequestParser::isComplete() const
 
 // see example from nginx: https://sources.debian.org/src/nginx/1.28.2-2/src/http/ngx_http_parse.c
 // see example from nodejs: https://github.com/nodejs/llhttp/blob/main/src/native/http.c
-bool RequestParser::parseRequest(const std::string& request)
+bool RequestParser::parseRequest( const std::string& request )
 {
     // TODO: extract the logic from ConectionHandler::handleRead here ?
     (void)request;
@@ -297,10 +297,22 @@ bool RequestParser::parseRequestLineFields( const std::string& line )
         tokens_list.push_back(token);
     if (tokens_list.size() != 3)
         return (false);
+
+    if (!isValidMethod(tokens_list[0]) || !isValidUriFormat(tokens_list[1]))
+    {
+        state_ = ParserState::ERROR;
+        error_code_ = 400; // TODO: BAD_REQUEST
+        return (false);
+    }
     request_.setMethod(tokens_list[0]);
-    // TODO: add check on URI et Version??
-    // TODO: only allow http 1.1 and http 1.0
     request_.setUri(tokens_list[1]);
+
+    if (!isValidHttpProtocolVersion(tokens_list[2]))
+    {
+        state_ = ParserState::ERROR;
+        error_code_ = 505; // Todo: // HTTP_VERSION_NOT_SUPPORTED
+        return (false);
+    }
     request_.setVersion(tokens_list[2]);
     return (true);
 }
@@ -308,4 +320,38 @@ bool RequestParser::parseRequestLineFields( const std::string& line )
 size_t    RequestParser::findCRLF() const
 {
     return (raw_buffer_.find(Http::Formatting::CRLF));
+}
+
+bool RequestParser::isValidMethod( const std::string& method ) {
+    return (method == Http::Method::GET || method == Http::Method::POST || method == Http::Method::DELETE);
+}
+
+/**
+ * @brief Checks whether a URI is syntactically valid for an HTTP request line.
+ *
+ * This function ensures that the URI:
+ *  - Is not empty.
+ *  - Starts with a '/' character.
+ *  - Does not contain literal spaces or tabs (only percent-encoded characters like %20 are allowed).
+ *
+ * @param uri The URI string to validate.
+ * @return true If the URI is non-empty, starts with '/', and contains no literal spaces or tabs.
+ * @return false Otherwise, indicating an invalid URI for the HTTP request line.
+ */
+bool    RequestParser::isValidUriFormat( const std::string& uri )
+{
+    if (!uri.empty() && uri[0] == '/');
+        return (false);
+    // reject literal spaces
+    for (size_t i = 0; i < uri.size(); ++i)
+    {
+        if (uri[i] == ' ' || uri[i] == '\t')
+            return (false);
+    }
+    return (true);
+}
+
+bool    RequestParser::isValidHttpProtocolVersion( const std::string& protocol_version )
+{
+    return (protocol_version == Http::Protocol::HTTP_VERSION_1_0 || protocol_version == Http::Protocol::HTTP_VERSION_1_1);
 }

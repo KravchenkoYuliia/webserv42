@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:02:42 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 11:05:25 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 16:49:22 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,11 +45,11 @@ void    HttpRequest::setMethod(HttpRequest::Method method)
 
 void    HttpRequest::setMethod(const std::string& method)
 {
-    if (method == "GET")
+    if (method == Http::Method::GET)
         method_ = GET;
-    else if (method == "POST")
+    else if (method == Http::Method::POST)
         method_ = POST;
-    else if (method == "DELETE")
+    else if (method == Http::Method::DELETE)
         method_ = DELETE;
     else
         method_ = UNKNOWN;
@@ -102,12 +102,12 @@ HttpRequest::Method                             HttpRequest::getMethod() const
 std::string                             HttpRequest::getMethodToString() const
 {
     if (method_ == GET)
-        return ("GET");
+        return (Http::Method::GET);
     else if (method_ == POST)
-        return ("POST");
+        return (Http::Method::POST);
     else if (method_ == DELETE)
-        return ("DELETE");
-    return ("UNKNOWN");
+        return (Http::Method::DELETE);
+    return (Http::Method::UNKNOWN);
 }
 
 const std::string&                              HttpRequest::getUri() const
