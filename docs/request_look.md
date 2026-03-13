@@ -1,6 +1,6 @@
 ## Brave request
-GET / HTTP/1.1
-Host: localhost:8080
+GET / HTTP/1.1\r\n
+Host: localhost:8080\r\n
 Connection: keep-alive
 sec-ch-ua: "Not:A-Brand";v="99", "Brave";v="145", "Chromium";v="145"
 sec-ch-ua-mobile: ?0
@@ -14,8 +14,8 @@ Sec-Fetch-Site: none
 Sec-Fetch-Mode: navigate
 Sec-Fetch-User: ?1
 Sec-Fetch-Dest: document
-Accept-Encoding: gzip, deflate, br, zstd
-
+Accept-Encoding: gzip, deflate, br, zstd\r\n
+\r\n
 
 GET /favicon.ico HTTP/1.1
 Host: localhost:8080
