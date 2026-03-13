@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConnectionHandler.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:42:02 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/13 12:27:51 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/13 14:49:39 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 #include "http/HttpConstants.hpp"
 #include "http/ResponseBuilder.hpp"
 #include "utils/Utils.hpp"
+#include "ServerMatcher.hpp"
+#include "LocationMatcher.hpp"
 
 // ############################# ConnectionHandler Class #############################
 
@@ -112,8 +114,9 @@ void ConnectionHandler::handleRead()
                         ResponseBuilder     builder;
                         // TODO: integrate the server, host like the following in the response_builder object
 
-                        // ServerConfig        selected_server = ServerMatcher.matchServer(servers_, request_parser_.getHeader(Http::Headers::HOST), port_);
-                        // LocationConfig      selected_location = LocationMatcher.matchLocation(selected_server, request_parser_.getUri());
+                        const ServerConfig&        selected_server = ServerMatcher::matchServer(servers_, request_parser_.getHeader(Http::Headers::HOST), port_);
+                        const LocationConfig&      selected_location = LocationMatcher::matchLocation(selected_server, request_parser_.getUri());
+                        (void)selected_location;
                         // HttpResponse response = builder.build(request, selected_server, selected_location);
 
                         HttpResponse        response = builder.build(request_parser_.getRequest());

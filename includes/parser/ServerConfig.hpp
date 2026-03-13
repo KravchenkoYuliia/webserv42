@@ -44,6 +44,7 @@ public:
 	bool					getDefaultServer() const;
 	bool					getHasListen() const;
 	std::vector<LocationConfig>&	getLocationList();
+	const std::vector<LocationConfig>&	getLocationList() const;
 	const std::vector<std::string>&	    getServerName() const;
 	const std::string&	                    getRoot() const;
 	const std::vector<std::string>&	    getIndex() const;
@@ -69,7 +70,7 @@ private:
 	std::map<int, std::string>	return_code_;
 };
 
-std::ostream&	operator<<( std::ostream& out, ServerConfig& s );
+std::ostream&	operator<<( std::ostream& out, const ServerConfig& s );
 
 
 #endif

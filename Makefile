@@ -15,6 +15,7 @@ IFLAGS =	-I$(INCLUDE_DIR) \
 			-I$(INCLUDE_DIR)/http \
 			-I$(INCLUDE_DIR)/parser \
 			-I$(INCLUDE_DIR)/utils \
+			-I$(INCLUDE_DIR)/routing \
 
 ############################### COMPILER & FLAGS ###############################
 

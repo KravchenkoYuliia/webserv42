@@ -108,6 +108,10 @@ std::vector<LocationConfig>&	ServerConfig::getLocationList() {
 	return location_list_;
 }
 
+const std::vector<LocationConfig>&	ServerConfig::getLocationList() const {
+	return location_list_;
+}
+
 const std::vector<std::string>&	ServerConfig::getServerName() const {
 	return server_name_;
 }
@@ -144,7 +148,7 @@ bool	ServerConfig::getHasReturn() const {
 	return has_return_;
 }
 
-std::ostream&	operator<<( std::ostream& out, ServerConfig& s ) {
+std::ostream&	operator<<( std::ostream& out, const ServerConfig& s ) {
 
     out << "\tPort: " << s.getPort() << std::endl
 			<< "\tInterface: " << s.getInterface();
