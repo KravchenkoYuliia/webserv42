@@ -317,10 +317,11 @@ void	ConfigParser::parseErrorPage() {
 	long error_nb = std::strtol( token.getValue().c_str(), &end, 10 );
 	if ( *end )
 		throw std::runtime_error( "Error in config: error_page needs a number of the error" );
-	int	first_valid_error = 100;
-	int	last_valid_error = 599;
-	if ( error_nb < first_valid_error || error_nb > last_valid_error )
-		throw std::runtime_error( "Error in config: invalid error number" );
+
+	int			numbers[] = { 400, 403, 404, 405, 413, 415, 500, 502, 504, 505 };
+	std::vector<int>	implemented_codes( numbers, numbers + sizeof( numbers )/sizeof(numbers[0]) );
+	if ( std::find( implemented_codes.begin(), implemented_codes.end(), error_nb ) == implemented_codes.end() )
+		throw std::runtime_error( "Error in config: invalid or not implemented error number" );
 
 	//next token must be a page error
 	//
@@ -426,10 +427,11 @@ void	ConfigParser::parseReturn() {
 	long code = std::strtol( token.getValue().c_str(), &end, 10 );
 	if ( *end )
 		throw std::runtime_error( "Error in config: fix return block - must have a return code");
-	int	first_valid_code = 100;
-	int	last_valid_code = 599;
-	if ( code < first_valid_code || code > last_valid_code )
-		throw std::runtime_error( "Error in config: invalid code after return" );
+
+	int numbers[] = { 200, 201, 204, 301, 302, 303, 307, 308, 400, 403, 404, 405, 413, 415, 500, 502, 504, 505 };
+	std::vector<int> 	implemented_codes( numbers, numbers + sizeof( numbers )/sizeof(numbers[0]) );
+	if ( std::find( implemented_codes.begin(), implemented_codes.end(), code ) == implemented_codes.end() )
+		throw std::runtime_error( "Error in config: invalid or not implemented code after return" );
 
 	//next token can be a page / text / nothing
 	//

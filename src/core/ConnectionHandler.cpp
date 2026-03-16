@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:42:02 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/13 14:49:39 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/18 13:09:05 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include "utils/Utils.hpp"
 #include "ServerMatcher.hpp"
 #include "LocationMatcher.hpp"
+#include "MergedConfig.hpp"
 
 // ############################# ConnectionHandler Class #############################
 
@@ -111,17 +112,16 @@ void ConnectionHandler::handleRead()
                     {
                         // TODO: remove this log
                         std::cout << "request_.isComplete bloc" << std::endl;
-                        ResponseBuilder     builder;
                         // TODO: integrate the server, host like the following in the response_builder object
 
                         const ServerConfig&        selected_server = ServerMatcher::matchServer(servers_, request_parser_.getHeader(Http::Headers::HOST), port_);
                         const LocationConfig&      selected_location = LocationMatcher::matchLocation(selected_server, request_parser_.getUri());
-                        (void)selected_location;
-                        // HttpResponse response = builder.build(request, selected_server, selected_location);
+                        MergedConfig        config_data( selected_server, selected_location );
 
-                        HttpResponse        response = builder.build(request_parser_.getRequest());
-
+                        ResponseBuilder     builder( request_parser_.getRequest(), config_data );
+                        const HttpResponse&        response = builder.build();
                         serialized_response_ = response.serialize();
+
                         bytes_sent_ = 0;
                         setWantWrite(true);
                         // setWantRead(false); // TODO: should i disable the EPOLLIN here?

@@ -15,24 +15,46 @@
 #include "http/HttpConstants.hpp"
 #include "http/HttpResponse.hpp"
 
-// ############################# HttpResponse Class ############################
-
-// ------------------------- Destructor / Constructor -------------------------
-
-HttpResponse::HttpResponse(void)
-{
-    // TODO: Delete this log
-    std::cout << "HttpResponse default constructor called" << std::endl;
+HttpResponse::HttpResponse() {
+	header_ = "";
+	body_ = "";
 }
 
-HttpResponse::~HttpResponse(void)
-{
-    // TODO: Delete this log
-
-    std::cout << "HttpResponse destructor called" << std::endl;
+HttpResponse::HttpResponse( const std::string& header, const std::string& body) {// delete if not used??
+	header_ = header;
+	body_ = body;
 }
 
-// --------------------------- Public Setter Methods ---------------------------
+HttpResponse::~HttpResponse(void) {}
+
+const std::string	HttpResponse::serialize() const {
+	return header_ + body_;
+}
+
+//setters
+//
+void	HttpResponse::setHeader( const std::ostringstream& header ) {
+	header_ = header.str();
+}
+
+void	HttpResponse::setBody( const std::string& body ) {
+	body_ = body;
+}
+
+
+//getters
+//
+const std::string&	HttpResponse::getHeader() const {
+	return header_;
+}
+
+const std::string&	HttpResponse::getBody() const {
+	return body_;
+}
+
+
+/*
+
 
 void    HttpResponse::setStatusCode(int code, const std::string& description)
 {
@@ -84,4 +106,4 @@ std::string HttpResponse::serialize()
     response << Http::Formatting::CRLF;
     response << "Hello pink t-shirts team";
     return (response.str());
-}
+}*/

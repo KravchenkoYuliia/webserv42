@@ -3,44 +3,57 @@
 /*                                                        :::      ::::::::   */
 /*   ResponseBuilder.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 16:46:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/13 12:53:28 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/18 12:28:49 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef RESPONSE_BUILDER_HPP
 #define RESPONSE_BUILDER_HPP
 
-#include <string>
+#include <map>
+#include <sstream> //stringstream
 #include "http/HttpResponse.hpp"
 #include "http/HttpRequest.hpp"
+#include "ServerConfig.hpp"
+#include "MergedConfig.hpp"
 
 class ResponseBuilder {
 public:
-    // ---------- Constructors / Destructor ----------
+	ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data );
+    	~ResponseBuilder();
 
-    ResponseBuilder(void);
-    ResponseBuilder(const ResponseBuilder& copy);
-    ~ResponseBuilder(void);
-
-    // ---------- Overloading Operators Methods -------
-
-    ResponseBuilder& operator=(const ResponseBuilder& copy);
-
-    // ---------- Getter and Setter Methods ------------
-
-    // ---------- Member Methods -----------------------
-
-    HttpResponse     build( const HttpRequest& request );
-    HttpResponse     build( const HttpRequest& request, const std::string &server, const std::string &uri );
-
-protected:
-    // ---------- Protected Data Members ---------------------
+	const HttpResponse&	build();
 
 private:
-    // ---------- Private Data members -------------------------
+	HttpResponse	response_;
+	MergedConfig	config_data_;
+
+	int			code_;
+	std::string		code_meaning_;
+	std::ostringstream	header_;
+
+//Build `Return` response **************************************************************************
+	const HttpResponse&	buildReturnResponse( const std::map<int, std::string>& return_data );
+	void			setFirstLineOfReturnResponse();
+	void			buildReturnRedirection( const std::string& what_is_return );
+	void			buildReturnPageHtml( const std::string& what_is_return );
+	void			buildBasicReturn( const std::string& what_is_return );
+	std::string		getCodeMeaning();
+
+
+//Utils ********************************************************************************************
+	std::string		generateDefaultPage();
+	std::string		readContentFromFile( const std::string& file );
+	const std::string	buildPathFromRootAndFile( const std::string& file );
+
+
+	ResponseBuilder();
+	ResponseBuilder( const ResponseBuilder& copy );
+	ResponseBuilder& operator=( const ResponseBuilder& copy );
+
 };
 
-#endif // RESPONSE_BUILDER_HPP
+#endif

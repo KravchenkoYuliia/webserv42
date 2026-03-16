@@ -18,35 +18,29 @@
 
 class HttpResponse {
 public:
-    // ---------- Constructors / Destructor ----------
-
-    HttpResponse(void);
-    HttpResponse(const HttpResponse& copy);
-    ~HttpResponse(void);
-
-    // ---------- Overloading Operators Methods -------
-
-    HttpResponse& operator=(const HttpResponse& copy);
-
-    // ---------- Getter and Setter Methods ------------
-
-    void            setStatusCode(int code, const std::string& description);
-    void            setHeader(const std::string& key, const std::string& value);
-    void            setBody(const std::string& body);
-
-    // ---------- Member Methods -----------------------
-
-    std::string     serialize();
-
-protected:
-    // ---------- Protected Data Members ---------------------
-
+	HttpResponse();
+	HttpResponse( const std::string& header, const std::string& body);//delete if not used
+	~HttpResponse();
+	
+	const std::string	serialize() const;
+//setters
+//
+	void			setHeader( const std::ostringstream& header );
+	void			setBody( const std::string& body );
+//getters
+//
+	const std::string&	getHeader() const;
+	const std::string&	getBody() const;
 private:
-    // ---------- Private Data members -------------------------
-    int                                 status_code_value_;         // ex. 200
-    std::string                         status_code_description_;   // ex. OK
-    std::map<std::string, std::string>  headers_;                   // Host: webserv.fr
-    std::string                         body_;
+	//int                                 status_code_value_;         // ex. 200
+	// std::string                         status_code_description_;   // ex. OK
+
+	std::string	header_;
+	std::string	body_;
+
+
+	HttpResponse( const HttpResponse& copy );
+	HttpResponse& operator=( const HttpResponse& copy );
 };
 
-#endif // HTTP_RESPONSE_HPP
+#endif

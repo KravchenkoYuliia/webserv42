@@ -15,7 +15,7 @@ Content-Length:108\r\n
 
 ### 1. version 1.0
 can accept request 1.0 and 1.1
-other version -> 505 HTTP Version Not Supported in RequestParser ??
+other version -> 505 HTTP Version Not Supported in RequestParser - checked in RequestParser
 in any case build a response 1.0
 
 ### 2. status code
