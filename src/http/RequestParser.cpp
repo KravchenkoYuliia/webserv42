@@ -174,74 +174,24 @@ RequestParser::ResultType       RequestParser::parseHeaders()
 
 bool RequestParser::validateHeaderSet()
 {
-    // 1: Check presence of HTTP mention + version
-
-    if (request_.getVersion() == Http::Protocol::HTTP_VERSION_1_1)
-    {
-        if (!request_.hasHeader(Http::Headers::HOST))
-        {
-            std::cout << "has headers failed" << std::endl;
-            return (false);
-        }
-    }
-
+    if (!validateHostHeader())
+        return (false);
     // 2 : Check Headers conflicts
     /*
         RFC-7230 - section 3.3.2 "A sender MUST NOT send a Content-Length header field in any message
         that contains a Transfer-Encoding header field."
     */
-    // TODO: see how to return an ERROR then ste status cod eto 400 when if (hasContentLength && hasTransferEncoding)
-
-    std::string cl = request_.getHeader(Http::Headers::CONTENT_LENGTH);
-    std::string te = request_.getHeader(Http::Headers::TRANSFER_ENCODING);
-
-    if (!cl.empty() && !te.empty())
-    {
-        std::cout << " if !cl.empty() && !te.empty() return false" << std::endl;
+    if (!validateHeaderConflicts())
         return (false);
-    }
-
-    if (!te.empty())
-    {
-        if (te != "chunked") // TODO: create variable to hold "chunk"
-        {
-            // TODO: remove this log
-            std::cout << " if te != chunked return false " << std::endl;
-            return (false);
-        }
-        request_.setChunkSize(0);
-        state_ = ParserState::BODY_CHUNKED;
-    }
-    else if (!cl.empty())
-    {
-        // TODO: extract usage of std::strtol into helper
-        // TODO: check which one if can be interesting to use std::strtoll or std::strtoull instead of std::strtol
-        char *endptr;
-        errno = 0;
-        long value = std::strtol(cl.c_str(), &endptr, 10);
-        // TODO: can i check this errno here?
-        if (errno != 0 || *endptr != '\0' || value < 0)
-            return false;
-        request_.setContentLength(static_cast<size_t>(value));
-        if (request_.getContentLength() > 0)
-            state_ = ParserState::BODY_CONTENT_LENGTH;
-        else
-            state_ = ParserState::COMPLETE;
-    }
-    else
-        state_ = ParserState::BODY_NONE;
-
-    // 3. Check Body state with method type
-
-    if (request_.getMethod() == HttpRequest::GET && state_ != ParserState::BODY_NONE)
-    {
-        // TODO: remove this log
-        std::cout << "Failed because method = " << request_.getMethod() << ", state_ = " << state_ << std::endl;
+    if (!validateTransferEncodingHeader())
         return (false);
-    }
-    return (true);
-
+    // TODO: add validateContentTypeHeader()
+    if (!validateContentLengthHeader())
+        return (false);
+    if (!validateBodyForMethod())
+        return (false);
     // TODO: any others check to perform on this step?
+    return (true);
 }
 
 bool    RequestParser::parseHeaderLine( const std::string& line )
@@ -300,7 +250,6 @@ bool RequestParser::parseRequestLineFields( const std::string& line )
 
     if (!isValidMethod(tokens_list[0]) || !isValidUriFormat(tokens_list[1]))
     {
-        state_ = ParserState::ERROR;
         error_code_ = 400; // TODO: BAD_REQUEST
         return (false);
     }
@@ -309,7 +258,6 @@ bool RequestParser::parseRequestLineFields( const std::string& line )
 
     if (!isValidHttpProtocolVersion(tokens_list[2]))
     {
-        state_ = ParserState::ERROR;
         error_code_ = 505; // Todo: // HTTP_VERSION_NOT_SUPPORTED
         return (false);
     }
@@ -354,4 +302,105 @@ bool    RequestParser::isValidUriFormat( const std::string& uri )
 bool    RequestParser::isValidHttpProtocolVersion( const std::string& protocol_version )
 {
     return (protocol_version == Http::Protocol::HTTP_VERSION_1_0 || protocol_version == Http::Protocol::HTTP_VERSION_1_1);
+}
+
+bool    RequestParser::validateHostHeader()
+{
+    if ( request_.getVersion() == Http::Protocol::HTTP_VERSION_1_1 && !request_.hasHeader( Http::Headers::HOST ) )
+    {
+        error_code_ = 400; // TODO: BAD_REQUEST
+        return (false);
+    }
+    return (true);
+}
+
+bool    RequestParser::validateHeaderConflicts()
+{
+    if (!request_.getHeader(Http::Headers::CONTENT_LENGTH).empty()
+            && !request_.getHeader(Http::Headers::TRANSFER_ENCODING).empty())
+    {
+        error_code_ = 400; // TODO: BAD_REQUEST
+        return (false);
+    }
+    return (true);
+}
+
+bool    RequestParser::validateTransferEncodingHeader()
+{
+    const std::string transfer_encoding_header = request_.getHeader(Http::Headers::TRANSFER_ENCODING);
+
+    if (transfer_encoding_header.empty())
+        return (true);
+
+    const std::string transfer_encoding_type = "chunked";
+    if (transfer_encoding_header != transfer_encoding_type)
+    {
+        error_code_ = 400; // TODO: BAD_REQUEST
+        return (false);
+    }
+    request_.setChunkSize(0);
+    state_ = ParserState::BODY_CHUNKED;
+    return (true);
+}
+
+bool    RequestParser::validateContentLengthHeader()
+{
+    const std::string content_length_header = request_.getHeader(Http::Headers::CONTENT_LENGTH);
+
+    if (content_length_header.empty())
+    {
+        if (state_ == ParserState::BODY_CHUNKED)
+            return (true);
+        state_ = ParserState::BODY_NONE;
+        return (true);
+    }
+
+    bool success;
+    unsigned long value = parseUnsignedLong(content_length_header, success);
+    if (!success)
+    {
+        error_code_ = 400; // TODO: BAD_REQUEST
+        return (false);
+    }
+
+    try {
+        request_.setContentLength(static_cast<size_t>(value));
+    } catch (const std::runtime_error& e)
+    {
+        error_code_ = 413; // TODO: PAYLOAD_TOO_LARGE
+        return (false);
+    }
+    if (value == 0)
+    {
+        state_ = ParserState::COMPLETE;
+        return (true);
+    }
+    state_ = ParserState::BODY_CONTENT_LENGTH;
+    content_length_bytes_ = value;
+    return (true);
+}
+
+bool    RequestParser::validateBodyForMethod()
+{
+    if (request_.getMethod() == HttpRequest::GET && state_ != ParserState::BODY_NONE)
+    {
+        error_code_ = 400; // TODO: BAD_REQUEST
+        return (false);
+    }
+    return (true);
+}
+
+unsigned long RequestParser::parseUnsignedLong(const std::string &str, bool &success)
+{
+    char            *endptr = 0;
+    int             base = 10;
+    unsigned long   value = std::strtoul(str.c_str(), &endptr, base);
+
+    if (*endptr != '\0')
+    {
+        success = false;
+        return (0);
+    }
+    success = true;
+    return (value);
 }

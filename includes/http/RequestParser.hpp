@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:28:58 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/16 10:36:37 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/16 15:04:24 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ private:
     std::string             raw_buffer_; // store the accumulated bytes receive by recv
     ParserState::Type       state_;
     int                     error_code_;
+    unsigned int            content_length_bytes_;
 
     // ---------------------- Private Member Methods ----------------------
     ResultType            parseRequestLine();
@@ -91,16 +92,22 @@ private:
 
     bool            hasEndOfLine() const;
     std::string     extract_line();
-    bool            parseRequestLineFields(const std::string& line);
-    bool            parseHeaderLine(const std::string& line);
+    bool            parseRequestLineFields( const std::string& line );
+    bool            parseHeaderLine( const std::string& line );
     bool            validateHeaderSet();
+    bool            validateHostHeader();
+    bool            validateHeaderConflicts();
+    bool            validateBodyHeaders();
+    bool            validateTransferEncodingHeader();
+    bool            validateContentLengthHeader();
+    bool            validateBodyForMethod();
 
     // Utility
     size_t          findCRLF() const;
     bool            isValidMethod( const std::string& method );
     bool            isValidUriFormat( const std::string& uri );
     bool            isValidHttpProtocolVersion( const std::string& protocol_version );
-
+    unsigned long   parseUnsignedLong( const std::string &str, bool &success );
 };
 
 #endif // REQUEST_PARSER_HPP

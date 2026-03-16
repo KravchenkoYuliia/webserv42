@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:02:42 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/13 16:49:22 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/16 15:22:34 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,10 @@ void    HttpRequest::setBody(const std::string& body)
 
 void    HttpRequest::setContentLength(size_t value)
 {
+    // TODO: check if convertion is correct
+    const size_t MAX_CONTENT_LENGTH = 10 * 1024 * 1024; // 10MB
+    if (value > MAX_CONTENT_LENGTH)
+        throw std::runtime_error("Content-Length too large");
     content_length_ = value;
 }
 void    HttpRequest::setChunkSize(size_t value)
