@@ -6,15 +6,16 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:07 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/19 11:01:22 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/19 11:02:20 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <cstdlib> // strtol
-#include <errno.h> // errno
+#include <algorithm>    // std::min
+#include <cstdlib>      // strtoul
+#include <errno.h>      // errno
 #include "http/HttpConstants.hpp"
 #include "http/RequestParser.hpp"
 #include "utils/Utils.hpp"
@@ -50,7 +51,6 @@ std::string     RequestParser::ParserState::toString(RequestParser::ParserState:
 
 RequestParser::RequestParser(void)
     :   request_(),
-        response_(),
         state_(RequestParser::ParserState::REQUEST_LINE)
 {
     std::cout << "RequestParser default constructor called" << std::endl;
@@ -132,7 +132,7 @@ RequestParser::ResultType       RequestParser::parseRequestLine()
     if (!hasEndOfLine())
         return (ParserResult::AGAIN);
 
-    std::string     line = extract_line();
+    std::string     line = extract_header_line();
 
     if (!parseRequestLineFields(line))
     {
@@ -148,7 +148,7 @@ RequestParser::ResultType       RequestParser::parseHeaders()
     if (!hasEndOfLine())
         return (ParserResult::AGAIN);
 
-    std::string     line = extract_line();
+    std::string     line = extract_header_line();
 
     if (line.empty())
     {
@@ -212,8 +212,19 @@ bool    RequestParser::parseHeaderLine( const std::string& line )
 
 RequestParser::ResultType       RequestParser::parseBodyContentLength()
 {
-    // TODO: to finish
-    return (ParserResult::OK);
+    if (raw_buffer_.empty())
+        return (ParserResult::AGAIN);
+    size_t              body_data_size_parsed = std::min(raw_buffer_.size(), content_length_bytes_);
+    const std::string   body_data = raw_buffer_.substr(0, body_data_size_parsed);
+    request_.appendToBody(body_data);
+    raw_buffer_.erase(0, body_data_size_parsed);
+    content_length_bytes_ -= body_data_size_parsed;
+    if (content_length_bytes_ == 0)
+    {
+        state_ = ParserState::COMPLETE;
+        return (ParserResult::OK);
+    }
+    return (ParserResult::AGAIN);
 }
 
 RequestParser::ResultType       RequestParser::parseBodyChunked()
@@ -222,13 +233,12 @@ RequestParser::ResultType       RequestParser::parseBodyChunked()
     return (ParserResult::OK);
 }
 
-
 bool    RequestParser::hasEndOfLine() const
 {
     return (findCRLF() != std::string::npos);
 }
 
-std::string RequestParser::extract_line()
+std::string RequestParser::extract_header_line()
 {
     size_t      pos = findCRLF();
     std::string line = raw_buffer_.substr(0, pos);
@@ -266,6 +276,8 @@ bool RequestParser::parseRequestLineFields( const std::string& line )
     return (true);
 }
 
+// ------------------------------- Method Helper -------------------------------
+
 size_t    RequestParser::findCRLF() const
 {
     return (raw_buffer_.find(Http::Formatting::CRLF));
@@ -289,7 +301,7 @@ bool RequestParser::isValidMethod( const std::string& method ) {
  */
 bool    RequestParser::isValidUriFormat( const std::string& uri )
 {
-    if (!uri.empty() && uri[0] == '/');
+    if (!uri.empty() && uri[0] == '/')
         return (false);
     // reject literal spaces
     for (size_t i = 0; i < uri.size(); ++i)

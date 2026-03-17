@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 17:50:45 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/13 12:48:27 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/17 10:56:19 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ public:
     void                                            setUri(const std::string& uri);
     void                                            setVersion(const std::string& version);
     void                                            setHeader(const std::string& key, const std::string& value);
-    void                                            setBody(const std::string& body);
+    void                                            appendToBody(const std::string& body);
     void                                            setContentLength(size_t value);
     void                                            setChunkSize(size_t value);
 

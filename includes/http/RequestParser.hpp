@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:28:58 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/16 15:04:24 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/17 11:02:01 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,11 +76,10 @@ protected:
 private:
     // ----------------------- Private Data members -----------------------
     HttpRequest             request_;
-    HttpResponse            response_;
     std::string             raw_buffer_; // store the accumulated bytes receive by recv
     ParserState::Type       state_;
     int                     error_code_;
-    unsigned int            content_length_bytes_;
+    size_t                  content_length_bytes_;
 
     // ---------------------- Private Member Methods ----------------------
     ResultType            parseRequestLine();
@@ -91,7 +90,7 @@ private:
     // ------------------------- Private helpers -------------------------
 
     bool            hasEndOfLine() const;
-    std::string     extract_line();
+    std::string     extract_header_line();
     bool            parseRequestLineFields( const std::string& line );
     bool            parseHeaderLine( const std::string& line );
     bool            validateHeaderSet();

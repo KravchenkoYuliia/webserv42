@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:02:42 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/16 15:22:34 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/17 11:34:18 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ void    HttpRequest::setMethod(const std::string& method)
 
 void    HttpRequest::setUri(const std::string& uri)
 {
+    // TODO: consider adding an uri limit to handle 414 - request uri too long?
     uri_ = uri;
 }
 
@@ -78,14 +79,14 @@ void    HttpRequest::setHeader(const std::string& key, const std::string& value)
     headers_[normalized_key] = value;
 }
 
-void    HttpRequest::setBody(const std::string& body)
+void    HttpRequest::appendToBody(const std::string& body)
 {
-    body_ = body;
+    body_.append(body);
 }
 
 void    HttpRequest::setContentLength(size_t value)
 {
-    // TODO: check if convertion is correct
+    // TODO: check if convertion is correct? to keep?
     const size_t MAX_CONTENT_LENGTH = 10 * 1024 * 1024; // 10MB
     if (value > MAX_CONTENT_LENGTH)
         throw std::runtime_error("Content-Length too large");
