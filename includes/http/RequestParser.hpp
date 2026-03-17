@@ -54,7 +54,7 @@ public:
     // ---------- Getter and Setter Methods ------------
 
     const HttpRequest&      getRequest() const;
-    std::string             getHeader( const std::string& key ) const;
+    const std::string&      getHeader( const std::string& key ) const;
     const std::string&      getUri() const;
 
     // ---------- Member Methods -----------------------
@@ -101,6 +101,7 @@ private:
     bool            validateTransferEncodingHeader();
     bool            validateContentLengthHeader();
     bool            validateBodyForMethod();
+    bool            validateContentTypeHeader();
 
     // Utility
     size_t          findCRLF() const;

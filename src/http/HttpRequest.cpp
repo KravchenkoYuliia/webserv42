@@ -129,9 +129,9 @@ const std::map<std::string, std::string>&       HttpRequest::getHeaders() const
     return (headers_);
 }
 
-std::string                                     HttpRequest::getHeader(const std::string& key) const
+const std::string&                                     HttpRequest::getHeader(const std::string& key) const
 {
-    std::string empty_string = "";
+    static const std::string empty_string = "";
     std::string normalize_key = Utils::toLower(key);
     std::map<std::string, std::string>::const_iterator    it = headers_.find(normalize_key);
     if (it != headers_.end())

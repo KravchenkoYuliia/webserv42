@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 11:44:57 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/13 16:49:22 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/17 11:07:02 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,10 @@ struct Http
         static const char *HEADER_SEPARATOR;
     };
 
+    struct ContentType {
+        static const std::string TEXT_PLAIN;
+        static const std::string MULTIPART_FORM_DATA;
+    };
 };
 
 #endif // HTTP_CONSTANTS_HPP

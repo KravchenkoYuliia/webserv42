@@ -68,7 +68,7 @@ const HttpRequest&     RequestParser::getRequest() const
     return (request_);
 }
 
-std::string  RequestParser::getHeader( const std::string& key ) const
+const std::string&  RequestParser::getHeader( const std::string& key ) const
 {
     return (request_.getHeader(key));
 }
@@ -185,7 +185,8 @@ bool RequestParser::validateHeaderSet()
         return (false);
     if (!validateTransferEncodingHeader())
         return (false);
-    // TODO: add validateContentTypeHeader()
+    if (!validateContentTypeHeader())
+        return (false);
     if (!validateContentLengthHeader())
         return (false);
     if (!validateBodyForMethod())
@@ -327,7 +328,7 @@ bool    RequestParser::validateHeaderConflicts()
 
 bool    RequestParser::validateTransferEncodingHeader()
 {
-    const std::string transfer_encoding_header = request_.getHeader(Http::Headers::TRANSFER_ENCODING);
+    const std::string& transfer_encoding_header = request_.getHeader(Http::Headers::TRANSFER_ENCODING);
 
     if (transfer_encoding_header.empty())
         return (true);
@@ -345,7 +346,7 @@ bool    RequestParser::validateTransferEncodingHeader()
 
 bool    RequestParser::validateContentLengthHeader()
 {
-    const std::string content_length_header = request_.getHeader(Http::Headers::CONTENT_LENGTH);
+    const std::string& content_length_header = request_.getHeader(Http::Headers::CONTENT_LENGTH);
 
     if (content_length_header.empty())
     {
@@ -388,6 +389,20 @@ bool    RequestParser::validateBodyForMethod()
         return (false);
     }
     return (true);
+}
+
+bool    RequestParser::validateContentTypeHeader()
+{
+    const std::string& content_type = request_.getHeader(Http::Headers::CONTENT_TYPE);
+
+    if (content_type.empty())
+        return (true);
+    if (content_type.find(Http::ContentType::TEXT_PLAIN) != std::string::npos)
+        return (true);
+    if (content_type.find(Http::ContentType::MULTIPART_FORM_DATA) != std::string::npos)
+        return (true);
+    error_code_ = 415; // TODO: UNSUPPORTED_MEDIA_TYPE
+    return (false);
 }
 
 unsigned long RequestParser::parseUnsignedLong(const std::string &str, bool &success)
