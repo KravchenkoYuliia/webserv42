@@ -13,6 +13,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <cstring>      // strlen
 #include <algorithm>    // std::min
 #include <cstdlib>      // strtoul
 #include <errno.h>      // errno
@@ -51,7 +52,10 @@ std::string     RequestParser::ParserState::toString(RequestParser::ParserState:
 
 RequestParser::RequestParser(void)
     :   request_(),
-        state_(RequestParser::ParserState::REQUEST_LINE)
+        state_(RequestParser::ParserState::REQUEST_LINE),
+        content_length_bytes_(0),
+        current_chunk_size_(0),
+        waiting_for_chunk_size_(true)
 {
     std::cout << "RequestParser default constructor called" << std::endl;
 }
@@ -123,7 +127,6 @@ RequestParser::ResultType       RequestParser::parseNext()
     }
     return (ParserResult::ERROR);
 }
-
 
 // -------------------------- Private Member Methods --------------------------
 
@@ -229,7 +232,51 @@ RequestParser::ResultType       RequestParser::parseBodyContentLength()
 
 RequestParser::ResultType       RequestParser::parseBodyChunked()
 {
-    // TODO: to finish
+    size_t CRLF_size = std::strlen(Http::Formatting::CRLF);
+    while (true)
+    {
+        if (waiting_for_chunk_size_)
+        {
+            if (!hasEndOfLine())
+                return (ParserResult::AGAIN);
+            std::string     line = extract_header_line();
+            line = Utils::trim(line);
+            bool            success;
+            int             base = 16;
+            current_chunk_size_ = parseUnsignedLong(line, success, base);
+            if (!success)
+            {
+                error_code_ = 400;
+                state_ = ParserState::ERROR;
+                return (ParserResult::ERROR);
+            }
+            if (current_chunk_size_ == 0)
+            {
+                if (raw_buffer_.size() < CRLF_size)
+                    return (ParserResult::AGAIN);
+                if (raw_buffer_.substr(0, 2) != Http::Formatting::CRLF)
+                {
+                    error_code_ = 400;
+                    state_ = ParserState::ERROR;
+                    return ParserResult::ERROR;
+                }
+                raw_buffer_.erase(0, CRLF_size);
+                state_ = ParserState::COMPLETE;
+                return (ParserResult::OK);
+            }
+            waiting_for_chunk_size_ = false;
+        }
+        size_t total_chunk_size = current_chunk_size_ + CRLF_size;
+        if (raw_buffer_.size() < total_chunk_size)
+            return (ParserResult::AGAIN);
+
+        std::string     chunk = raw_buffer_.substr(0, current_chunk_size_);
+        request_.appendToBody(chunk);
+        raw_buffer_.erase(0, total_chunk_size);
+
+        waiting_for_chunk_size_ = true;
+        current_chunk_size_ = 0;
+    }
     return (ParserResult::OK);
 }
 
@@ -301,7 +348,7 @@ bool RequestParser::isValidMethod( const std::string& method ) {
  */
 bool    RequestParser::isValidUriFormat( const std::string& uri )
 {
-    if (!uri.empty() && uri[0] == '/')
+    if (uri.empty() || uri[0] != '/')
         return (false);
     // reject literal spaces
     for (size_t i = 0; i < uri.size(); ++i)
@@ -369,7 +416,8 @@ bool    RequestParser::validateContentLengthHeader()
     }
 
     bool success;
-    unsigned long value = parseUnsignedLong(content_length_header, success);
+    int base = 10;
+    unsigned long value = parseUnsignedLong(content_length_header, success, base);
     if (!success)
     {
         error_code_ = 400; // TODO: BAD_REQUEST
@@ -413,14 +461,15 @@ bool    RequestParser::validateContentTypeHeader()
         return (true);
     if (content_type.find(Http::ContentType::MULTIPART_FORM_DATA) != std::string::npos)
         return (true);
+    if (content_type.find(Http::ContentType::APPLICATION_X_WWW_FORM_URLENCODED) != std::string::npos)
+        return (true);
     error_code_ = 415; // TODO: UNSUPPORTED_MEDIA_TYPE
     return (false);
 }
 
-unsigned long RequestParser::parseUnsignedLong(const std::string &str, bool &success)
+unsigned long RequestParser::parseUnsignedLong(const std::string &str, bool &success, int base)
 {
     char            *endptr = 0;
-    int             base = 10;
     unsigned long   value = std::strtoul(str.c_str(), &endptr, base);
 
     if (*endptr != '\0')

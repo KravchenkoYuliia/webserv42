@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:28:58 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/17 11:02:01 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/17 13:53:04 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,9 @@ private:
     ParserState::Type       state_;
     int                     error_code_;
     size_t                  content_length_bytes_;
+    size_t                  current_chunk_size_;
+    bool                    waiting_for_chunk_size_;
+
 
     // ---------------------- Private Member Methods ----------------------
     ResultType            parseRequestLine();
@@ -107,7 +110,7 @@ private:
     bool            isValidMethod( const std::string& method );
     bool            isValidUriFormat( const std::string& uri );
     bool            isValidHttpProtocolVersion( const std::string& protocol_version );
-    unsigned long   parseUnsignedLong( const std::string &str, bool &success );
+    unsigned long   parseUnsignedLong( const std::string &str, bool &success, int base );
 };
 
 #endif // REQUEST_PARSER_HPP

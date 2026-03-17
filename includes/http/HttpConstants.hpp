@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 11:44:57 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/17 11:07:02 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/17 14:54:58 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ struct Http
     struct ContentType {
         static const std::string TEXT_PLAIN;
         static const std::string MULTIPART_FORM_DATA;
+        static const std::string APPLICATION_X_WWW_FORM_URLENCODED;
     };
 };
 

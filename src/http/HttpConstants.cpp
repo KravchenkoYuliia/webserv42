@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 11:46:46 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/17 11:07:36 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/17 14:55:20 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,3 +46,4 @@ const char *Http::Formatting::HEADER_SEPARATOR = ": ";
 
 const std::string Http::ContentType::TEXT_PLAIN = "text/plain";
 const std::string Http::ContentType::MULTIPART_FORM_DATA = "multipart/form-data";
+const std::string Http::ContentType::APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
