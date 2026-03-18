@@ -105,7 +105,7 @@ long long	LocationConfig::getClientMaxBodySize() const {
 	return client_max_body_size_;
 }
 
-std::vector<std::string>	LocationConfig::getAllowedMethods() const {
+const std::vector<std::string>&	LocationConfig::getAllowedMethods() const {
 	return allowed_methods_;
 }
 

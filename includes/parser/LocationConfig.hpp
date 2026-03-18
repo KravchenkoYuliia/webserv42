@@ -47,7 +47,7 @@ public:
 	const std::map<int, std::string>&	getErrorPage() const;
 	AutoindexType					getAutoindex() const;
 	long long			getClientMaxBodySize() const;
-	std::vector<std::string>	getAllowedMethods() const;
+	const std::vector<std::string>&	getAllowedMethods() const;
 	const std::map<int, std::string>&	getReturn() const;
 	bool                                getHasReturn() const;
 	bool				getUploadAllowed() const;

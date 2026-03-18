@@ -126,4 +126,4 @@ if not written -> server autoindex
 ### 5.7 if there is an error - find corresponding error_page
 - location error_page
 
-- if none -> server error_page and return corresponding page
+- if none -> server error_page and return corresponding pagee

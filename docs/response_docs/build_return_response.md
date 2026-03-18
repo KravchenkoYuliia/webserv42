@@ -54,6 +54,18 @@ else
     Content-Length: 0
 
 TODO : fix config parser -> if redirection code does not have smth after -> error
-TODO: check permission of directory and file to open file 
+TODO: check permission of directory and file to open file
 if smth after code starts with `/` --> it's path
     find - open - read - return text
+
+
+## special directives in syntax
+- redirection
+```Location:```
+
+- 405
+```Allow: GET```
+explain which methods are allowed
+
+- 
+

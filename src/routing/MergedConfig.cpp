@@ -30,5 +30,22 @@ std::string	MergedConfig::getRoot() const {
 	return server_.getRoot();
 }
 
+const std::vector<std::string>&		MergedConfig::getMethods() const {
+	return location_.getAllowedMethods();
+}
+
+const std::map<int, std::string>&	MergedConfig::getErrorPage() const {
+
+	if ( !location_.getErrorPage().empty() )
+		return location_.getErrorPage();
+	return server_.getErrorPage();
+}
+
+size_t	MergedConfig::getMaxBodySize() const {
+
+	if ( location_.getClientMaxBodySize() != -1 )
+		return location_.getClientMaxBodySize();
+	return server_.getClientMaxBodySize();
+}
 
 MergedConfig::~MergedConfig() {}

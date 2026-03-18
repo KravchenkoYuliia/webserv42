@@ -205,7 +205,12 @@ void	ConfigParser::parseListenInServer() {
 	if ( position == 0 || position == token.getValue().size() - 1 )
 		throw std::runtime_error( "Error in config: listen to invalid port" );
 	if ( position != token.getValue().npos ) {
-		current_server.setInterface( token.getValue().substr( 0, position ) );
+
+		std::string	interface = token.getValue().substr( 0, position );
+		if ( interface != "127.0.0.1" && interface != "localhost")
+			throw std::runtime_error( "Error in config: listen to invalid interface" );
+
+		current_server.setInterface( interface );
 		portValue = token.getValue().substr( position + 1 );
 	}
 	else {

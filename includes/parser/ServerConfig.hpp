@@ -9,7 +9,7 @@
 #include "LocationConfig.hpp"
 
 static const int kDefaultServerPort = 8080;
-static const std::string kDefaultServerInterface = "0.0.0.0";
+static const std::string kDefaultServerInterface = "localhost";
 static const std::string kDefaultRoot = "html";
 static const std::string kDefaultIndex = "index.html";
 static const int kDefaultClientMaxBodySize = 1024 * 1024; //equivalent to 1M

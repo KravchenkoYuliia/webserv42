@@ -20,6 +20,8 @@
 #include "ServerConfig.hpp"
 #include "MergedConfig.hpp"
 
+enum status { SUCCESS, ERROR };
+
 class ResponseBuilder {
 public:
 	ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data );
@@ -42,6 +44,13 @@ private:
 	void			buildReturnPageHtml( const std::string& what_is_return );
 	void			buildBasicReturn( const std::string& what_is_return );
 	std::string		getCodeMeaning();
+
+//Check possible errors
+	int	checkMethodInRequest( HttpRequest::Method current_method, const std::vector<std::string>& allowed_methods );
+	int	checkBodySize( size_t current_body_size, size_t max_body_size );
+
+//Build `Error` response
+	void	buildErrorResponse( int code );
 
 
 //Utils ********************************************************************************************

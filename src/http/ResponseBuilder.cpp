@@ -19,13 +19,16 @@
 
 ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data ) {
 	
-	(void)request;
-
 	config_data_ = config_data;
 	if ( !config_data_.getReturn().empty() ) {//check RETURN - first priority
 		ResponseBuilder::buildReturnResponse( config_data.getReturn() );
+		return ;
 	}
-
+	if ( ResponseBuilder::checkMethodInRequest( request.getMethod(), config_data_.getMethods() ) == ERROR )
+		return ;
+	if ( request.getMethod() == HttpRequest::POST && ResponseBuilder::checkBodySize( request.getContentLength(), config_data_.getMaxBodySize() ) == ERROR )
+		return ;
+		
 }
 
 ResponseBuilder::~ResponseBuilder() {}
@@ -157,9 +160,11 @@ std::string	ResponseBuilder::readContentFromFile( const std::string& file ) {
 
 	std::ifstream		content_stream;
 	const std::string	whole_path = ResponseBuilder::buildPathFromRootAndFile( file );
+	std::cout << "Path is [" << whole_path << "]" << std::endl;
 
 	content_stream.open( whole_path.c_str() );
 	if ( content_stream.fail() || !content_stream.is_open() ) {
+		std::cout << "Can't open file " << std::endl;
 		return "";
 	}
 	std::string	buffer;
@@ -179,13 +184,57 @@ std::string	ResponseBuilder::readContentFromFile( const std::string& file ) {
 const std::string	ResponseBuilder::buildPathFromRootAndFile( const std::string& file ) {
 
 	std::string	root = config_data_.getRoot();
+
 	if ( file[0] == '/' && root[root.size()-1] == '/' )
 		root = root.substr(0, root.size()-1);
+	else if ( file[0] != '/' && root[root.size()-1] != '/' )
+		root += "/";
+
 	return root + file;
 }
 
+int	ResponseBuilder::checkMethodInRequest( HttpRequest::Method current_method, const std::vector<std::string>& allowed_methods ) {
 
+	for ( std::vector<std::string>::size_type i = 0; i < allowed_methods.size(); i++ ) {
+		if ( allowed_methods[i] == "GET" && current_method == HttpRequest::GET )
+			return SUCCESS;
+		else if ( allowed_methods[i] == "POST" && current_method == HttpRequest::POST )
+			return SUCCESS;
+		else if ( allowed_methods[i] == "DELETE" && current_method == HttpRequest::DELETE )
+			return SUCCESS;
+	}
+	ResponseBuilder::buildErrorResponse( 405 );
+	return ERROR;
+}
 
+void	ResponseBuilder::buildErrorResponse( int code ) {
+
+	code_ = code;
+	ResponseBuilder::setFirstLineOfReturnResponse();
+
+	bool					error_page_from_config = false;
+	const std::map<int, std::string>&	config_errors = config_data_.getErrorPage();
+	for ( std::map<int, std::string>::const_iterator it = config_errors.begin(); it != config_errors.end(); it++ ) {
+		if ( it->first == code_ ) {
+			response_.setBody( ResponseBuilder::readContentFromFile( it->second ) );
+			if ( response_.getBody() != "" )
+				error_page_from_config = true;
+		}
+	}
+	if ( error_page_from_config == false )
+		response_.setBody( ResponseBuilder::generateDefaultPage() );
+
+	response_.setHeader( header_ );
+}
+
+int	ResponseBuilder::checkBodySize( size_t current_body_size, size_t max_body_size ) {
+
+	if ( current_body_size > max_body_size ) {
+		ResponseBuilder::buildErrorResponse( 413 );
+		return ERROR;
+	}
+	return SUCCESS;
+}
 
 /*
 
