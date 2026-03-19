@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:54:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/13 16:09:10 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/18 15:26:07 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,6 @@
 
 Reactor::Reactor(void)
 {
-    std::cout << "Reactor default constructor called" << std::endl;
-
     epoll_fd_ = epoll_create(1);
     if (epoll_fd_ == -1)
         throw std::runtime_error("epoll_create failed");

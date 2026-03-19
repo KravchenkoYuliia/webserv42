@@ -18,7 +18,6 @@
 
 ServerManager::ServerManager(void)
 {
-    std::cout << "ServerManager default constructor called" << std::endl;
 }
 
 ServerManager::~ServerManager(void)

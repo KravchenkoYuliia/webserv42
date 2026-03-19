@@ -35,8 +35,6 @@ ConnectionHandler::ConnectionHandler(int client_fd,
     port_(port),
     servers_(servers)
 {
-    // TODO: delete this log
-    std::cout << "ConnectionHandler default constructor called" << std::endl;
 }
 
 ConnectionHandler::~ConnectionHandler(void)

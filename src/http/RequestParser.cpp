@@ -57,7 +57,6 @@ RequestParser::RequestParser(void)
         current_chunk_size_(0),
         waiting_for_chunk_size_(true)
 {
-    std::cout << "RequestParser default constructor called" << std::endl;
 }
 
 RequestParser::~RequestParser(void)

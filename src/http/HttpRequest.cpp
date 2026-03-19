@@ -26,8 +26,6 @@ HttpRequest::HttpRequest(void)
         content_length_(0),
         chunk_size_(0)
 {
-    // TODO: Delete this log
-    std::cout << "HttpRequest default constructor called" << std::endl;
 }
 
 HttpRequest::~HttpRequest(void)

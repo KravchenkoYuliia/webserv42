@@ -26,7 +26,6 @@ Socket::Socket(void)
     :   fd_(kDefaultFd),
         bind_port_(kDefaultPort)
 {
-    std::cout << "Socket parametized constructor called" << std::endl;
 }
 
 Socket::Socket( const Socket& copy )

@@ -28,7 +28,6 @@ ConnectionAcceptor::ConnectionAcceptor(
     port_(port),
     servers_(servers)
 {
-    std::cout << "ConnectionAcceptor parametized constructor called" << std::endl;
 }
 
 ConnectionAcceptor::~ConnectionAcceptor(void)

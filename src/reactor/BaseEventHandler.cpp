@@ -21,8 +21,6 @@ BaseEventHandler::BaseEventHandler(EventType type)
     :   flags_(FLAG_WANT_READ),
         type_(type)
 {
-    // TODO: remove this log
-    std::cout << "BaseEventHandler default constructor called" << std::endl;
 }
 
 BaseEventHandler::~BaseEventHandler(void)
