@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include <limits>
+#include <stdexcept>
 
 ConfigParser::ConfigParser( char* config_file )
 	: lexer_(config_file) {
@@ -420,7 +421,7 @@ void	ConfigParser::parseClientMaxBodySize() {
 
 void	ConfigParser::parseReturn() {
 
-    ConfigParser::checkIfOnlyOneReturn();
+   	 ConfigParser::checkIfOnlyOneReturn();
 
 	//next token must be a number like 200
 	//
@@ -438,11 +439,12 @@ void	ConfigParser::parseReturn() {
 	if ( std::find( implemented_codes.begin(), implemented_codes.end(), code ) == implemented_codes.end() )
 		throw std::runtime_error( "Error in config: invalid or not implemented code after return" );
 
-	//next token can be a page / text / nothing
+	//next token can be a page / text / url / nothing
 	//
 	token = lexer_.getNextToken();
 	if ( token.getType() == TOKEN_SEMICOLON ) {
 		ConfigParser::setReturn( code, "" );
+		ConfigParser::checkIfRedirection( code, token );
 		return ;
 	}
 	if ( token.getType() != TOKEN_WORD )
@@ -453,6 +455,15 @@ void	ConfigParser::parseReturn() {
 	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_SEMICOLON )
 		throw std::runtime_error( "Error in config: fix return block - semicolon is missing");
+}
+
+void	ConfigParser::checkIfRedirection( int code, Token token ) {
+
+	if ( code == 301 || code == 302 || code == 303 || code == 307 || code == 308 ) {
+
+		if ( token.getType() != TOKEN_WORD )
+			throw std::runtime_error( "Error in config: return redirection(301, 302, 303, 307, 308) must have an url after code");
+	}
 }
 
 void	ConfigParser::setReturn( int code, std::string value ) {
@@ -512,7 +523,7 @@ void	ConfigParser::parseUploadAllowedInLocation() {
 	Token	token = lexer_.getNextToken();
 	if ( token.getType() != TOKEN_WORD )
 		throw std::runtime_error( "Error in config: fix upload_allowed block - directive does not provide any value");
-	
+
 	if ( token.getValue() == "on" )
 		servers_list_.back().getLocationList().back().setUploadAllowed();
 	else if ( token.getValue() != "off" )
@@ -524,7 +535,7 @@ void	ConfigParser::parseUploadAllowedInLocation() {
 }
 
 void	ConfigParser::parseUploadLocationInLocation() {
-	
+
 	if ( mode_.top() != MODE_LOCATION )
 		throw std::runtime_error( "Error in config: directive `upload_location` only is possible inside location block" );
 	if ( servers_list_.back().getLocationList().back().getUploadAllowed() == true ) {
@@ -538,14 +549,12 @@ void	ConfigParser::parseUploadLocationInLocation() {
 		if ( token.getType() != TOKEN_SEMICOLON )
 			throw std::runtime_error( "Error in config: fix upload_location block - semicolon is missing");
 	}
-	else { 
+	else {
 		Token	token = lexer_.getNextToken();
-		std::cout << "Token after upload_location " << token.getValue() << std::endl;
 		if ( token.getType() == TOKEN_WORD ) {
-			std::cout << "Token after word after upload_location is " << token.getValue() << std::endl;
 			token = lexer_.getNextToken();
 		}
-	}	
+	}
 }
 
 void	ConfigParser::fillEmptyDirectives() {
@@ -564,19 +573,7 @@ void	ConfigParser::fillEmptyDirectives() {
 			servers_list_[i].setIndex( kDefaultIndex );
 		}
 	}
-	//
-	//check if there is server block that has 0 error page
 
-	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
-		if ( servers_list_[i].getErrorPage().empty() ) {
-			servers_list_[i].setErrorPage( 400, "400.html" );
-			servers_list_[i].setErrorPage( 403, "403.html" );
-			servers_list_[i].setErrorPage( 404, "404.html" );
-			servers_list_[i].setErrorPage( 405, "405.html" );
-			servers_list_[i].setErrorPage( 413, "413.html" );
-			servers_list_[i].setErrorPage( 500, "500.html" );
-		}
-	}
 	//allowed methods
 	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
 		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {
@@ -594,7 +591,7 @@ void	ConfigParser::checkUpload() {
 	for ( std::vector<ServerConfig>::size_type i = 0; i < servers_list_.size(); i++ ) {
 		for ( std::vector<LocationConfig>::size_type j = 0; j < servers_list_[i].getLocationList().size(); j++ ) {
 
-			if ( servers_list_[i].getLocationList()[j].getUploadAllowed() == true 
+			if ( servers_list_[i].getLocationList()[j].getUploadAllowed() == true
 					&& servers_list_[i].getLocationList()[j].getUploadLocation() == "" ) {
 				throw std::runtime_error( "Error in config: upload_allowed is ON but no upload_location is provided");
 			}
@@ -608,7 +605,7 @@ std::ostream&	operator<<( std::ostream& out, std::map<uint16_t, std::vector<Serv
 		<< "\e[1;92m" <<  "Map< port, vector of Server > :" << std::endl;
 	for ( std::map<uint16_t, std::vector<ServerConfig> >::iterator it = m.begin(); it != m.end(); it++ ) {
 		out << "\e[1;92m" << "Port [" << it->first << "] is in " << it->second.size() << " servers" << std::endl << "\033[0m";
-		
+
 		for ( std::vector<ServerConfig>::size_type i = 0; i < it->second.size(); i++ ) {
 			out << "\t" << "\e[4;37m" << "Server["<< i << "] has" << std::endl
 				<< it->second[i];

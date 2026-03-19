@@ -53,12 +53,6 @@ else
     just return code
     Content-Length: 0
 
-TODO : fix config parser -> if redirection code does not have smth after -> error
-TODO: check permission of directory and file to open file
-if smth after code starts with `/` --> it's path
-    find - open - read - return text
-
-
 ## special directives in syntax
 - redirection
 ```Location:```
@@ -67,5 +61,6 @@ if smth after code starts with `/` --> it's path
 ```Allow: GET```
 explain which methods are allowed
 
-- 
-
+## ERRORs
+### return non_existing file -> 404
+### return file with no permission -> 403

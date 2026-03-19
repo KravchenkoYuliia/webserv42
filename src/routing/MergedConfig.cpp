@@ -48,4 +48,20 @@ size_t	MergedConfig::getMaxBodySize() const {
 	return server_.getClientMaxBodySize();
 }
 
+const std::string&	MergedConfig::getPath() const {
+	return location_.getPath();
+}
+
+const std::vector<std::string>&	MergedConfig::getIndex() const {
+	if ( !location_.getIndex().empty() )
+		return location_.getIndex();
+	return server_.getIndex();
+}
+
+AutoindexType	MergedConfig::getAutoindex() const {
+	if ( location_.getAutoindex() != AUTOINDEX_NOT_SPECIFIED )
+		return location_.getAutoindex();
+	return server_.getAutoindex();
+}
+
 MergedConfig::~MergedConfig() {}

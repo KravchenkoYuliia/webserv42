@@ -57,6 +57,7 @@ private:
 	void	parseAutoindex();
 	void	parseClientMaxBodySize();
 	void	parseReturn();
+	void	checkIfRedirection( int code, Token token );
 	void    setReturn( int code, std::string value );
 	void	checkIfOnlyOneReturn();
 

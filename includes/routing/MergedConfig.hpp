@@ -19,15 +19,19 @@ public:
 	const std::vector<std::string>&		getMethods() const;
 	const std::map<int, std::string>&	getErrorPage() const;
 	size_t					getMaxBodySize() const;
+	const std::string&			getPath() const;
+	const std::vector<std::string>&		getIndex() const;
+	AutoindexType				getAutoindex() const;
+
 /*
 	bool				has_return_ ;           +
 	std::map<int, std::string>	return_code_ ;          +
 
 	std::vector<std::string>	server_name_;
 	std::string			root_;                  + 
-	std::vector<std::string>	index_;
+	std::vector<std::string>	index_;			+
 	std::map<int, std::string>	error_page_;            +
-	AutoindexType			autoindex_;
+	AutoindexType			autoindex_;		+
 	long long			client_max_body_size_;  +
 	std::vector<std::string>	allowed_methods_;       +
 	bool				upload_allowed_;

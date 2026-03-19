@@ -7,8 +7,14 @@ LocationConfig::LocationConfig()
 			client_max_body_size_(kNotSpecified),
 			has_return_( false ),
 			upload_allowed_( false ),
-			upload_location_( "" )
-{}
+			upload_location_( "" ) {
+
+allowed_methods_.push_back("GET");
+allowed_methods_.push_back("POST");
+allowed_methods_.push_back("DELETE");
+}
+
+
 LocationConfig::LocationConfig( const std::string& path )
 			: autoindex_( AUTOINDEX_NOT_SPECIFIED ),
 			path_( path ),

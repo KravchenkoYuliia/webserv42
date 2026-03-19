@@ -1,6 +1,6 @@
 #include "LocationMatcher.hpp"
 
-const LocationConfig&	LocationMatcher::matchLocation( const ServerConfig& selected_server, const std::string& uri ) {
+const LocationConfig	LocationMatcher::matchLocation( const ServerConfig& selected_server, const std::string& uri ) {
 
 	std::string::size_type			count_match;
 	std::string				biggest_match = "/";
@@ -21,6 +21,9 @@ const LocationConfig&	LocationMatcher::matchLocation( const ServerConfig& select
 			biggest_match = path;
 			index_of_matched_location = i;
 		}
+	}
+	if ( index_of_matched_location == 0 && uri == "/" && locations[0].getPath() != "/" ) {
+		return LocationConfig();
 	}
 
 	return locations[index_of_matched_location];

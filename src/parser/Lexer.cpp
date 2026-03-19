@@ -1,4 +1,5 @@
 #include "Lexer.hpp"
+#include <stdexcept>
 
 Lexer::Lexer() {}
 

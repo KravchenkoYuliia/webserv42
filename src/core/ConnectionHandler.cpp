@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:42:02 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/19 12:05:21 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/24 13:21:55 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,8 +114,7 @@ void ConnectionHandler::handleRead()
                         std::cout << "request_.isComplete bloc" << std::endl;
                         // TODO: integrate the server, host like the following in the response_builder object
                         const ServerConfig&        selected_server = ServerMatcher::matchServer(servers_, request_parser_.getHeader(Http::Headers::HOST), port_);
-                        const LocationConfig&      selected_location = LocationMatcher::matchLocation(selected_server, request_parser_.getUri());
-
+                        const LocationConfig&      selected_location = LocationMatcher::matchLocation(selected_server, request_parser_.getUri() );
                         MergedConfig        config_data( selected_server, selected_location );
 
                         ResponseBuilder     builder( request_parser_.getRequest(), config_data );
