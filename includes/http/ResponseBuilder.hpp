@@ -41,7 +41,7 @@ private:
 	const HttpResponse&	buildReturnResponse( const std::map<int, std::string>& return_data );
 	void			setFirstLineOfReturnResponse();
 	void			buildReturnRedirection( const std::string& what_is_return );
-	void			buildReturnPageHtml( const std::string& what_is_return );
+	void			buildReturnPageHtml( const std::string what_is_return );
 	void			buildBasicReturn( const std::string& what_is_return );
 	std::string		getCodeMeaning();
 
@@ -51,6 +51,7 @@ private:
 
 //Build `Error` response
 	void	buildErrorResponse( int code );
+	void	addHeaderLineFor405Error();
 
 
 //Utils ********************************************************************************************

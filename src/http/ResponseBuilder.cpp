@@ -78,11 +78,13 @@ void	ResponseBuilder::buildReturnRedirection( const std::string& what_is_return 
 			<< Http::Headers::CONTENT_LENGTH << ": 0";
 }
 
-void	ResponseBuilder::buildReturnPageHtml( const std::string& what_is_return ) {
+void	ResponseBuilder::buildReturnPageHtml( const std::string what_is_return ) {
 
 	header_ << Http::Headers::CONTENT_TYPE << ": text/html" << Http::Formatting::CRLF;
 
-	std::string	body = ResponseBuilder::readContentFromFile( what_is_return );
+	std::string	body;
+	if ( what_is_return != "")
+		body = ResponseBuilder::readContentFromFile( what_is_return );
 	if ( body == "" )
 		body = ResponseBuilder::generateDefaultPage();
 	response_.setBody( body );
@@ -211,20 +213,36 @@ void	ResponseBuilder::buildErrorResponse( int code ) {
 
 	code_ = code;
 	ResponseBuilder::setFirstLineOfReturnResponse();
-
+	ResponseBuilder::addHeaderLineFor405Error();
+	
 	bool					error_page_from_config = false;
 	const std::map<int, std::string>&	config_errors = config_data_.getErrorPage();
 	for ( std::map<int, std::string>::const_iterator it = config_errors.begin(); it != config_errors.end(); it++ ) {
 		if ( it->first == code_ ) {
-			response_.setBody( ResponseBuilder::readContentFromFile( it->second ) );
+			ResponseBuilder::buildReturnPageHtml( it->second );
 			if ( response_.getBody() != "" )
 				error_page_from_config = true;
 		}
 	}
 	if ( error_page_from_config == false )
-		response_.setBody( ResponseBuilder::generateDefaultPage() );
+		ResponseBuilder::buildReturnPageHtml( "" );
 
+	header_ << Http::Formatting::HEADER_END;
 	response_.setHeader( header_ );
+}
+
+void	ResponseBuilder::addHeaderLineFor405Error() {
+
+	if ( code_ != 405 )
+		return ;
+
+	header_ << "Allow: ";
+
+	const std::vector<std::string>&		allowed_methods = config_data_.getMethods();
+	for ( std::vector<std::string>::size_type i = 0; i < allowed_methods.size(); i++ ) {
+		header_ << allowed_methods[i] << " ";
+	}
+	header_ << Http::Formatting::CRLF;
 }
 
 int	ResponseBuilder::checkBodySize( size_t current_body_size, size_t max_body_size ) {
