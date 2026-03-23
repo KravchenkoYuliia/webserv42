@@ -25,7 +25,7 @@ public:
     void appendBody(const std::string &data)                   { body_ += data; }
     void setContentLength(size_t n)                            { content_length_ = n; }
     void setChunked(bool v)                                    { is_chunked_ = v; }
-    void setMultipart(bool v)                                  { is_multipart_ = v; }
+    void setIsMultipart(bool v)                                  { is_multipart_ = v; }
     void setMultipartBoundary(const std::string &b)            { multipart_boundary_ = b; }
 
     // ── Getters (used by ResponseBuilder) ────────────────────────────────────

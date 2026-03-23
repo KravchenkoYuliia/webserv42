@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:42:02 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/30 19:30:24 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/30 19:32:37 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,10 +60,6 @@ int ConnectionHandler::getFd() const
 void ConnectionHandler::handleRead()
 {
     char buffer[8192];
-    // TODO: remove this log
-    std::cout << "EPOLLIN case" << std::endl;
-
-    // read the request until recv == 0
     while (true)
     {
         ssize_t bytes_received = recv(fd_, buffer, sizeof(buffer), 0);
@@ -89,6 +85,7 @@ void ConnectionHandler::handleRead()
             // TODO: remove printing lines when done
             std::cout.write(buffer, bytes_received);
             std::cout.flush();
+            std::cout << std::endl;
 
             // save bytes into a read_buffer
             request_parser_.appendData(buffer, bytes_received);

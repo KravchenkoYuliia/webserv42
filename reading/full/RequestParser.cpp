@@ -198,7 +198,7 @@ bool RequestParser::finalizeHeaders()
         size_t b = ct.find("boundary=");
         if (b == std::string::npos)
             return false; // multipart without boundary is malformed
-        request_.setMultipart(true);
+        request_.setIsMultipart(true);
         request_.setMultipartBoundary(ct.substr(b + 9));
     }
 
