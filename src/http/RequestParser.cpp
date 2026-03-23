@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:07 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/19 11:02:20 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/23 18:08:34 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <algorithm>    // std::min
 #include <cstdlib>      // strtoul
 #include <errno.h>      // errno
+#include "http/MultipartParser.hpp"
 #include "http/HttpConstants.hpp"
 #include "http/RequestParser.hpp"
 #include "utils/Utils.hpp"
@@ -138,6 +139,7 @@ RequestParser::ResultType       RequestParser::parseRequestLine()
 
     if (!parseRequestLineFields(line))
     {
+        std::cout << "parseRequestLineFields(line) failed" << std::endl;
         state_ = ParserState::ERROR;
         return (ParserResult::ERROR);
     }
@@ -177,22 +179,40 @@ RequestParser::ResultType       RequestParser::parseHeaders()
 bool RequestParser::validateHeaderSet()
 {
     if (!validateHostHeader())
+    {
+        std::cout << "validateHostHeader() failed" << std::endl;
         return (false);
+    }
     // 2 : Check Headers conflicts
     /*
         RFC-7230 - section 3.3.2 "A sender MUST NOT send a Content-Length header field in any message
         that contains a Transfer-Encoding header field."
     */
     if (!validateHeaderConflicts())
+    {
+        std::cout << "validateHeaderConflicts failed" << std::endl;
         return (false);
+    }
     if (!validateTransferEncodingHeader())
+    {
+        std::cout << "validateTransferEncodingHeader failed" << std::endl;
         return (false);
+    }
     if (!validateContentTypeHeader())
+    {
+        std::cout << "validateContentTypeHeader failed" << std::endl;
         return (false);
+    }
     if (!validateContentLengthHeader())
+    {
+        std::cout << "validateContentLengthHeader failed" << std::endl;
         return (false);
+    }
     if (!validateBodyForMethod())
+    {
+        std::cout << "validateBodyForMethod failed" << std::endl;
         return (false);
+    }
     // TODO: any others check to perform on this step?
     return (true);
 }
@@ -224,6 +244,9 @@ RequestParser::ResultType       RequestParser::parseBodyContentLength()
     if (content_length_bytes_ == 0)
     {
         state_ = ParserState::COMPLETE;
+        handleMultiPart();
+        if (state_ == ParserState::ERROR)
+            return (ParserResult::ERROR);
         return (ParserResult::OK);
     }
     return (ParserResult::AGAIN);
@@ -242,6 +265,9 @@ RequestParser::ResultType       RequestParser::parseBodyChunked()
             line = Utils::trim(line);
             bool            success;
             int             base = 16;
+            size_t          separator = line.find(';');
+            if (separator != std::string::npos)
+                line = line.substr(0, separator);
             current_chunk_size_ = parseUnsignedLong(line, success, base);
             if (!success)
             {
@@ -257,9 +283,12 @@ RequestParser::ResultType       RequestParser::parseBodyChunked()
                 {
                     error_code_ = 400;
                     state_ = ParserState::ERROR;
-                    return ParserResult::ERROR;
+                    return (ParserResult::ERROR);
                 }
                 raw_buffer_.erase(0, CRLF_size);
+                handleMultiPart();
+                if (state_ == ParserState::ERROR)
+                    return (ParserResult::ERROR);
                 state_ = ParserState::COMPLETE;
                 return (ParserResult::OK);
             }
@@ -307,6 +336,7 @@ bool RequestParser::parseRequestLineFields( const std::string& line )
 
     if (!isValidMethod(tokens_list[0]) || !isValidUriFormat(tokens_list[1]))
     {
+        std::cout << "!isValidMethod(tokens_list[0]) || !isValidUriFormat(tokens_list[1]) failed! method = " << tokens_list[0] << " uri format = " << tokens_list[1] << std::endl;
         error_code_ = 400; // TODO: BAD_REQUEST
         return (false);
     }
@@ -315,6 +345,7 @@ bool RequestParser::parseRequestLineFields( const std::string& line )
 
     if (!isValidHttpProtocolVersion(tokens_list[2]))
     {
+        std::cout << "isValidHttpProtocolVersion(tokens_list[2]) failed! http protocol version = " << tokens_list[2] << std::endl;
         error_code_ = 505; // Todo: // HTTP_VERSION_NOT_SUPPORTED
         return (false);
     }
@@ -324,6 +355,7 @@ bool RequestParser::parseRequestLineFields( const std::string& line )
 
 // ------------------------------- Method Helper -------------------------------
 
+// TODO: replace with ParserUtils::findCRLF()
 size_t    RequestParser::findCRLF() const
 {
     return (raw_buffer_.find(Http::Formatting::CRLF));
@@ -353,7 +385,10 @@ bool    RequestParser::isValidUriFormat( const std::string& uri )
     for (size_t i = 0; i < uri.size(); ++i)
     {
         if (uri[i] == ' ' || uri[i] == '\t')
+        {
+            std::cout << "uri[i] == ' ' || uri[i] == '\t' failed" << std::endl;
             return (false);
+        }
     }
     return (true);
 }
@@ -459,7 +494,10 @@ bool    RequestParser::validateContentTypeHeader()
     if (content_type.find(Http::ContentType::TEXT_PLAIN) != std::string::npos)
         return (true);
     if (content_type.find(Http::ContentType::MULTIPART_FORM_DATA) != std::string::npos)
+    {
+        request_.setIsMultipart(true);
         return (true);
+    }
     if (content_type.find(Http::ContentType::APPLICATION_X_WWW_FORM_URLENCODED) != std::string::npos)
         return (true);
     error_code_ = 415; // TODO: UNSUPPORTED_MEDIA_TYPE
@@ -478,4 +516,25 @@ unsigned long RequestParser::parseUnsignedLong(const std::string &str, bool &suc
     }
     success = true;
     return (value);
+}
+
+void    RequestParser::handleMultiPart()
+{
+    if (!request_.getIsMultipart())
+        return ;
+
+    MultipartParser multipart_parser;
+    try {
+        MultipartData   data = multipart_parser.parse(
+            request_.getBody(),
+            request_.getHeader(Http::Headers::CONTENT_TYPE)
+        );
+        request_.setMultipartData(data);
+    } catch (const std::runtime_error& e)
+    {
+        // TODO: remove this log ?
+        std::cerr << "Multipart parsing error: " << e.what() << std::endl;
+        error_code_ = 400; // TODO: BAD_REQUEST
+        state_ = ParserState::ERROR;
+    }
 }

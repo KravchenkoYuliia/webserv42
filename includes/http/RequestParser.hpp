@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:28:58 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/17 13:53:04 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/23 17:37:10 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,14 +62,7 @@ public:
     bool            parseRequest( const std::string& ); // or parseRequestBytes or process
     ResultType      parseNext(); // or parseRequestBytes or process
     bool            isComplete() const;
-    // ngx_http_parse_request_line
-    // ngx_http_parse_header_line
-    // ngx_http_parse_uri
-    // ngx_http_parse_status_line
-    // ngx_http_parse_multi_header_lines
-    // ngx_http_arg
-    // ngx_http_split_args
-    // ngx_http_parse_chunked
+    
 protected:
     // ---------- Protected Data Members ---------------------
 
@@ -104,6 +97,7 @@ private:
     bool            validateContentLengthHeader();
     bool            validateBodyForMethod();
     bool            validateContentTypeHeader();
+    void            handleMultiPart();
 
     // Utility
     size_t          findCRLF() const;
