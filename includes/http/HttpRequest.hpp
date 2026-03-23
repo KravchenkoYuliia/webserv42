@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 17:50:45 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/17 10:56:19 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/20 12:52:11 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <string>
 #include <map>
 #include <inttypes.h>
+#include "http/MultipartData.hpp"
 
 class HttpRequest {
 public:
@@ -39,6 +40,8 @@ public:
     void                                            appendToBody(const std::string& body);
     void                                            setContentLength(size_t value);
     void                                            setChunkSize(size_t value);
+    void                                            setIsMultipart(bool value);
+    void                                            setMultipartData(const MultipartData& data);
 
     Method                                          getMethod() const;
     std::string                                     getMethodToString() const;
@@ -49,6 +52,8 @@ public:
     const std::string&                              getBody() const;
     size_t                                          getContentLength() const;
     size_t                                          getChunkSize() const;
+    bool                                            getIsMultipart() const;
+    const MultipartData&                            getMultipartData() const;
 
     // ---------- Member Methods -----------------------
     bool                                            hasHeader( const std::string& key) const;
@@ -65,6 +70,8 @@ private:
     std::string                             body_;
     size_t                                  content_length_;
     size_t                                  chunk_size_;
+    bool                                    is_multipart_;
+    MultipartData                           multipart_data_;
 
     HttpRequest& operator=(const HttpRequest& copy);
     HttpRequest(const HttpRequest& copy);

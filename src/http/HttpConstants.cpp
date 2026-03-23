@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 11:46:46 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/17 14:55:20 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/20 16:25:15 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,16 +34,30 @@ const std::string Http::Headers::CONNECTION = "Connection";
 
 // ------------------------- Struct Formatting -------------------------
 
-const char *Http::Formatting::CR = "\r";
-const char *Http::Formatting::LF = "\n";
-const char *Http::Formatting::CRLF = "\r\n";
-const char *Http::Formatting::HEADER_END = "\r\n\r\n";
-const char *Http::Formatting::SPACE = " ";
-const char *Http::Formatting::COLON_SEPARATOR = ":";
-const char *Http::Formatting::HEADER_SEPARATOR = ": ";
+const char      *Http::Formatting::CR = "\r";
+const char      *Http::Formatting::LF = "\n";
+const char      *Http::Formatting::CRLF = "\r\n";
+const size_t     Http::Formatting::CRLF_SIZE = 2;
+const char      *Http::Formatting::HEADER_END = "\r\n\r\n";
+const size_t     Http::Formatting::HEADER_END_SIZE = 4;
+const char      *Http::Formatting::SPACE = " ";
+const char      *Http::Formatting::COLON_SEPARATOR = ":";
+const char      *Http::Formatting::HEADER_SEPARATOR = ": ";
+const char      *Http::Formatting::BOUNDARY_PREFIX = "--";
+const char      *Http::Formatting::BOUNDARY_SUFFIX = "--";
+const size_t     Http::Formatting::BOUNDARY_DELIMITER_SIZE = 2;
+
 
 // ------------------------- Struct ContentType -------------------------
 
 const std::string Http::ContentType::TEXT_PLAIN = "text/plain";
 const std::string Http::ContentType::MULTIPART_FORM_DATA = "multipart/form-data";
 const std::string Http::ContentType::APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
+
+// ------------------------- Struct Multipart -------------------------
+
+const std::string Http::MultiPart::BOUNDARY = "boundary=";
+const std::string Http::MultiPart::NAME = "name=";
+const std::string Http::MultiPart::FILENAME = "filename=";
+const std::string Http::MultiPart::CONTENT_DISPOSITION = "Content-Disposition:";
+const std::string Http::MultiPart::CONTENT_TYPE = "Content-Type:";

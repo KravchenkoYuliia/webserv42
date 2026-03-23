@@ -6,12 +6,13 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:02:42 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/17 11:34:18 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/23 17:32:11 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
 #include <cctype>   // isupper, tolower
+#include <stdexcept>        //std::runtime_error
 #include "http/HttpConstants.hpp"
 #include "http/HttpRequest.hpp"
 #include "utils/Utils.hpp"
@@ -22,9 +23,10 @@
 
 HttpRequest::HttpRequest(void)
     :   method_(GET), // TODO: is not hiding that default method is GET?
-        version_(Http::Protocol::HTTP_VERSION_1_1), // TODO: should we use default 1.1?
+        version_(Http::Protocol::HTTP_VERSION_1_1),
         content_length_(0),
-        chunk_size_(0)
+        chunk_size_(0),
+        is_multipart_(false)
 {
 }
 
@@ -90,10 +92,23 @@ void    HttpRequest::setContentLength(size_t value)
         throw std::runtime_error("Content-Length too large");
     content_length_ = value;
 }
+
 void    HttpRequest::setChunkSize(size_t value)
 {
     chunk_size_ = value;
 }
+
+void    HttpRequest::setIsMultipart(bool value)
+{
+    is_multipart_ = value;
+}
+
+void HttpRequest::setMultipartData(const MultipartData& data)
+{
+    multipart_data_ = data;
+    is_multipart_ = true;
+}
+
 
 // --------------------------- Public Getter Methods ---------------------------
 
@@ -154,13 +169,21 @@ size_t                                          HttpRequest::getChunkSize() cons
     return (chunk_size_);
 }
 
+bool                                            HttpRequest::getIsMultipart() const
+{
+    return (is_multipart_);
+}
+
+
+const MultipartData& HttpRequest::getMultipartData() const
+{
+    return (multipart_data_);
+}
+
 // --------------------------- Public Member Methods ---------------------------
 
 bool    HttpRequest::hasHeader( const std::string& key) const
 {
-    // TODO: Delete this log
-    std::cout << "hasHeader: key = " << key << std::endl;
-
     std::string normalized_key = Utils::toLower(key);
     return (headers_.find(normalized_key) != headers_.end());
 }

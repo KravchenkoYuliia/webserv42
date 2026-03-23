@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 11:44:57 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/17 14:54:58 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/20 16:28:35 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,19 +38,32 @@ struct Http
     };
 
     struct Formatting {
-        static const char *CR;
-        static const char *LF;
-        static const char *CRLF;
-        static const char *HEADER_END;
-        static const char *SPACE;
-        static const char *COLON_SEPARATOR;
-        static const char *HEADER_SEPARATOR;
+        static const char   *CR;
+        static const char   *LF;
+        static const char   *CRLF;
+        static const size_t CRLF_SIZE;
+        static const char   *HEADER_END;
+        static const size_t HEADER_END_SIZE;
+        static const char   *SPACE;
+        static const char   *COLON_SEPARATOR;
+        static const char   *HEADER_SEPARATOR;
+        static const char   *BOUNDARY_PREFIX;
+        static const char   *BOUNDARY_SUFFIX;
+        static const size_t BOUNDARY_DELIMITER_SIZE;
     };
 
     struct ContentType {
         static const std::string TEXT_PLAIN;
         static const std::string MULTIPART_FORM_DATA;
         static const std::string APPLICATION_X_WWW_FORM_URLENCODED;
+    };
+
+    struct MultiPart {
+        static const std::string BOUNDARY;
+        static const std::string NAME;
+        static const std::string FILENAME;
+        static const std::string CONTENT_DISPOSITION;
+        static const std::string CONTENT_TYPE;
     };
 };
 
