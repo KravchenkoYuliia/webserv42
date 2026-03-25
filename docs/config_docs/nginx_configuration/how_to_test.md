@@ -1,6 +1,9 @@
-## create me_nginx.conf
+## GET
 
-example: events {}
+create me_nginx.conf
+
+example:
+events {}
 
 http {
     server {

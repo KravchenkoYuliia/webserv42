@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 16:46:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/25 13:02:06 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/26 11:55:41 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,9 +43,12 @@ private:
 	std::ostringstream	header_;
 
 	void	        initialize_values( const std::string& uri, const MergedConfig& config_data );
-	void	        setFirstLineOfHeader();
-	void	        setLastLineOfHeader();
+	void		buildResponse( const HttpRequest& request );
+
+	void	        setStatusCode();
 	void	        setContentType( const std::string& path );
+	void		setContentLength();
+	void	        setLastLineOfHeader();
 	void		setServerAndDate();
 	std::string		getCodeMeaning();
 
@@ -64,7 +67,7 @@ private:
     void    setErrorState( int error_code );
 
 //Build `Error` response
-	void	buildErrorResponse( int code );
+	void	buildErrorResponse();
 	void	setHeaderLineFor405Error();
 	void	setErrorPageHtml( const std::string page_from_config );
 

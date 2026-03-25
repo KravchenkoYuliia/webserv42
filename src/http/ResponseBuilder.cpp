@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/25 12:58:28 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/26 11:55:41 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h> //opendir
-#include <ctime> 
+#include <ctime>
 #include "http/HttpConstants.hpp"
 #include "http/ResponseBuilder.hpp"
 
@@ -23,22 +23,33 @@
 ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data ) {
 
 	initialize_values( request.getUri(), config_data );
-	if ( !config_data_.getReturn().empty() ) {
-		buildReturn( config_data.getReturn() );
+	
+	if ( request.getErrorCode() != NOT_SPECIFIED ) {
+		setErrorState( request.getErrorCode() );
 	}
 	else {
-		buildResponseAccordingToMethod( request );
+		buildResponse( request );
 	}
 
 	if ( error_ == true ) {
-		buildErrorResponse( code_ );
+		buildErrorResponse();
 	}
-
-	header_ << Http::Headers::CONTENT_LENGTH << ": " << response_.getBody().length() << Http::Formatting::CRLF;
+	
+	setContentLength();
 	setLastLineOfHeader();
 }
 
 ResponseBuilder::~ResponseBuilder() {}
+
+void	ResponseBuilder::buildResponse( const HttpRequest& request ) {
+	
+	if ( !config_data_.getReturn().empty() ) {
+		buildReturn( config_data_.getReturn() );
+	}
+	else {
+		buildResponseAccordingToMethod( request );
+	}
+}
 
 void	ResponseBuilder::initialize_values( const std::string& uri, const MergedConfig& config_data ) {
 
@@ -57,7 +68,7 @@ const HttpResponse&	ResponseBuilder::getResponse() {
 	return response_;
 }
 
-void	ResponseBuilder::setFirstLineOfHeader() {
+void	ResponseBuilder::setStatusCode() {
 
 	code_meaning_ = getCodeMeaning();
 	if ( code_meaning_ == "This code is not implemented" ) {
@@ -66,6 +77,11 @@ void	ResponseBuilder::setFirstLineOfHeader() {
 	}
 
 	header_ << Http::Protocol::HTTP_VERSION_1_0 << " " << code_ << " " << code_meaning_ << Http::Formatting::CRLF;
+}
+
+void	ResponseBuilder::setContentLength() {
+
+	header_ << Http::Headers::CONTENT_LENGTH << ": " << response_.getBody().length() << Http::Formatting::CRLF;
 }
 
 void	ResponseBuilder::setLastLineOfHeader() {
@@ -79,7 +95,7 @@ void	ResponseBuilder::buildReturn( const std::map<int, std::string>& return_data
 	code_ = return_data.begin()->first;
 	std::string	what_is_return = return_data.begin()->second;
 
-	setFirstLineOfHeader();
+	setStatusCode();
 	setServerAndDate();
 	if ( code_ >= 301 && code_ <= 308 ) {
 		buildRedirectionReturn( what_is_return );
@@ -133,7 +149,7 @@ void	ResponseBuilder::buildResponseAccordingToMethod( const HttpRequest& request
 void	ResponseBuilder::buildResponseGET() {
 
 	code_ = 200;
-	setFirstLineOfHeader();
+	setStatusCode();
 	setServerAndDate();
 	std::string	path_without_prefix = cutPrefixFromUri( uri_ );
 	handleUri( path_without_prefix );
@@ -152,11 +168,9 @@ void	ResponseBuilder::buildResponseDELETE( const HttpRequest& request ) {
 	header_ << "WIP: building DELETE response";
 }
 
-void	ResponseBuilder::buildErrorResponse( int code ) {
+void	ResponseBuilder::buildErrorResponse() {
 
-	code_ = code;
-
-	setFirstLineOfHeader();
+	setStatusCode();
 	setHeaderLineFor405Error();
 	setServerAndDate();
 
@@ -253,7 +267,7 @@ void	ResponseBuilder::setContentType( const std::string& path ) {
 
 
 void	ResponseBuilder::setServerAndDate() {
-	
+
 	header_ << "Server: 📡✅ Webserv 🐝" << Http::Formatting::CRLF;
 
 	time_t		t;
