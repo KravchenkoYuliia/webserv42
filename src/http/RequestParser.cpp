@@ -224,6 +224,31 @@ bool RequestParser::validateHeaderFields()
     return (true);
 }
 
+/**
+ * @brief Parses and stores a single HTTP header field.
+ *
+ * This method extracts the header key and value from a raw header line
+ * using the ':' delimiter, trims surrounding whitespace, and validates
+ * the result before storing it in the request object.
+ *
+ * Behavior:
+ * - Splits the input line into key and value at the first ':' occurrence.
+ * - Trims leading and trailing whitespace from both key and value.
+ * - Ensures the key is not empty.
+ * - Verifies header uniqueness constraints via validateHeaderFieldIsUnique().
+ * - Stores the header in the request object if valid.
+ *
+ * @param line The raw header line to parse (e.g., "Host: example.com").
+ *
+ * @return true if the header field is successfully parsed and stored.
+ * @return false if:
+ *         - The delimiter ':' is missing,
+ *         - The header key is empty,
+ *         - The header violates uniqueness constraints.
+ *
+ * @note On failure due to uniqueness violation, error_code_ may be set
+ *       by validateHeaderFieldIsUnique().
+ */
 bool    RequestParser::parseHeaderField( const std::string& line )
 {
     static const std::string    delimiter = Http::Formatting::COLON_SEPARATOR;
@@ -232,10 +257,65 @@ bool    RequestParser::parseHeaderField( const std::string& line )
     if (pos == std::string::npos)
         return (false);
 
-    std::string     key = line.substr(0, pos);
-    std::string     value = line.substr(pos + delimiter.length());
+    std::string     key = Utils::trim( line.substr(0, pos) );
+    std::string     value = Utils::trim( line.substr(pos + delimiter.length()) );
+    if (key.empty())
+        return (false);
+    if (!validateHeaderFieldIsUnique(key, value))
+        return (false);
+    request_.setHeader(key, value);
+    return (true);
+}
 
-    request_.setHeader(Utils::trim(key), Utils::trim(value));
+/**
+ * @brief Validates that a header field complies with uniqueness constraints.
+ *
+ * This method ensures that certain HTTP headers are not duplicated in a way
+ * that violates the HTTP specification or internal parser rules.
+ *
+ * Rules enforced:
+ * - "Content-Length":
+ *   - May appear multiple times only if all values are identical.
+ *   - If a different value is encountered, the request is invalid.
+ *
+ * - "Host", "Content-Type", "Transfer-Encoding":
+ *   - Must not appear more than once.
+ *
+ * Header name comparison is performed case-insensitively.
+ *
+ * @param key The header field name.
+ * @param value The header field value.
+ *
+ * @return true if the header field respects uniqueness constraints.
+ * @return false if a violation is detected.
+ *
+ * @note On failure, sets error_code_ to 400 (Bad Request).
+ */
+bool            RequestParser::validateHeaderFieldIsUnique( const std::string& key, const std::string& value )
+{
+    const std::string normalized_key = Utils::toLower(key);
+    static const std::string normalized_host = Utils::toLower(Http::Headers::HOST);
+    static const std::string normalized_content_length = Utils::toLower(Http::Headers::CONTENT_LENGTH);
+    static const std::string normalized_transfer_encoding = Utils::toLower(Http::Headers::TRANSFER_ENCODING);
+    static const std::string normalized_content_type = Utils::toLower(Http::Headers::CONTENT_TYPE);
+
+    if ( normalized_key == normalized_content_length && request_.hasHeader(normalized_key))
+    {
+        if (request_.getHeaderValue(normalized_key) != value)
+        {
+            error_code_ = 400;
+            return (false);
+        }
+    }
+
+    if ((normalized_key == normalized_host
+            || normalized_key == normalized_content_type
+            || normalized_key == normalized_transfer_encoding)
+            && request_.hasHeader(normalized_key))
+    {
+        error_code_ = 400; // TODO: BAD_REQUEST
+        return (false);
+    }
     return (true);
 }
 

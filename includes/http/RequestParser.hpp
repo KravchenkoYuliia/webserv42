@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:28:58 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/26 11:57:09 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/27 14:50:03 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ private:
     bool            validateBodyForMethod();
     bool            validateContentTypeHeader();
     void            handleMultiPart();
-
+    bool            validateHeaderFieldIsUnique( const std::string& key, const std::string& value );
     // Utility
     size_t          findCRLF() const;
     bool            isValidMethod( const std::string& method );
