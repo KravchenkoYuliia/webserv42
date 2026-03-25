@@ -10,7 +10,15 @@
 [x] return only works with html -> change to any type
 [x] if no location match -> it's not an error
     server must work without location with server data
-[] listing must be a link to the correct files
+[x] listing must be a link to the correct files
 [x] upgrade default html
-[] return just code must add a corresponding html page to body
 
+[x] redirection makes second request to a new location
+    add body to redirection
+
+[x] return 200 /text.html
+    returns plain text - only one element or config error
+    no second request - just text
+
+[x] add other lines from request example
+[x] check build listing if uri does not have /

@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/24 13:37:34 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/25 12:58:28 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,12 +15,32 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h> //opendir
+#include <ctime> 
 #include "http/HttpConstants.hpp"
 #include "http/ResponseBuilder.hpp"
 
-//"\e[1;92m"
-//"\033[0m"
+//std::cout << "\e[1;92m" << "\033[0m" << std::endl;
 ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data ) {
+
+	initialize_values( request.getUri(), config_data );
+	if ( !config_data_.getReturn().empty() ) {
+		buildReturn( config_data.getReturn() );
+	}
+	else {
+		buildResponseAccordingToMethod( request );
+	}
+
+	if ( error_ == true ) {
+		buildErrorResponse( code_ );
+	}
+
+	header_ << Http::Headers::CONTENT_LENGTH << ": " << response_.getBody().length() << Http::Formatting::CRLF;
+	setLastLineOfHeader();
+}
+
+ResponseBuilder::~ResponseBuilder() {}
+
+void	ResponseBuilder::initialize_values( const std::string& uri, const MergedConfig& config_data ) {
 
 	error_ = false;
 	file_or_dir_ = NOT_SPECIFIED;
@@ -28,77 +48,135 @@ ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig
 	code_meaning_ = "";
 	header_.str("");
 
-	ResponseBuilder::setResponse( request, config_data );
-	ResponseBuilder::setLastLineOfHeader();
+	config_data_ = config_data;
+	uri_ = uri;
 }
 
-ResponseBuilder::~ResponseBuilder() {}
-
-const HttpResponse&	ResponseBuilder::build() {
+const HttpResponse&	ResponseBuilder::getResponse() {
 
 	return response_;
 }
 
-void	ResponseBuilder::setResponse( const HttpRequest& request, const MergedConfig& config_data ) {
-
-	config_data_ = config_data;
-	if ( !config_data_.getReturn().empty() ) {
-		ResponseBuilder::buildDirectReturn( config_data.getReturn() );
-	}
-	else {
-		ResponseBuilder::buildResponseAccordingToMethod( request );
-	}
-
-	if ( error_ == true ) {
-		ResponseBuilder::buildErrorResponse( code_ );
-	}
-}
-
-void	ResponseBuilder::setLastLineOfHeader() {
-
-	header_ << Http::Formatting::HEADER_END;
-	response_.setHeader( header_ );
-}
-
-void	ResponseBuilder::buildDirectReturn( const std::map<int, std::string>& return_data ) {
-
-	code_ = return_data.begin()->first;
-	std::string	what_is_return = return_data.begin()->second;
-
-	ResponseBuilder::setFirstLineOfHeader();
-
-	if ( code_ >= 301 && code_ <= 308 ) {
-		ResponseBuilder::setReturnRedirection( what_is_return );
-	}
-	else if ( what_is_return != "" && what_is_return[0] == '/' ) {
-		ResponseBuilder::handleResource( what_is_return );
-	}
-	else {
-		ResponseBuilder::setBasicReturn( what_is_return );
-	}
-}
-
 void	ResponseBuilder::setFirstLineOfHeader() {
 
-	code_meaning_ = ResponseBuilder::getCodeMeaning();
+	code_meaning_ = getCodeMeaning();
 	if ( code_meaning_ == "This code is not implemented" ) {
 		code_ = 500;
-		code_meaning_ = ResponseBuilder::getCodeMeaning();
+		code_meaning_ = getCodeMeaning();
 	}
 
 	header_ << Http::Protocol::HTTP_VERSION_1_0 << " " << code_ << " " << code_meaning_ << Http::Formatting::CRLF;
 }
 
-void	ResponseBuilder::setReturnRedirection( const std::string& what_is_return ) {
+void	ResponseBuilder::setLastLineOfHeader() {
 
-	header_ << "Location: " << what_is_return << Http::Formatting::CRLF
-			<< Http::Headers::CONTENT_LENGTH << ": 0";
+	header_ << "Connection: keep-alive" << Http::Formatting::HEADER_END;
+	response_.setHeader( header_ );
 }
 
-void	ResponseBuilder::handleResource( const std::string resource ) {
+void	ResponseBuilder::buildReturn( const std::map<int, std::string>& return_data ) {
 
-	const std::string path = ResponseBuilder::buildPathFromRootAndResource( resource );
-	if ( ResponseBuilder::checkIfPathExists( path ) == ERROR )
+	code_ = return_data.begin()->first;
+	std::string	what_is_return = return_data.begin()->second;
+
+	setFirstLineOfHeader();
+	setServerAndDate();
+	if ( code_ >= 301 && code_ <= 308 ) {
+		buildRedirectionReturn( what_is_return );
+	}
+	else {
+		buildBasicReturn( what_is_return );
+	}
+}
+
+void	ResponseBuilder::buildRedirectionReturn( const std::string& what_is_return ) {
+
+	header_ << "Location: " << what_is_return << Http::Formatting::CRLF;
+	header_ << Http::Headers::CONTENT_TYPE << ": " << "text/html" << Http::Formatting::CRLF;
+	response_.setBody( generateDefaultPage() );
+}
+
+void	ResponseBuilder::buildBasicReturn( const std::string& what_is_return ) {
+
+	header_ << Http::Headers::CONTENT_TYPE << ": text/plain" << Http::Formatting::CRLF;
+	response_.setBody( what_is_return );
+}
+
+void	ResponseBuilder::buildResponseAccordingToMethod( const HttpRequest& request ) {
+
+	if ( checkMethodInRequest( request.getMethod(), config_data_.getMethods() ) == ERROR ) {
+
+		ResponseBuilder::setErrorState( 405 );
+		return ;
+	}
+
+	if ( request.getMethod() == HttpRequest::GET ) {
+
+		buildResponseGET();
+	}
+	else if ( request.getMethod() == HttpRequest::POST ) {
+
+		if ( checkBodySize( request.getContentLength(), config_data_.getMaxBodySize() ) == ERROR ) {
+			setErrorState( 413 );
+			return ;
+		}
+
+		buildResponsePOST( request );
+	}
+	else if ( request.getMethod() == HttpRequest::DELETE ) {
+
+		buildResponseDELETE( request );
+	}
+
+}
+
+void	ResponseBuilder::buildResponseGET() {
+
+	code_ = 200;
+	setFirstLineOfHeader();
+	setServerAndDate();
+	std::string	path_without_prefix = cutPrefixFromUri( uri_ );
+	handleUri( path_without_prefix );
+}
+
+void	ResponseBuilder::buildResponsePOST( const HttpRequest& request ) {
+
+	(void)request;
+
+	header_ << "WIP: building POST response";
+}
+
+void	ResponseBuilder::buildResponseDELETE( const HttpRequest& request ) {
+
+	(void)request;
+	header_ << "WIP: building DELETE response";
+}
+
+void	ResponseBuilder::buildErrorResponse( int code ) {
+
+	code_ = code;
+
+	setFirstLineOfHeader();
+	setHeaderLineFor405Error();
+	setServerAndDate();
+
+	bool					error_page_from_config = false;
+	const std::map<int, std::string>&	config_errors = config_data_.getErrorPage();
+	for ( std::map<int, std::string>::const_iterator it = config_errors.begin(); it != config_errors.end(); it++ ) {
+		if ( it->first == code_ ) {
+			setErrorPageHtml( it->second );
+			if ( response_.getBody() != "" )
+				error_page_from_config = true;
+		}
+	}
+	if ( error_page_from_config == false )
+		setErrorPageHtml( "" );
+}
+
+void	ResponseBuilder::handleUri( const std::string uri ) {
+
+	const std::string path = buildPathFromRootAndResource( config_data_.getRoot(), uri );
+	if ( checkIfPathExists( path ) == ERROR )
 		return ;
 
 	if ( file_or_dir_ == IS_FILE ) {
@@ -112,19 +190,18 @@ void	ResponseBuilder::handleResource( const std::string resource ) {
 
 int	ResponseBuilder::handleFile( const std::string& path ) {
 
-	if ( ResponseBuilder::checkFilePermissions( path.c_str() ) == ERROR )
+	if ( checkFilePermissions( path.c_str() ) == ERROR )
 		return ERROR;
-	ResponseBuilder::setContentType( path );
+	setContentType( path );
 
 	std::string	body;
-	body = ResponseBuilder::readContentFromFile( path );
+	body = readContentFromFile( path );
 	if ( error_ == true ) {
 		setErrorState( 500 );
 		return ERROR;
 	}
-	response_.setBody( body );
-	header_ << Http::Headers::CONTENT_LENGTH << ": " << response_.getBody().length();
 
+	response_.setBody( body );
 	return SUCCESS;
 }
 
@@ -132,8 +209,8 @@ void	ResponseBuilder::handleDirectory( const std::string& path_without_file ) {
 
 	const std::vector<std::string>&	indices = config_data_.getIndex();
 	for ( std::vector<std::string>::size_type i = 0; i < indices.size(); i++ ) {
-		
-		std::string	path = path_without_file + indices[i];
+
+		std::string	path = buildPathFromRootAndResource( path_without_file, indices[i] );
 		if ( access( path.c_str(), F_OK ) == 0 ) {
 			handleFile( path );
 			return ;
@@ -155,23 +232,14 @@ void	ResponseBuilder::handleAutoindex( const std::string& path ) {
 
 	std::vector<std::string>	files_from_dir;
 	readDirectory( dir_ptr, files_from_dir );
-	
-	buildListing( files_from_dir, path );
-}
 
-void	ResponseBuilder::setBasicReturn( const std::string& what_is_return ) {
-
-	if ( what_is_return != "" )
-		header_ << Http::Headers::CONTENT_TYPE << ": text/plain" << Http::Formatting::CRLF;
-
-	header_ << Http::Headers::CONTENT_LENGTH << ": " << what_is_return.length();
-	response_.setBody( what_is_return );
+	buildListing( files_from_dir );
 }
 
 void	ResponseBuilder::setContentType( const std::string& path ) {
 
 	std::string		content_type;
-	const std::string	extension = ResponseBuilder::getExtension( path );
+	const std::string	extension = getExtension( path );
 
 	if ( extension == "No extension" )
 		content_type = "application/octet-stream";
@@ -183,65 +251,102 @@ void	ResponseBuilder::setContentType( const std::string& path ) {
 	header_ << Http::Headers::CONTENT_TYPE << ": " << content_type << Http::Formatting::CRLF;
 }
 
-void	ResponseBuilder::buildListing( std::vector<std::string>& files_from_dir, const std::string& path ) {
 
-	header_ << Http::Headers::CONTENT_TYPE << ": " << "text/html" << Http::Formatting::CRLF;
+void	ResponseBuilder::setServerAndDate() {
 	
-	std::stringstream	body;
-	body << "<!DOCTYPE html><html>"
-		<< "<head><title>Index of " << path << "</title></head>"
-		<< "<head>Index of " << path << "</head><br>"
-		<< "<body>";
-	for ( std::vector<std::string>::size_type i = 0; i < files_from_dir.size(); i++ ) {
-		body << "<a href=" << path+files_from_dir[i] << ">" << files_from_dir[i] << "</a><br>";
-	}
-	body << "</body></html>";
-	response_.setBody( body.str() );
-	header_ << Http::Headers::CONTENT_LENGTH << ": " << response_.getBody().length();
+	header_ << "Server: 📡✅ Webserv 🐝" << Http::Formatting::CRLF;
+
+	time_t		t;
+	struct tm*	t_struct;
+	std::time( &t );
+	t_struct = std::localtime( &t );
+	std::string	date = asctime( t_struct );
+
+	header_ << "Date: " << date.substr( 0, date.length()-1 ) << Http::Formatting::CRLF;
 }
 
-int	ResponseBuilder::checkFilePermissions( const char* path ) {
+void	ResponseBuilder::buildListing( std::vector<std::string>& files_from_dir ) {
 
-	if ( access( path, R_OK ) == -1 ) {
-		ResponseBuilder::setErrorState( 403 );
+	header_ << Http::Headers::CONTENT_TYPE << ": " << "text/html" << Http::Formatting::CRLF;
+
+	std::string		path;
+	std::stringstream	body;
+	body << "<!DOCTYPE html>\n"
+		<< "<html>\n"
+		<< "<head><title>Index of " << uri_ << "</title></head>\n"
+		<< "<h2> &#128221; Index of &#128193;" << uri_ << "</h2>\n"
+		<< "<hr><body>\n";
+	for ( std::vector<std::string>::size_type i = 0; i < files_from_dir.size(); i++ ) {
+		path = buildPathFromRootAndResource( uri_, files_from_dir[i] );
+		body << "<a href=\"" << path << "\">" << files_from_dir[i] << "</a><br>\n";
+	}
+	body << "</body>\n</html>\n";
+	response_.setBody( body.str() );
+}
+
+int	ResponseBuilder::checkIfPathExists( const std::string& path ) {
+
+	struct stat s;
+
+	int result = stat( path.c_str(), &s );
+	if ( result == -1 ) {
+		setErrorState( 404 );
+		return ERROR;
+	}
+
+	if ( S_ISREG( s.st_mode ) != 0 ) {
+		file_or_dir_ = IS_FILE;
+	}
+	else if ( S_ISDIR( s.st_mode ) != 0 ) {
+		file_or_dir_ = IS_DIR;
+	}
+	else {
+		setErrorState( 403 );
+		return ERROR;
+	}
+
+	return SUCCESS;
+}
+
+int	ResponseBuilder::checkBodySize( size_t current_body_size, size_t max_body_size ) {
+
+	if ( current_body_size > max_body_size ) {
+
 		return ERROR;
 	}
 	return SUCCESS;
 }
 
-void	ResponseBuilder::setErrorState( int error_code ) {
+void	ResponseBuilder::setErrorPageHtml( const std::string page_from_config ) {
 
-	header_.str("");
-	error_ = true;
-	code_ = error_code;
+	header_ << Http::Headers::CONTENT_TYPE << ": text/html" << Http::Formatting::CRLF;
+
+	std::string	body;
+	if ( page_from_config != "")
+		body = readContentFromFile( page_from_config );
+	if ( body == "" )
+		body = generateDefaultPage();
+	response_.setBody( body );
 }
 
-void	ResponseBuilder::buildResponseAccordingToMethod( const HttpRequest& request ) {
+const std::string	ResponseBuilder::generateDefaultPage() {
 
-	if ( ResponseBuilder::checkMethodInRequest( request.getMethod(), config_data_.getMethods() ) == ERROR ) {
+	std::stringstream	default_page;
 
-		ResponseBuilder::setErrorState( 405 );
-		return ;
-	}
+	default_page << "<!DOCTYPE html>\n"
+			<< "<html>\n"
+			<< "<head><title>"
+			<< code_ << " " << code_meaning_
+			<<"</title></head><br>\n"
+			<< "<body>\n"
+			<< "<center><h1>"
+			<< code_ << " " << code_meaning_
+			<<"</h1></center>\n"
+			<< "<hr><center> &#128225;&#9989; Webserv &#128029;</center>\n"
+			<< "</body>\n"
+			<< "</html>";
 
-	if ( request.getMethod() == HttpRequest::GET ) {
-
-		ResponseBuilder::buildResponseGET( request );
-	}
-	else if ( request.getMethod() == HttpRequest::POST ) {
-
-		if ( ResponseBuilder::checkBodySize( request.getContentLength(), config_data_.getMaxBodySize() ) == ERROR ) {
-			ResponseBuilder::setErrorState( 413 );
-			return ;
-		}
-
-		ResponseBuilder::buildResponsePOST( request );
-	}
-	else if ( request.getMethod() == HttpRequest::DELETE ) {
-
-		ResponseBuilder::buildResponseDELETE( request );
-	}
-
+	return default_page.str();
 }
 
 int	ResponseBuilder::checkMethodInRequest( HttpRequest::Method current_method, const std::vector<std::string>& allowed_methods ) {
@@ -258,114 +363,7 @@ int	ResponseBuilder::checkMethodInRequest( HttpRequest::Method current_method, c
 	return ERROR;
 }
 
-void	ResponseBuilder::buildResponseGET( const HttpRequest& request ) {
-
-	code_ = 200;
-	ResponseBuilder::setFirstLineOfHeader();
-	std::string	path_without_prefix = cut_prefix_from_uri( request.getUri() );
-	ResponseBuilder::handleResource( path_without_prefix );
-}
-
-int	ResponseBuilder::checkIfPathExists( const std::string& path ) {
-
-	struct stat s;
-
-	int result = stat( path.c_str(), &s );
-	if ( result == -1 ) {
-		ResponseBuilder::setErrorState( 404 );
-		return ERROR;
-	}
-
-	if ( S_ISREG( s.st_mode ) != 0 ) {
-		file_or_dir_ = IS_FILE;
-	}
-	else if ( S_ISDIR( s.st_mode ) != 0 ) {
-		file_or_dir_ = IS_DIR;
-	}
-	else {
-		ResponseBuilder::setErrorState( 403 );
-		return ERROR;
-	}
-
-	return SUCCESS;
-}
-
-void	ResponseBuilder::buildResponsePOST( const HttpRequest& request ) {
-
-	(void)request;
-
-	header_ << "WIP: building POST response";
-}
-
-int	ResponseBuilder::checkBodySize( size_t current_body_size, size_t max_body_size ) {
-
-	if ( current_body_size > max_body_size ) {
-
-		return ERROR;
-	}
-	return SUCCESS;
-}
-
-void	ResponseBuilder::buildResponseDELETE( const HttpRequest& request ) {
-
-	(void)request;
-	header_ << "WIP: building DELETE response";
-}
-
-void	ResponseBuilder::buildErrorResponse( int code ) {
-
-	code_ = code;
-
-	ResponseBuilder::setFirstLineOfHeader();
-	ResponseBuilder::addHeaderLineFor405Error();
-
-	bool					error_page_from_config = false;
-	const std::map<int, std::string>&	config_errors = config_data_.getErrorPage();
-	for ( std::map<int, std::string>::const_iterator it = config_errors.begin(); it != config_errors.end(); it++ ) {
-		if ( it->first == code_ ) {
-			ResponseBuilder::setErrorPageHtml( it->second );
-			if ( response_.getBody() != "" )
-				error_page_from_config = true;
-		}
-	}
-	if ( error_page_from_config == false )
-		ResponseBuilder::setErrorPageHtml( "" );
-}
-
-void	ResponseBuilder::setErrorPageHtml( const std::string page_from_config ) {
-
-	header_ << Http::Headers::CONTENT_TYPE << ": text/html" << Http::Formatting::CRLF;
-
-	std::string	body;
-	if ( page_from_config != "")
-		body = ResponseBuilder::readContentFromFile( page_from_config );
-	if ( body == "" )
-		body = ResponseBuilder::generateDefaultPage();
-	response_.setBody( body );
-
-	header_ << Http::Headers::CONTENT_LENGTH << ": " << response_.getBody().length();
-}
-
-std::string	ResponseBuilder::generateDefaultPage() {
-
-	std::stringstream	default_page;
-
-	default_page << "<!DOCTYPE html><br>"
-			<< "<html><br>"
-			<< "<head><title>"
-			<< code_ << code_meaning_
-			<<"</title></head><br>"
-			<< "<body><br>"
-			<< "<center><h1>"
-			<< code_ << code_meaning_
-			<<"</h1></center><br>"
-			<< "<hr><center> &#128225;&#9989; Webserv &#128029;</center><br>"
-			<< "</body><br>"
-			<< "</html>";
-	return default_page.str();
-}
-
-void	ResponseBuilder::addHeaderLineFor405Error() {
+void	ResponseBuilder::setHeaderLineFor405Error() {
 
 	if ( code_ != 405 )
 		return ;
@@ -379,7 +377,7 @@ void	ResponseBuilder::addHeaderLineFor405Error() {
 	header_ << Http::Formatting::CRLF;
 }
 
-std::string	ResponseBuilder::readContentFromFile( const std::string& path ) {
+const std::string	ResponseBuilder::readContentFromFile( const std::string& path ) {
 
 	std::ifstream	content_stream( path.c_str(), std::ios::in | std::ios::binary );
 
@@ -388,7 +386,6 @@ std::string	ResponseBuilder::readContentFromFile( const std::string& path ) {
 		return "";
 	}
 	int c = content_stream.get();
-//	std::cout << "\e[1;92m" << EOF << "\033[0m" << std::endl;
 	if ( c == EOF )
 		return "";
 
@@ -413,29 +410,27 @@ const std::string	ResponseBuilder::getExtension( const std::string& path ) {
 	return path.substr( point_position + 1 );
 }
 
-const std::string	ResponseBuilder::buildPathFromRootAndResource( const std::string file ) {
+const std::string	ResponseBuilder::buildPathFromRootAndResource( std::string root, std::string resource ) {
 
-	std::string	root = config_data_.getRoot();
-
-	if ( file == "" )
+	if ( resource == "" )
 		return root;
 
-	if ( file[0] == '/' && root[root.size()-1] == '/' )
+	if ( resource[0] == '/' && root[root.size()-1] == '/' )
 		root = root.substr(0, root.size()-1);
-	else if ( file[0] != '/' && root[root.size()-1] != '/' )
+	else if ( resource[0] != '/' && root[root.size()-1] != '/' )
 		root += "/";
 
-	return root + file;
+	return root + resource;
 }
 
-const std::string	ResponseBuilder::cut_prefix_from_uri( const std::string& uri_from_request ) {
+const std::string	ResponseBuilder::cutPrefixFromUri( const std::string& uri_from_request ) {
 
 	const std::string	prefix = config_data_.getPath();
 	return uri_from_request.substr( prefix.length() );
 }
 
 DIR*	ResponseBuilder::openDirectory( const std::string& path ) {
-	
+
 	DIR*	dir_ptr = opendir( path.c_str() );
 	if ( dir_ptr == NULL ) {
 		setErrorState( 403 );
@@ -446,15 +441,33 @@ DIR*	ResponseBuilder::openDirectory( const std::string& path ) {
 void	ResponseBuilder::readDirectory( DIR* dir_ptr, std::vector<std::string>& files_from_dir ) {
 
 	std::string	file_name;
-	
+
 	struct dirent*	read_from_dir = readdir( dir_ptr );
 	while ( read_from_dir != NULL ) {
-		
-		file_name = read_from_dir->d_name;
-		files_from_dir.push_back( file_name );
 
+		file_name = read_from_dir->d_name;
+		if ( file_name != "." && file_name != ".." ) {
+			files_from_dir.push_back( file_name );
+		}
 		read_from_dir = readdir( dir_ptr );
 	}
+	closedir( dir_ptr );
+}
+
+int	ResponseBuilder::checkFilePermissions( const char* path ) {
+
+	if ( access( path, R_OK ) == -1 ) {
+		setErrorState( 403 );
+		return ERROR;
+	}
+	return SUCCESS;
+}
+
+void	ResponseBuilder::setErrorState( int error_code ) {
+
+	header_.str("");
+	error_ = true;
+	code_ = error_code;
 }
 
 std::string	ResponseBuilder::getCodeMeaning() {

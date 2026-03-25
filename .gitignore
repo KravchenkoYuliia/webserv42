@@ -44,7 +44,8 @@ webserv
 *.su
 *.idb
 *.pdb
-test.cub
+test.cpp
+my_config.conf
 
 # Kernel Module Compile Results
 *.mod*

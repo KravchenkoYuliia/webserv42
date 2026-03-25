@@ -18,8 +18,9 @@ MergedConfig&	MergedConfig::operator=( const MergedConfig& other ) {
 
 const std::map<int, std::string>&	MergedConfig::getReturn() const {
 
-	if ( location_.getHasReturn() == true )
+	if ( location_.getHasReturn() == true ) {
 		return location_.getReturn();
+	}
 	return server_.getReturn();
 }
 

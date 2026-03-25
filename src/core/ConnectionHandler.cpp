@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:42:02 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/24 13:21:55 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/25 11:28:35 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,7 +118,7 @@ void ConnectionHandler::handleRead()
                         MergedConfig        config_data( selected_server, selected_location );
 
                         ResponseBuilder     builder( request_parser_.getRequest(), config_data );
-                        const HttpResponse&        response = builder.build();
+                        const HttpResponse&        response = builder.getResponse();
 
                         serialized_response_ = response.serialize();
 
