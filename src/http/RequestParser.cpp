@@ -73,9 +73,9 @@ const HttpRequest&     RequestParser::getRequest() const
     return (request_);
 }
 
-const std::string&  RequestParser::getHeader( const std::string& key ) const
+const std::string&  RequestParser::getHeaderValue( const std::string& key ) const
 {
-    return (request_.getHeader(key));
+    return (request_.getHeaderValue(key));
 }
 
 const std::string&  RequestParser::getUri() const
@@ -416,8 +416,8 @@ bool    RequestParser::validateHostHeader()
 
 bool    RequestParser::validateHeaderConflicts()
 {
-    if (!request_.getHeader(Http::Headers::CONTENT_LENGTH).empty()
-            && !request_.getHeader(Http::Headers::TRANSFER_ENCODING).empty())
+    if (!request_.getHeaderValue(Http::Headers::CONTENT_LENGTH).empty()
+            && !request_.getHeaderValue(Http::Headers::TRANSFER_ENCODING).empty())
     {
         error_code_ = 400; // TODO: BAD_REQUEST
         return (false);
@@ -427,7 +427,7 @@ bool    RequestParser::validateHeaderConflicts()
 
 bool    RequestParser::validateTransferEncodingHeader()
 {
-    const std::string& transfer_encoding_header = request_.getHeader(Http::Headers::TRANSFER_ENCODING);
+    const std::string& transfer_encoding_header = request_.getHeaderValue(Http::Headers::TRANSFER_ENCODING);
 
     if (transfer_encoding_header.empty())
         return (true);
@@ -445,7 +445,7 @@ bool    RequestParser::validateTransferEncodingHeader()
 
 bool    RequestParser::validateContentLengthHeader()
 {
-    const std::string& content_length_header = request_.getHeader(Http::Headers::CONTENT_LENGTH);
+    const std::string& content_length_header = request_.getHeaderValue(Http::Headers::CONTENT_LENGTH);
 
     if (content_length_header.empty())
     {
@@ -493,7 +493,7 @@ bool    RequestParser::validateBodyForMethod()
 
 bool    RequestParser::validateContentTypeHeader()
 {
-    const std::string& content_type = request_.getHeader(Http::Headers::CONTENT_TYPE);
+    const std::string& content_type = request_.getHeaderValue(Http::Headers::CONTENT_TYPE);
 
     if (content_type.empty())
         return (true);
@@ -533,7 +533,7 @@ void    RequestParser::handleMultiPart()
     try {
         MultipartData   data = multipart_parser.parse(
             request_.getBody(),
-            request_.getHeader(Http::Headers::CONTENT_TYPE)
+            request_.getHeaderValue(Http::Headers::CONTENT_TYPE)
         );
         request_.setMultipartData(data);
     } catch (const std::runtime_error& e)

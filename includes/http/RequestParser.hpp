@@ -54,7 +54,7 @@ public:
     // ---------- Getter and Setter Methods ------------
 
     const HttpRequest&      getRequest() const;
-    const std::string&      getHeader( const std::string& key ) const;
+    const std::string&      getHeaderValue( const std::string& key ) const;
     const std::string&      getUri() const;
     int                     getErrorCode() const;
 

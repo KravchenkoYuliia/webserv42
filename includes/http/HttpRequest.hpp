@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 17:50:45 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/20 12:52:11 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/24 17:49:26 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ public:
     const std::string&                              getUri() const;
     const std::string&                              getVersion() const;
     const std::map<std::string, std::string>&       getHeaders() const;
-    const std::string&                              getHeader(const std::string& key) const;
+    const std::string&                              getHeaderValue(const std::string& key) const;
     const std::string&                              getBody() const;
     size_t                                          getContentLength() const;
     size_t                                          getChunkSize() const;
