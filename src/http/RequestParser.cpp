@@ -153,6 +153,24 @@ RequestParser::ResultType       RequestParser::parseRequestLine()
     return (ParserResult::OK);
 }
 
+/**
+ * @brief Parses HTTP header fields line by line until completion.
+ *
+ * This method extracts and processes header fields from the incoming buffer.
+ * It operates incrementally and is designed to work in a non-blocking context.
+ *
+ * Behavior:
+ * - If no complete line is available, parsing is suspended.
+ * - If a non-empty header line is extracted, it is parsed and stored.
+ * - If an empty line is encountered, it indicates the end of headers and
+ *   triggers validation of all collected header fields.
+ *
+ * @return ParserResult::AGAIN if more data is required to continue parsing.
+ * @return ParserResult::OK if a header line was successfully processed or headers are fully parsed.
+ * @return ParserResult::ERROR if a parsing or validation error occurs.
+ *
+ * @note On error, the parser state is set to ParserState::ERROR.
+ */
 RequestParser::ResultType       RequestParser::parseHeaderFields()
 {
     if (!hasEndOfLine())
@@ -183,6 +201,29 @@ RequestParser::ResultType       RequestParser::parseHeaderFields()
     return (ParserResult::OK);
 }
 
+/**
+ * @brief Validates all parsed HTTP header fields.
+ *
+ * This method performs a series of validation checks on the parsed headers
+ * to ensure compliance with HTTP specifications and internal constraints.
+ *
+ * The validations include:
+ * - Presence of mandatory headers (e.g., Host for HTTP/1.1)
+ * - Detection of conflicting headers (e.g., Content-Length vs Transfer-Encoding)
+ * - Validation of Transfer-Encoding header
+ * - Validation of Content-Type header
+ * - Validation of Content-Length header
+ * - Consistency between request method and body presence
+ *
+ * Each validation step may update the parser state or internal request metadata.
+ *
+ * @return true if all validations succeed.
+ * @return false if any validation fails.
+ *
+ * @note On failure, the corresponding validation method sets error_code_.
+ * @note This method does not directly modify the parser state to ERROR;
+ *       the caller is responsible for handling failure.
+ */
 bool RequestParser::validateHeaderFields()
 {
     if (!validateHostHeader())
@@ -190,11 +231,6 @@ bool RequestParser::validateHeaderFields()
         std::cout << "validateHostHeader() failed" << std::endl;
         return (false);
     }
-    // 2 : Check Headers conflicts
-    /*
-        RFC-7230 - section 3.3.2 "A sender MUST NOT send a Content-Length header field in any message
-        that contains a Transfer-Encoding header field."
-    */
     if (!validateHeaderConflicts())
     {
         std::cout << "validateHeaderConflicts failed" << std::endl;
@@ -442,7 +478,6 @@ bool RequestParser::parseRequestLineFields( const std::string& line )
 
 // ------------------------------- Method Helper -------------------------------
 
-// TODO: replace with ParserUtils::findCRLF()
 size_t    RequestParser::findCRLF() const
 {
     return (raw_buffer_.find(Http::Formatting::CRLF));
@@ -485,6 +520,17 @@ bool    RequestParser::isValidHttpProtocolVersion( const std::string& protocol_v
     return (protocol_version == Http::Protocol::HTTP_VERSION_1_0 || protocol_version == Http::Protocol::HTTP_VERSION_1_1);
 }
 
+/**
+ * @brief Validates the presence of the Host header for HTTP/1.1 requests.
+ *
+ * According to HTTP/1.1 specification, all requests MUST include a Host header.
+ * This method checks whether the request complies with that requirement.
+ *
+ * @return true if the Host header is present or the protocol version is not HTTP/1.1.
+ * @return false if the Host header is missing in an HTTP/1.1 request.
+ *
+ * @note On failure, sets error_code_ to 400 (Bad Request).
+ */
 bool    RequestParser::validateHostHeader()
 {
     if ( request_.getVersion() == Http::Protocol::HTTP_VERSION_1_1 && !request_.hasHeader( Http::Headers::HOST ) )
@@ -495,6 +541,17 @@ bool    RequestParser::validateHostHeader()
     return (true);
 }
 
+/**
+ * @brief Validates that mutually exclusive headers are not present together.
+ *
+ * As specified in RFC 7230 (section 3.3.2), a request MUST NOT contain both
+ * "Content-Length" and "Transfer-Encoding" headers at the same time.
+ *
+ * @return true if no conflict is detected.
+ * @return false if both headers are present.
+ *
+ * @note On failure, sets error_code_ to 400 (Bad Request).
+ */
 bool    RequestParser::validateHeaderConflicts()
 {
     if (!request_.getHeaderValue(Http::Headers::CONTENT_LENGTH).empty()
@@ -506,6 +563,20 @@ bool    RequestParser::validateHeaderConflicts()
     return (true);
 }
 
+/**
+ * @brief Validates and processes the Transfer-Encoding header.
+ *
+ * This method checks whether the Transfer-Encoding header is present and valid.
+ * Currently, only the "chunked" transfer encoding is supported.
+ *
+ * If valid, the parser transitions to chunked body parsing mode.
+ *
+ * @return true if the header is absent or valid.
+ * @return false if the header is present but unsupported.
+ *
+ * @note On failure, sets error_code_ to 400 (Bad Request).
+ * @note On success with "chunked", updates parser state to BODY_CHUNKED.
+ */
 bool    RequestParser::validateTransferEncodingHeader()
 {
     const std::string& transfer_encoding_header = request_.getHeaderValue(Http::Headers::TRANSFER_ENCODING);
@@ -524,6 +595,26 @@ bool    RequestParser::validateTransferEncodingHeader()
     return (true);
 }
 
+/**
+ * @brief Validates and processes the Content-Length header.
+ *
+ * This method parses and validates the Content-Length header value.
+ * It ensures the value is a valid unsigned integer and updates the parser state accordingly.
+ *
+ * Behavior:
+ * - If the header is absent:
+ *   - BODY_NONE is set unless Transfer-Encoding is already active.
+ * - If the value is 0:
+ *   - Parsing is considered complete.
+ * - If the value is valid and non-zero:
+ *   - The parser transitions to BODY_CONTENT_LENGTH state.
+ *
+ * @return true if the header is absent or valid.
+ * @return false if the header value is invalid or exceeds allowed limits.
+ *
+ * @note On invalid format, sets error_code_ to 400 (Bad Request).
+ * @note On overflow or excessive size, sets error_code_ to 413 (Payload Too Large).
+ */
 bool    RequestParser::validateContentLengthHeader()
 {
     const std::string& content_length_header = request_.getHeaderValue(Http::Headers::CONTENT_LENGTH);
@@ -562,9 +653,23 @@ bool    RequestParser::validateContentLengthHeader()
     return (true);
 }
 
+/**
+ * @brief Validates whether the HTTP request body is allowed for the request method.
+ *
+ * According to RFC 7230, GET and DELETE requests **may** include a message body,
+ * but in practice most servers ignore it. For simplicity, this server
+ * **rejects GET and DELETE requests that include a body**.
+ *
+ * If the request method is GET and the parser state indicates that a body is present
+ * (i.e., state_ != ParserState::BODY_NONE), this function sets the parser's
+ * error_code_ to 400 (Bad Request) and returns false.
+ *
+ * @return true if the request body is allowed for the method (or no body is present),
+ * false if the request is invalid due to a body being present for a GET/DELETE request.
+ */
 bool    RequestParser::validateBodyForMethod()
 {
-    if (request_.getMethod() == HttpRequest::GET && state_ != ParserState::BODY_NONE)
+    if ((request_.getMethod() == HttpRequest::GET || request_.getMethod() == HttpRequest::DELETE) && state_ != ParserState::BODY_NONE)
     {
         error_code_ = 400; // TODO: BAD_REQUEST
         return (false);
