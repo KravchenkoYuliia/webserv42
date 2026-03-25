@@ -116,7 +116,7 @@ RequestParser::ResultType       RequestParser::parseNext()
         case ParserState::REQUEST_LINE:
             return (parseRequestLine());
         case ParserState::HEADERS:
-            return (parseHeaders());
+            return (parseHeaderFields());
         case ParserState::BODY_CONTENT_LENGTH:
             return (parseBodyContentLength());
         case ParserState::BODY_CHUNKED:
@@ -141,7 +141,7 @@ RequestParser::ResultType       RequestParser::parseRequestLine()
     if (!hasEndOfLine())
         return (ParserResult::AGAIN);
 
-    std::string     line = extract_header_line();
+    std::string     line = extract_header_field();
 
     if (!parseRequestLineFields(line))
     {
@@ -153,28 +153,29 @@ RequestParser::ResultType       RequestParser::parseRequestLine()
     return (ParserResult::OK);
 }
 
-RequestParser::ResultType       RequestParser::parseHeaders()
+RequestParser::ResultType       RequestParser::parseHeaderFields()
 {
     if (!hasEndOfLine())
         return (ParserResult::AGAIN);
 
-    std::string     line = extract_header_line();
+    std::string     extracted_header_field = extract_header_field();
 
-    if (line.empty())
+    if (extracted_header_field.empty())
     {
-        if (!validateHeaderSet())
+        if (!validateHeaderFields())
         {
             // TODO: remove this log
-            std::cout << "validateHeaderSet return false because method = " << request_.getMethodToString() << ", state_ = " << ParserState::toString(state_) << std::endl;
+            std::cout << "validateHeaderFields return false because method = " << request_.getMethodToString() << ", state_ = " << ParserState::toString(state_) << std::endl;
             state_ = ParserState::ERROR;
             return (ParserResult::ERROR);
         }
         return (ParserResult::OK);
     }
-    if (!parseHeaderLine(line))
+    if (!parseHeaderField(extracted_header_field))
     {
         // TODO: remove this log
-        std::cout << "parseHeaderLine return false" << std::endl;
+        std::cout << "parseHeaderField return false" << std::endl;
+        // error_code_ = 400;
         state_ = ParserState::ERROR;
         return (ParserResult::ERROR);
     }
@@ -182,7 +183,7 @@ RequestParser::ResultType       RequestParser::parseHeaders()
     return (ParserResult::OK);
 }
 
-bool RequestParser::validateHeaderSet()
+bool RequestParser::validateHeaderFields()
 {
     if (!validateHostHeader())
     {
@@ -223,7 +224,7 @@ bool RequestParser::validateHeaderSet()
     return (true);
 }
 
-bool    RequestParser::parseHeaderLine( const std::string& line )
+bool    RequestParser::parseHeaderField( const std::string& line )
 {
     static const std::string    delimiter = Http::Formatting::COLON_SEPARATOR;
     size_t                      pos = line.find(delimiter);
@@ -267,7 +268,7 @@ RequestParser::ResultType       RequestParser::parseBodyChunked()
         {
             if (!hasEndOfLine())
                 return (ParserResult::AGAIN);
-            std::string     line = extract_header_line();
+            std::string     line = extract_header_field();
             line = Utils::trim(line);
             bool            success;
             int             base = 16;
@@ -319,7 +320,7 @@ bool    RequestParser::hasEndOfLine() const
     return (findCRLF() != std::string::npos);
 }
 
-std::string RequestParser::extract_header_line()
+std::string RequestParser::extract_header_field()
 {
     size_t      pos = findCRLF();
     std::string line = raw_buffer_.substr(0, pos);

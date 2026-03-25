@@ -80,17 +80,17 @@ private:
 
     // ---------------------- Private Member Methods ----------------------
     ResultType            parseRequestLine();
-    ResultType            parseHeaders();
+    ResultType            parseHeaderFields();
     ResultType            parseBodyContentLength();
     ResultType            parseBodyChunked();
 
     // ------------------------- Private helpers -------------------------
 
     bool            hasEndOfLine() const;
-    std::string     extract_header_line();
+    std::string     extract_header_field();
     bool            parseRequestLineFields( const std::string& line );
-    bool            parseHeaderLine( const std::string& line );
-    bool            validateHeaderSet();
+    bool            parseHeaderField( const std::string& line );
+    bool            validateHeaderFields();
     bool            validateHostHeader();
     bool            validateHeaderConflicts();
     bool            validateBodyHeaders();
