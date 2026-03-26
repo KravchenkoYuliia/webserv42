@@ -39,20 +39,20 @@ public:
     void	setHasReturn();
 
 //getters
-	uint16_t			            getPort() const;
-	const std::string&			            getInterface() const;
-	bool					getDefaultServer() const;
-	bool					getHasListen() const;
-	std::vector<LocationConfig>&	getLocationList();
+	uint16_t			                getPort() const;
+	const std::string&		            getInterface() const;
+	bool					            getDefaultServer() const;
+	bool					            getHasListen() const;
+	std::vector<LocationConfig>&	    getLocationList();
 	const std::vector<LocationConfig>&	getLocationList() const;
 	const std::vector<std::string>&	    getServerName() const;
-	const std::string&	                    getRoot() const;
+	const std::string&                  getRoot() const;
 	const std::vector<std::string>&	    getIndex() const;
 	const std::map<int, std::string>&	getErrorPage() const;
-	AutoindexType		 		            getAutoindex() const;
-	long long			getClientMaxBodySize() const;
+	AutoindexType		 		        getAutoindex() const;
+	long long			                getClientMaxBodySize() const;
 	const std::map<int, std::string>&	getReturn() const;
-    bool					getHasReturn() const;
+    bool					            getHasReturn() const;
 
 private:
 	uint16_t			        port_;

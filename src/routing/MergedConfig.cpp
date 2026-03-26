@@ -65,4 +65,12 @@ AutoindexType	MergedConfig::getAutoindex() const {
 	return server_.getAutoindex();
 }
 
+bool	MergedConfig::getUploadAllowed() const {
+	return location_.getUploadAllowed();
+}
+
+const std::string&	MergedConfig::getUploadLocation() const {
+	return location_.getUploadLocation();
+}
+
 MergedConfig::~MergedConfig() {}

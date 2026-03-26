@@ -156,10 +156,13 @@ void	ResponseBuilder::buildResponseGET() {
 }
 
 void	ResponseBuilder::buildResponsePOST( const HttpRequest& request ) {
-
-	(void)request;
-
-	header_ << "WIP: building POST response";
+	
+	/*if ( config_data_.getCgiAllowed() == true )
+		handleCGI();*/
+	if ( config_data_.getUploadAllowed() == true )
+		handleUpload( request );
+	else
+		setErrorState( 403 );
 }
 
 void	ResponseBuilder::buildResponseDELETE( const HttpRequest& request ) {
@@ -248,6 +251,75 @@ void	ResponseBuilder::handleAutoindex( const std::string& path ) {
 	readDirectory( dir_ptr, files_from_dir );
 
 	buildListing( files_from_dir );
+}
+
+void	ResponseBuilder::handleUpload( const HttpRequest& request ) {
+
+	const std::string&	request_body = request.getBody();
+	const std::string	filename = getFileNametoUpload( request_body );
+	if ( filename == "")
+		return ;
+	const std::string	file_content = getFileContent( request_body );
+	if ( file_content == "")
+		return ;
+
+	createUploadedFile( filename, file_content );
+}
+
+const std::string	ResponseBuilder::getFileNametoUpload( const std::string& request_body ) {
+
+	size_t	position_of_start  = request_body.find( "filename=\"" ) + 10;
+	if ( position_of_start == request_body.npos) {
+
+		setErrorState( 400 );
+		return "";
+	}
+	size_t	position_of_end    = request_body.find( Http::Formatting::CRLF, position_of_start );
+	if ( position_of_end == request_body.npos) {
+		setErrorState( 400 );
+		return "";
+	}
+
+	size_t	length_of_filename = position_of_end - position_of_start - 1;
+	return request_body.substr( position_of_start, length_of_filename );
+}
+
+const std::string	ResponseBuilder::getFileContent( const std::string& request_body ) {
+
+	size_t	position_of_start = request_body.find( Http::Formatting::HEADER_END ) + 4;
+	if ( position_of_start == request_body.npos) {
+		setErrorState( 400 );
+		return "";
+	}
+
+	size_t	position_of_end   = request_body.find_last_of( Http::Formatting::HEADER_END ) + 4;
+	if ( position_of_end == request_body.npos ) {
+		setErrorState( 400 );
+		return "";
+	}
+
+	size_t	length_of_filename = position_of_end - position_of_start - 1;
+	return request_body.substr( position_of_start, length_of_filename );
+}
+
+int	ResponseBuilder::createUploadedFile( const std::string& filename, const std::string& file_content ) {
+
+	std::string	path = buildPathFromRootAndResource( config_data_.getUploadLocation(), filename );
+	if ( path[0] != '.' )
+		path = "." + path;
+
+	std::cout << "\e[1;92m" << path << "\033[0m" << std::endl;
+
+	std::ofstream	file;
+	file.open( path.c_str() );
+	if ( !file.is_open() ) {
+		setErrorState( 500 );
+		return ERROR;
+	}
+
+	file << file_content;
+	file.close();
+	return SUCCESS;
 }
 
 void	ResponseBuilder::setContentType( const std::string& path ) {

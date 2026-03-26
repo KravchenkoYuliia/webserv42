@@ -41,17 +41,17 @@ public:
 
 //getters
 
-	const std::string&		getPath() const;
-	const std::string&		getRoot() const;
-	const std::vector<std::string>&	getIndex() const;
+	const std::string&					getPath() const;
+	const std::string&					getRoot() const;
+	const std::vector<std::string>&		getIndex() const;
 	const std::map<int, std::string>&	getErrorPage() const;
-	AutoindexType					getAutoindex() const;
-	long long			getClientMaxBodySize() const;
-	const std::vector<std::string>&	getAllowedMethods() const;
+	AutoindexType						getAutoindex() const;
+	long long							getClientMaxBodySize() const;
+	const std::vector<std::string>&		getAllowedMethods() const;
 	const std::map<int, std::string>&	getReturn() const;
 	bool                                getHasReturn() const;
-	bool				getUploadAllowed() const;
-	const std::string&		getUploadLocation() const;
+	bool								getUploadAllowed() const;
+	const std::string&					getUploadLocation() const;
 
 private:
 	AutoindexType					autoindex_;

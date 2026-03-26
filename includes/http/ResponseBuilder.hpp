@@ -79,6 +79,10 @@ private:
 	void	handleDirectory( const std::string& path );
 	void	handleAutoindex( const std::string& path );
 	void	buildResponsePOST( const HttpRequest& request );
+	void	handleUpload( const HttpRequest& request );
+	const std::string	getFileNametoUpload( const std::string& request_body );
+	const std::string	getFileContent( const std::string& request_body );
+	int		createUploadedFile( const std::string& filename, const std::string& file_content );
 	void	buildResponseDELETE( const HttpRequest& request );
 	void	buildListing( std::vector<std::string>& files_from_dir );
 

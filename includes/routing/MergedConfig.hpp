@@ -22,21 +22,9 @@ public:
 	const std::string&			getPath() const;
 	const std::vector<std::string>&		getIndex() const;
 	AutoindexType				getAutoindex() const;
+	bool					getUploadAllowed() const;
+	const std::string&			getUploadLocation() const;
 
-/*
-	bool				has_return_ ;           +
-	std::map<int, std::string>	return_code_ ;          +
-
-	std::vector<std::string>	server_name_;
-	std::string			root_;                  + 
-	std::vector<std::string>	index_;			+
-	std::map<int, std::string>	error_page_;            +
-	AutoindexType			autoindex_;		+
-	long long			client_max_body_size_;  +
-	std::vector<std::string>	allowed_methods_;       +
-	bool				upload_allowed_;
-	std::string			upload_location_;
-*/
 private:
 
 	ServerConfig	server_;
