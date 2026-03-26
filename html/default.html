@@ -6,14 +6,20 @@
 		background-color: #FFB6C1;
 		color: black;
 		box-shadow: 5px 10px #D3D3D3;
+		padding: 25px 50px;
+		font-size: 17px;
 	}
 	</style>
 </head><br>
 <body style="background-color:lavender;">
 	<center><h1>Welcome to Webserv</h1></center>
-	<hr><center> &#128225;&#9989; Webserv &#128029;</center>
-	<form action="hello" method="post">
-		<button class="button">Press to send POST request</button>
+	<hr><center> &#128225;&#9989; Webserv &#128029;</center><br><br>
+	<form action="/upload" method="post" enctype="multipart/form-data">
+		<button class="button">Press to upload a file</button><br><br>
+		<input type="file" name="test"><br><br><br><br>
+	</form>
+	<form action="/cgi/script.py" method="post" enctype="multipart/form-data">
+		<button class="button">Press to run a script</button><br><br>
 	</form>
 </body>
 </html>

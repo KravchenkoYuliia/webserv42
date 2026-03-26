@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:07 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/26 15:44:41 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/26 15:45:26 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,8 +57,7 @@ RequestParser::RequestParser(void)
         error_code_(-1),
         content_length_bytes_(0),
         current_chunk_size_(0),
-        waiting_for_chunk_size_(true),
-        error_code_(-1)
+        waiting_for_chunk_size_(true)
 {
 }
 

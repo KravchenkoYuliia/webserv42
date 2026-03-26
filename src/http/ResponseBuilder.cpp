@@ -24,12 +24,12 @@ ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig
 
 	initialize_values( request.getUri(), config_data );
 	
-	if ( request.getErrorCode() != NOT_SPECIFIED ) {
+	/*if ( request.getErrorCode() != NOT_SPECIFIED ) {
 		setErrorState( request.getErrorCode() );
 	}
-	else {
+	else {*/
 		buildResponse( request );
-	}
+	//}
 
 	if ( error_ == true ) {
 		buildErrorResponse();
