@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestParser.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:07 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/24 12:42:04 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/26 15:32:40 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ std::string     RequestParser::ParserState::toString(RequestParser::ParserState:
 RequestParser::RequestParser(void)
     :   request_(),
         state_(RequestParser::ParserState::REQUEST_LINE),
+        error_code_(-1),
         content_length_bytes_(0),
         current_chunk_size_(0),
         waiting_for_chunk_size_(true)
@@ -80,6 +81,11 @@ const std::string&  RequestParser::getHeader( const std::string& key ) const
 const std::string&  RequestParser::getUri() const
 {
     return (request_.getUri());
+}
+
+int RequestParser::getErrorCode() const
+{
+    return (error_code_);
 }
 
 // --------------------------- Public Member Methods ---------------------------

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestParser.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:28:58 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/24 12:42:30 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/26 11:57:09 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@ public:
     const HttpRequest&      getRequest() const;
     const std::string&      getHeader( const std::string& key ) const;
     const std::string&      getUri() const;
+    int                     getErrorCode() const;
 
     // ---------- Member Methods -----------------------
     void            appendData( const char *data, size_t len );
