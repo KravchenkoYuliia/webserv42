@@ -27,3 +27,7 @@ Content-Disposition: form-data; name="test"; filename="text"
 
 #### 6.2 script
 Content-Type: multipart/form-data;
+
+## 7 Success
+201 Created
+Location: path_to_created_file

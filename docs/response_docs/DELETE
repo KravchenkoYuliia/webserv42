@@ -1,0 +1,7 @@
+## errors
+403 chmod
+404 no such file
+405 no alowed to delete in this location (checked in RequestParser)
+
+## success
+200 + html "File is deleted"

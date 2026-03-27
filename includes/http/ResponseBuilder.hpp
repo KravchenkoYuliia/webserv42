@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 16:46:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/26 11:55:41 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/27 17:30:54 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ enum status { SUCCESS, ERROR, NOT_SPECIFIED=-1, IS_FILE, IS_DIR };
 class ResponseBuilder {
 public:
 
-	ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data, size_t error_code );
+	ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data );//, size_t error_code );
     ~ResponseBuilder();
 
 	const HttpResponse&	getResponse();
@@ -40,6 +40,7 @@ private:
 	int			        file_or_dir_;
 	std::string		    uri_;
 	std::string		    code_meaning_;
+	std::string		upload_path_;
 	std::ostringstream	header_;
 
 	void	        initialize_values( const std::string& uri, const MergedConfig& config_data );
@@ -77,17 +78,19 @@ private:
 	void	handleUri( const std::string what_is_return );
 	int		handleFile( const std::string& path );
 	void	handleDirectory( const std::string& path );
+	void	buildListing( std::vector<std::string>& files_from_dir );
 	void	handleAutoindex( const std::string& path );
 	void	buildResponsePOST( const HttpRequest& request );
 	void	handleUpload( const HttpRequest& request );
+	void	buildSuccessUploadResponse( const std::string& filename );
 	const std::string	getFileNametoUpload( const std::string& request_body );
 	const std::string	getFileContent( const std::string& request_body );
 	int		createUploadedFile( const std::string& filename, const std::string& file_content );
 	void	buildResponseDELETE( const HttpRequest& request );
-	void	buildListing( std::vector<std::string>& files_from_dir );
+	int	deleteFile( const std::string& path );
 
 //Utils ********************************************************************************************
-	const std::string   generateDefaultPage();
+	const std::string   generateDefaultPage( const std::string& optionnal_message );
 	const std::string   readContentFromFile( const std::string& file );
 	const std::string	buildPathFromRootAndResource( std::string root, std::string resource );
 	const std::string	getExtension( const std::string& path );

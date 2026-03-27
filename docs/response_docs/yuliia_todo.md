@@ -22,3 +22,9 @@
 
 [x] add other lines from request example
 [x] check build listing if uri does not have /
+
+[] upload smth if uploads directory does not exist
+[] fix checkIfPathExist
+    if path exists /dir/file.c
+    but dir has chmod 000 --> returns 404 instead of 403
+

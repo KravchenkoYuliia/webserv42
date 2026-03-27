@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/26 11:55:41 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/27 17:33:44 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,21 +20,21 @@
 #include "http/ResponseBuilder.hpp"
 
 //std::cout << "\e[1;92m" << "\033[0m" << std::endl;
-ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data, size_t request_error ) {
+ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data ) {//, size_t request_error ) {
 
 	initialize_values( request.getUri(), config_data );
-	
-	if ( request_error != 1 ) {
+
+/*	if ( request_error != 1 ) {
 		setErrorState( request_error );
 	}
-	else {
+	else {*/
 		buildResponse( request );
-	}
+	//}
 
 	if ( error_ == true ) {
 		buildErrorResponse();
 	}
-	
+
 	setContentLength();
 	setLastLineOfHeader();
 }
@@ -42,7 +42,7 @@ ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig
 ResponseBuilder::~ResponseBuilder() {}
 
 void	ResponseBuilder::buildResponse( const HttpRequest& request ) {
-	
+
 	if ( !config_data_.getReturn().empty() ) {
 		buildReturn( config_data_.getReturn() );
 	}
@@ -109,7 +109,7 @@ void	ResponseBuilder::buildRedirectionReturn( const std::string& what_is_return 
 
 	header_ << "Location: " << what_is_return << Http::Formatting::CRLF;
 	header_ << Http::Headers::CONTENT_TYPE << ": " << "text/html" << Http::Formatting::CRLF;
-	response_.setBody( generateDefaultPage() );
+	response_.setBody( generateDefaultPage( "" ) );
 }
 
 void	ResponseBuilder::buildBasicReturn( const std::string& what_is_return ) {
@@ -143,7 +143,6 @@ void	ResponseBuilder::buildResponseAccordingToMethod( const HttpRequest& request
 
 		buildResponseDELETE( request );
 	}
-
 }
 
 void	ResponseBuilder::buildResponseGET() {
@@ -156,7 +155,7 @@ void	ResponseBuilder::buildResponseGET() {
 }
 
 void	ResponseBuilder::buildResponsePOST( const HttpRequest& request ) {
-	
+
 	/*if ( config_data_.getCgiAllowed() == true )
 		handleCGI();*/
 	if ( config_data_.getUploadAllowed() == true )
@@ -167,8 +166,42 @@ void	ResponseBuilder::buildResponsePOST( const HttpRequest& request ) {
 
 void	ResponseBuilder::buildResponseDELETE( const HttpRequest& request ) {
 
-	(void)request;
-	header_ << "WIP: building DELETE response";
+	if ( deleteFile( request.getUri() ) == ERROR )
+		return ;
+
+	code_ = 200;
+	setStatusCode();
+	setServerAndDate();
+	header_ << Http::Headers::CONTENT_TYPE << ": " << "text/html" << Http::Formatting::CRLF;
+	const std::string&	body = generateDefaultPage( "Successfully deleted " + request.getUri() );
+	response_.setBody( body );
+}
+
+int	ResponseBuilder::deleteFile( const std::string& uri ) {
+
+	std::string		uri_without_prefix = cutPrefixFromUri( uri );
+	const std::string	path = buildPathFromRootAndResource( config_data_.getRoot(), uri_without_prefix );
+
+	if ( checkIfPathExists( path ) == ERROR )
+		return ERROR;
+
+	if ( file_or_dir_ != IS_FILE ) {
+	        setErrorState( 403 );
+		return ERROR;
+    	}
+
+	int return_value = std::remove( path.c_str() );
+	if ( return_value != SUCCESS ) {
+		if ( errno == ENOENT )
+			setErrorState( 404 );
+		else if ( errno == EACCES || errno == EPERM || errno == EISDIR )
+			setErrorState( 403 );
+		else
+			setErrorState( 500 );
+		return ERROR;
+	}
+
+	return SUCCESS;
 }
 
 void	ResponseBuilder::buildErrorResponse() {
@@ -257,28 +290,43 @@ void	ResponseBuilder::handleUpload( const HttpRequest& request ) {
 
 	const std::string&	request_body = request.getBody();
 	const std::string	filename = getFileNametoUpload( request_body );
-	if ( filename == "")
+	if ( filename == "") {
+		setErrorState( 400 );
 		return ;
+	}
 	const std::string	file_content = getFileContent( request_body );
-	if ( file_content == "")
+	if ( file_content == "") {
+		setErrorState( 400 );
 		return ;
+	}
+	int return_status = createUploadedFile( filename, file_content );
+	if ( return_status == ERROR ) {
+		setErrorState( 500 );
+		return ;
+	}
+	buildSuccessUploadResponse( filename );
+}
 
-	createUploadedFile( filename, file_content );
+void	ResponseBuilder::buildSuccessUploadResponse( const std::string& filename ) {
+
+	code_ = 200;
+	setStatusCode();
+	setServerAndDate();
+	header_ << Http::Headers::CONTENT_TYPE << ": " << "text/html" << Http::Formatting::CRLF;
+
+	const std::string	body = generateDefaultPage( "Successfully uploaded " + filename );
+	response_.setBody( body );
 }
 
 const std::string	ResponseBuilder::getFileNametoUpload( const std::string& request_body ) {
 
 	size_t	position_of_start  = request_body.find( "filename=\"" ) + 10;
-	if ( position_of_start == request_body.npos) {
+	if ( position_of_start == request_body.npos)
+		return "";
 
-		setErrorState( 400 );
-		return "";
-	}
 	size_t	position_of_end    = request_body.find( Http::Formatting::CRLF, position_of_start );
-	if ( position_of_end == request_body.npos) {
-		setErrorState( 400 );
+	if ( position_of_end == request_body.npos)
 		return "";
-	}
 
 	size_t	length_of_filename = position_of_end - position_of_start - 1;
 	return request_body.substr( position_of_start, length_of_filename );
@@ -287,16 +335,12 @@ const std::string	ResponseBuilder::getFileNametoUpload( const std::string& reque
 const std::string	ResponseBuilder::getFileContent( const std::string& request_body ) {
 
 	size_t	position_of_start = request_body.find( Http::Formatting::HEADER_END ) + 4;
-	if ( position_of_start == request_body.npos) {
-		setErrorState( 400 );
+	if ( position_of_start == request_body.npos)
 		return "";
-	}
 
 	size_t	position_of_end   = request_body.find_last_of( Http::Formatting::HEADER_END ) + 4;
-	if ( position_of_end == request_body.npos ) {
-		setErrorState( 400 );
+	if ( position_of_end == request_body.npos )
 		return "";
-	}
 
 	size_t	length_of_filename = position_of_end - position_of_start - 1;
 	return request_body.substr( position_of_start, length_of_filename );
@@ -304,18 +348,12 @@ const std::string	ResponseBuilder::getFileContent( const std::string& request_bo
 
 int	ResponseBuilder::createUploadedFile( const std::string& filename, const std::string& file_content ) {
 
-	std::string	path = buildPathFromRootAndResource( config_data_.getUploadLocation(), filename );
-	if ( path[0] != '.' )
-		path = "." + path;
-
-	std::cout << "\e[1;92m" << path << "\033[0m" << std::endl;
+	upload_path_ = buildPathFromRootAndResource( config_data_.getUploadLocation(), filename );
 
 	std::ofstream	file;
-	file.open( path.c_str() );
-	if ( !file.is_open() ) {
-		setErrorState( 500 );
+	file.open( upload_path_.c_str() );
+	if ( !file.is_open() )
 		return ERROR;
-	}
 
 	file << file_content;
 	file.close();
@@ -376,7 +414,11 @@ int	ResponseBuilder::checkIfPathExists( const std::string& path ) {
 
 	int result = stat( path.c_str(), &s );
 	if ( result == -1 ) {
-		setErrorState( 404 );
+
+		if ( errno == EACCES )
+			setErrorState( 403 );
+		else
+			setErrorState( 404 );
 		return ERROR;
 	}
 
@@ -411,11 +453,11 @@ void	ResponseBuilder::setErrorPageHtml( const std::string page_from_config ) {
 	if ( page_from_config != "")
 		body = readContentFromFile( page_from_config );
 	if ( body == "" )
-		body = generateDefaultPage();
+		body = generateDefaultPage( "" );
 	response_.setBody( body );
 }
 
-const std::string	ResponseBuilder::generateDefaultPage() {
+const std::string	ResponseBuilder::generateDefaultPage( const std::string& optionnal_message ) {
 
 	std::stringstream	default_page;
 
@@ -427,6 +469,8 @@ const std::string	ResponseBuilder::generateDefaultPage() {
 			<< "<body>\n"
 			<< "<center><h1>"
 			<< code_ << " " << code_meaning_
+			<< "<br><br>"
+			<< optionnal_message
 			<<"</h1></center>\n"
 			<< "<hr><center> &#128225;&#9989; Webserv &#128029;</center>\n"
 			<< "</body>\n"
