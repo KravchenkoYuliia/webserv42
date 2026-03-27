@@ -20,16 +20,16 @@
 #include "http/ResponseBuilder.hpp"
 
 //std::cout << "\e[1;92m" << "\033[0m" << std::endl;
-ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data ) {
+ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data, size_t request_error ) {
 
 	initialize_values( request.getUri(), config_data );
 	
-	/*if ( request.getErrorCode() != NOT_SPECIFIED ) {
-		setErrorState( request.getErrorCode() );
+	if ( request_error != 1 ) {
+		setErrorState( request_error );
 	}
-	else {*/
+	else {
 		buildResponse( request );
-	//}
+	}
 
 	if ( error_ == true ) {
 		buildErrorResponse();

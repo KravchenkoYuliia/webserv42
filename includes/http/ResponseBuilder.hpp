@@ -26,7 +26,7 @@ enum status { SUCCESS, ERROR, NOT_SPECIFIED=-1, IS_FILE, IS_DIR };
 class ResponseBuilder {
 public:
 
-	ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data );
+	ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data, size_t error_code );
     ~ResponseBuilder();
 
 	const HttpResponse&	getResponse();
