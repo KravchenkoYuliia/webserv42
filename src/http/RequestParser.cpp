@@ -16,6 +16,7 @@
 #include <cstring>      // strlen
 #include <algorithm>    // std::min
 #include <errno.h>      // errno
+#include <limits>       // std::numeric_limits
 #include "http/MultipartParser.hpp"
 #include "http/HttpConstants.hpp"
 #include "http/RequestParser.hpp"
@@ -662,26 +663,24 @@ bool    RequestParser::validateContentLengthHeader()
     bool success;
     int base = 10;
     long long value = Utils::parseLongLong(Utils::trim(content_length_header), success, base);
-    if (!success)
+    if (!success || value < 0)
     {
         error_code_ = 400; // TODO: BAD_REQUEST
         return (false);
     }
-
-    try {
-        request_.setContentLength(static_cast<size_t>(value));
-    } catch (const std::runtime_error& e)
+    if (static_cast<unsigned long long>(value) > std::numeric_limits<size_t>::max())
     {
         error_code_ = 413; // TODO: PAYLOAD_TOO_LARGE
         return (false);
     }
+    request_.setContentLength(static_cast<size_t>(value));
     if (value == 0)
-    {
         state_ = ParserState::COMPLETE;
-        return (true);
+    else
+    {
+        state_ = ParserState::BODY_CONTENT_LENGTH;
+        content_length_bytes_ = value;
     }
-    state_ = ParserState::BODY_CONTENT_LENGTH;
-    content_length_bytes_ = value;
     return (true);
 }
 
