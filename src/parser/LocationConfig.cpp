@@ -42,6 +42,7 @@ LocationConfig&	LocationConfig::operator=(const LocationConfig& other) {
 		this->has_return_ = other.has_return_;
 		this->upload_allowed_ = other.upload_allowed_;
 		this->upload_location_ = other.upload_location_;
+		this->cgi_ = other.cgi_;
 	}
 	return *this;
 }
@@ -85,6 +86,10 @@ void	LocationConfig::setUploadAllowed() {
 
 void	LocationConfig::setUploadLocation( const std::string& upload_location ) {
 	upload_location_ = upload_location;
+}
+
+void	LocationConfig::setCgi( const std::string& extension, const std::string& path ) {
+	cgi_[extension] = path;
 }
 
 //getters
@@ -131,6 +136,9 @@ const std::string&	LocationConfig::getUploadLocation() const {
 	return upload_location_;
 }
 
+const std::map<std::string, std::string>&	LocationConfig::getCgi() const{
+	return cgi_;
+}
 
 std::ostream&	operator<<( std::ostream& out, const LocationConfig& l ) {
 	    out << "\t\t\t\tpath: "

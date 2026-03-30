@@ -37,6 +37,7 @@ public:
 	void	setHasReturn();
 	void	setUploadAllowed();
 	void	setUploadLocation( const std::string& upload_location );
+	void	setCgi( const std::string& extension, const std::string& path );
 
 
 //getters
@@ -52,6 +53,7 @@ public:
 	bool                                getHasReturn() const;
 	bool								getUploadAllowed() const;
 	const std::string&					getUploadLocation() const;
+	const std::map<std::string, std::string>&	getCgi() const;
 
 private:
 	AutoindexType					autoindex_;
@@ -65,6 +67,8 @@ private:
 	bool                            	has_return_;
 	bool					upload_allowed_;
 	std::string				upload_location_;
+	std::map<std::string, std::string>	cgi_;
+
 };
 
 std::ostream&	operator<<( std::ostream& out, const LocationConfig& l );

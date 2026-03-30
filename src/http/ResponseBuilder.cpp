@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/27 17:33:44 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/31 11:13:28 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,21 +15,23 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h> //opendir
+#include <sys/wait.h>
 #include <ctime>
 #include "http/HttpConstants.hpp"
 #include "http/ResponseBuilder.hpp"
 
+extern char** global_env;
 //std::cout << "\e[1;92m" << "\033[0m" << std::endl;
-ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data ) {//, size_t request_error ) {
+ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data, size_t request_error ) {
 
 	initialize_values( request.getUri(), config_data );
 
-/*	if ( request_error != 1 ) {
+	if ( request_error != 1 ) {
 		setErrorState( request_error );
 	}
-	else {*/
+	else {
 		buildResponse( request );
-	//}
+	}
 
 	if ( error_ == true ) {
 		buildErrorResponse();
@@ -43,7 +45,7 @@ ResponseBuilder::~ResponseBuilder() {}
 
 void	ResponseBuilder::buildResponse( const HttpRequest& request ) {
 
-	if ( !config_data_.getReturn().empty() ) {
+	if ( returnInRequest() == true ) {
 		buildReturn( config_data_.getReturn() );
 	}
 	else {
@@ -51,6 +53,73 @@ void	ResponseBuilder::buildResponse( const HttpRequest& request ) {
 	}
 }
 
+bool	ResponseBuilder::returnInRequest() {
+
+	if ( config_data_.getReturn().empty() )
+		return false;
+
+	return true;
+}
+/*
+bool	ResponseBuilder::cgiInRequest() {
+
+	const std::map<std::string, std::string>&	cgi_map = config_data_.getCgi();
+	if ( cgi_map.empty() )
+		return false;
+
+	const std::string uri_extension = "." + getExtension( uri_ );
+	for ( std::map<std::string, std::string>::const_iterator it = cgi_map.begin(); it != cgi_map.end(); it++ ) {
+
+		if ( uri_extension == it->first ) {
+			cgi_extension_ = it->first;
+			return true;
+		}
+	}
+	return false;
+}
+
+void	ResponseBuilder::executeCgi() {
+
+	pid_t	pid = fork();
+	if ( pid == -1 ) {
+		setErrorState( 500 );
+		return ;
+	}
+
+	if ( pid == 0 ) {
+		//check if path exists and has permissions
+		//
+		
+		std::string cgi_path = getElemFromMap( config_data_.getCgi(), cgi_extension_ );
+		std::string python_compiler = "/usr/bin/python3";
+		std::string php_compiler = "/usr/bin/php-cgi";
+
+		char	*argv[2];
+		if ( cgi_extension_ == ".py" )
+			argv[0] =  const_cast<char*>( python_compiler.c_str() );
+		else if ( cgi_extension_ == ".php" ) {
+			argv[0] =  const_cast<char*>( php_compiler.c_str() );
+		}
+		argv[1] = const_cast<char*>( cgi_path.c_str() );
+		argv[2] = NULL;
+
+
+		int execve_return = execve( argv[0], argv, global_env );
+		if ( execve_return == -1 ) {
+			
+			std::cout << "\e[1;92m" << "execve fail" << "\033[0m" << std::endl;
+			setErrorState( 500 );
+			return ;
+		}
+	}
+	int	status;
+	pid_t	waitpid_return = waitpid( pid, &status, 0 );
+	if ( waitpid_return == -1 ) {
+		setErrorState( 500 );
+		return ;
+	}
+}
+*/
 void	ResponseBuilder::initialize_values( const std::string& uri, const MergedConfig& config_data ) {
 
 	error_ = false;
@@ -598,6 +667,16 @@ void	ResponseBuilder::setErrorState( int error_code ) {
 	header_.str("");
 	error_ = true;
 	code_ = error_code;
+}
+
+std::string	ResponseBuilder::getElemFromMap( const std::map<std::string, std::string>& map, const std::string& first ) {
+
+	const std::map<std::string, std::string>::const_iterator	it = map.find( first );
+	if ( it != map.end() ) {
+		return it->second;
+	}
+
+	return "";
 }
 
 std::string	ResponseBuilder::getCodeMeaning() {

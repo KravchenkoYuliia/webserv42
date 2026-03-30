@@ -42,14 +42,18 @@ private:
 	void	parseDirectiveLocation();
 	void	parseWords( const Token& token );
 	void	fillEmptyDirectives();
+	
+	const std::string 	getTokenWord( const std::string& directive, const std::string& requirement );
+	void			checkSemicolon( const std::string& directive);
 
 	void	parseListenInServer();
 	void	parseServerNameInServer();
 
-	void	parseAllowedMethodsInLocation();
-	void	parseUploadAllowedInLocation();
-	void	parseUploadLocationInLocation();
-	void	checkUpload();
+	void				parseAllowedMethodsInLocation();
+	void				parseUploadAllowedInLocation();
+	void				parseUploadLocationInLocation();
+	void				parseCgiInLocation();
+	void				checkUpload();
 
 	void	parseRoot();
 	void	parseIndex();

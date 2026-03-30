@@ -73,4 +73,8 @@ const std::string&	MergedConfig::getUploadLocation() const {
 	return location_.getUploadLocation();
 }
 
+const std::map<std::string, std::string>&	MergedConfig::getCgi() const {
+	return location_.getCgi();
+}
+
 MergedConfig::~MergedConfig() {}

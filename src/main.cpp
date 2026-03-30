@@ -29,7 +29,8 @@
 #include "utils/Utils.hpp"
 #include "core/ServerManager.hpp"
 
-int main(int argc, char **argv)
+char** global_env;
+int main(int argc, char **argv, char **env )
 {
 
     if ( argc != 2 )
@@ -37,7 +38,7 @@ int main(int argc, char **argv)
         std::cerr << "Usage: ./webserv <config_file> " << std::endl;
         return 1;
     }
-
+	global_env = env;
     try {
         std::signal(SIGINT, handle_sigint);
         ServerManager server_manager;

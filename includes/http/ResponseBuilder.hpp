@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 16:46:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/27 17:30:54 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/31 11:13:28 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ enum status { SUCCESS, ERROR, NOT_SPECIFIED=-1, IS_FILE, IS_DIR };
 class ResponseBuilder {
 public:
 
-	ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data );//, size_t error_code );
+	ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data, size_t error_code );
     ~ResponseBuilder();
 
 	const HttpResponse&	getResponse();
@@ -41,6 +41,7 @@ private:
 	std::string		    uri_;
 	std::string		    code_meaning_;
 	std::string		upload_path_;
+	std::string		cgi_extension_;
 	std::ostringstream	header_;
 
 	void	        initialize_values( const std::string& uri, const MergedConfig& config_data );
@@ -53,7 +54,13 @@ private:
 	void		setServerAndDate();
 	std::string		getCodeMeaning();
 
+//
+//CGI
+	bool	cgiInRequest();
+	void	executeCgi();
+
 //Build `Return` response **************************************************************************
+	bool	returnInRequest();
 	void	buildReturn( const std::map<int, std::string>& return_data );
 	void	buildRedirectionReturn( const std::string& what_is_return );
 	void    buildBasicReturn( const std::string& what_is_return );
@@ -97,6 +104,7 @@ private:
 	const std::string	cutPrefixFromUri( const std::string& uri_from_request );
 	DIR*				openDirectory( const std::string& path );
 	void				readDirectory( DIR* dir_ptr, std::vector<std::string>& files_from_dir );
+	std::string	getElemFromMap( const std::map<std::string, std::string>& map, const std::string& first );
 
 	ResponseBuilder();
 	ResponseBuilder( const ResponseBuilder& copy );
