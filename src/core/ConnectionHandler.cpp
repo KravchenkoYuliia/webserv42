@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:42:02 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/30 19:32:37 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/30 19:32:59 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ int ConnectionHandler::getFd() const
 
 void ConnectionHandler::handleRead()
 {
+    // TODO: update this value with a menaingful constant, It limits how many bytes when can read per system call
     char buffer[8192];
     while (true)
     {
@@ -89,7 +90,13 @@ void ConnectionHandler::handleRead()
 
             // save bytes into a read_buffer
             request_parser_.appendData(buffer, bytes_received);
-
+            // TODO: add this check
+            // if (request_parser_.getRawBufferSize() > MAX_REQUEST_SIZE)
+            // {
+            //     TODO: add send Error Response (413)
+            //     reactor_.deleteHandler(fd_);
+            //     return;
+            // }
             while (true)
             {
                 RequestParser::ResultType result = request_parser_.parseNext();
@@ -147,6 +154,7 @@ void ConnectionHandler::handleWrite()
             0 );
         if (bytes == -1)
         {
+            // Normally should check EGAIN but not allow to use errno here so i close the fd directly
             // TODO: update the logging error message or maybe throw an exception?
             std::cerr << "Error sending data!" << std::endl;
             reactor_.deleteHandler(fd_);
