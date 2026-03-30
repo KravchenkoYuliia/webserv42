@@ -74,7 +74,7 @@ private:
     ParserState::Type       state_;
     int                     error_code_;
     size_t                  content_length_bytes_;
-    size_t                  current_chunk_size_;
+    long long               current_chunk_size_;
     bool                    waiting_for_chunk_size_;
 
 
@@ -105,7 +105,6 @@ private:
     bool            isValidMethod( const std::string& method );
     bool            isValidUriFormat( const std::string& uri );
     bool            isValidHttpProtocolVersion( const std::string& protocol_version );
-    unsigned long   parseUnsignedLong( const std::string &str, bool &success, int base );
 };
 
 #endif // REQUEST_PARSER_HPP

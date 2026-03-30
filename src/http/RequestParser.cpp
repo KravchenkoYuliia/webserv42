@@ -391,8 +391,8 @@ RequestParser::ResultType       RequestParser::parseBodyChunked()
             size_t          separator = line.find(';');
             if (separator != std::string::npos)
                 line = line.substr(0, separator);
-            current_chunk_size_ = parseUnsignedLong(line, success, base);
-            if (!success)
+            current_chunk_size_ = Utils::parseLongLong(line, success, base);
+            if (!success || current_chunk_size_ < 0)
             {
                 error_code_ = 400;
                 state_ = ParserState::ERROR;
@@ -417,11 +417,11 @@ RequestParser::ResultType       RequestParser::parseBodyChunked()
             }
             waiting_for_chunk_size_ = false;
         }
-        size_t total_chunk_size = current_chunk_size_ + CRLF_size;
+        size_t total_chunk_size = static_cast<size_t>(current_chunk_size_) + CRLF_size;
         if (raw_buffer_.size() < total_chunk_size)
             return (ParserResult::AGAIN);
 
-        std::string     chunk = raw_buffer_.substr(0, current_chunk_size_);
+        std::string     chunk = raw_buffer_.substr(0, static_cast<size_t>(current_chunk_size_));
         request_.appendToBody(chunk);
         raw_buffer_.erase(0, total_chunk_size);
 
@@ -629,7 +629,7 @@ bool    RequestParser::validateContentLengthHeader()
 
     bool success;
     int base = 10;
-    unsigned long value = parseUnsignedLong(content_length_header, success, base);
+    long long value = Utils::parseLongLong(Utils::trim(content_length_header), success, base);
     if (!success)
     {
         error_code_ = 400; // TODO: BAD_REQUEST
@@ -694,20 +694,6 @@ bool    RequestParser::validateContentTypeHeader()
         return (true);
     error_code_ = 415; // TODO: UNSUPPORTED_MEDIA_TYPE
     return (false);
-}
-
-unsigned long RequestParser::parseUnsignedLong(const std::string &str, bool &success, int base)
-{
-    char            *endptr = 0;
-    unsigned long   value = std::strtoul(str.c_str(), &endptr, base);
-
-    if (*endptr != '\0')
-    {
-        success = false;
-        return (0);
-    }
-    success = true;
-    return (value);
 }
 
 void    RequestParser::handleMultiPart()

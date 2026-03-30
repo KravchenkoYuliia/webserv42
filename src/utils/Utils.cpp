@@ -6,14 +6,16 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 17:54:23 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 11:20:40 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/27 15:12:35 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <fcntl.h>          // fcntl
 #include <cctype>           // std::tolower, std::isspace
-#include <stdexcept>
+#include <stdexcept>        // std::runtime_error
 #include <sstream>          // std::stringstream
+#include <cstdlib>          // strtoll
+#include <errno.h>          // errno // TODO: to keep?
 #include "utils/Utils.hpp"
 
 void Utils::setNonBlocking(int fd)
@@ -55,4 +57,25 @@ std::string Utils::trim(const std::string& str)
         --end;
 
     return (str.substr(start, end - start));
+}
+long long        Utils::parseLongLong(const std::string &str, bool &success, int base)
+{
+    std::string     trimmed_str = Utils::trim(str);
+    char            *endptr = 0;
+    long long       value;
+    if (trimmed_str.empty() || trimmed_str[0] == '-' || trimmed_str[0] == '+')
+    {
+        success = false;
+        return (0);
+    }
+    errno = 0; // TODO: to keep?
+    value = std::strtoll(trimmed_str.c_str(), &endptr, base);
+    // TODO: this errno check cases of overflow...can be kept?
+    if (errno == ERANGE || *endptr != '\0' || value < 0)
+    {
+        success = false;
+        return (0);
+    }
+    success = true;
+    return (value);
 }
