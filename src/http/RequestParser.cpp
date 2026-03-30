@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestParser.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:07 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/26 15:45:26 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/30 19:30:51 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -618,12 +618,11 @@ bool    RequestParser::validateTransferEncodingHeader()
         return (true);
 
     const std::string transfer_encoding_type = "chunked";
-    if (transfer_encoding_header != transfer_encoding_type)
+    if (Utils::toLower(transfer_encoding_header) != transfer_encoding_type)
     {
         error_code_ = 400; // TODO: BAD_REQUEST
         return (false);
     }
-    request_.setChunkSize(0);
     state_ = ParserState::BODY_CHUNKED;
     return (true);
 }
