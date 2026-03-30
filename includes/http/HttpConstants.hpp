@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 11:44:57 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/20 16:28:35 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/27 12:08:22 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,10 @@ struct Http
         static const std::string FILENAME;
         static const std::string CONTENT_DISPOSITION;
         static const std::string CONTENT_TYPE;
+    };
+
+    struct Response {
+        static const size_t REQUEST_VALID;
     };
 };
 

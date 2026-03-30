@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 11:46:46 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/20 16:25:15 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/27 12:08:30 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,3 +61,6 @@ const std::string Http::MultiPart::NAME = "name=";
 const std::string Http::MultiPart::FILENAME = "filename=";
 const std::string Http::MultiPart::CONTENT_DISPOSITION = "Content-Disposition:";
 const std::string Http::MultiPart::CONTENT_TYPE = "Content-Type:";
+
+
+const size_t      Http::Response::REQUEST_VALID = 1;

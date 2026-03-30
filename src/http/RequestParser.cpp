@@ -15,7 +15,6 @@
 #include <vector>
 #include <cstring>      // strlen
 #include <algorithm>    // std::min
-#include <cstdlib>      // strtoul
 #include <errno.h>      // errno
 #include "http/MultipartParser.hpp"
 #include "http/HttpConstants.hpp"
@@ -86,6 +85,29 @@ const std::string&  RequestParser::getUri() const
 int RequestParser::getErrorCode() const
 {
     return (error_code_);
+}
+
+RequestParser::ParserState::Type RequestParser::getState() const
+{
+    return (state_);
+}
+
+std::string RequestParser::getStateToString() const
+{
+    if (state_ == ParserState::REQUEST_LINE)
+        return ("REQUEST_LINE");
+    else if (state_ == ParserState::HEADERS)
+        return ("HEADERS");
+    else if (state_ == ParserState::BODY_CONTENT_LENGTH)
+        return ("BODY_CONTENT_LENGTH");
+    else if (state_ == ParserState::BODY_CHUNKED)
+        return ("BODY_CHUNKED");
+    else if (state_ == ParserState::BODY_NONE)
+        return ("BODY_NONE");
+    else if (state_ == ParserState::COMPLETE)
+        return ("COMPLETE");
+    else
+        return ("ERROR");
 }
 
 // --------------------------- Public Member Methods ---------------------------
@@ -366,10 +388,20 @@ RequestParser::ResultType       RequestParser::parseBodyContentLength()
     content_length_bytes_ -= body_data_size_parsed;
     if (content_length_bytes_ == 0)
     {
-        state_ = ParserState::COMPLETE;
+        if (raw_buffer_.size() >= Http::Formatting::CRLF_SIZE && raw_buffer_.substr(0, Http::Formatting::CRLF_SIZE) == Http::Formatting::CRLF)
+            raw_buffer_.erase(0, Http::Formatting::CRLF_SIZE);
+
+        if (!raw_buffer_.empty())
+        {
+            error_code_ = 400;
+            state_ = ParserState::ERROR;
+            std::cerr << "[RequestParser][ERROR] Unexpected extra data after body\n! raw_buffer_ contains: " << raw_buffer_ << std::endl;
+            return (ParserResult::ERROR);
+        }
         handleMultiPart();
         if (state_ == ParserState::ERROR)
             return (ParserResult::ERROR);
+        state_ = ParserState::COMPLETE;
         return (ParserResult::OK);
     }
     return (ParserResult::AGAIN);

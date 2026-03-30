@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:50:43 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/13 12:43:44 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/30 16:35:01 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,8 @@
 #include "reactor/BaseEventHandler.hpp"
 #include "reactor/IEventHandler.hpp"
 #include "reactor/Reactor.hpp"
-
+#include "routing/LocationMatcher.hpp"
+#include "routing/ServerMatcher.hpp"
 
 /*
 Internally it:
@@ -72,11 +73,18 @@ private:
     int                         fd_;
     Reactor&                    reactor_;
     RequestParser               request_parser_;
-    int                         bytes_sent_;
+    size_t                      bytes_sent_;
     std::string                 serialized_response_;
     uint16_t                    port_;
     const                       std::vector<ServerConfig>& servers_;
+    bool                        server_resolved_;
+    ServerConfig                selected_server_;
+    LocationConfig              selected_location_;
 
+    void                        prepareResponse(int status);
+    void                        resolveServerAndLocation();
+    bool                        checkBodySizeLimit();
+    bool                        checkIsMethodAllowed();
 
     ConnectionHandler& operator=(const ConnectionHandler& copy);
     ConnectionHandler(const ConnectionHandler& copy);

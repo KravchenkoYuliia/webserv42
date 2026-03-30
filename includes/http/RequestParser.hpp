@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:28:58 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/27 14:50:03 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/30 16:34:44 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ public:
     };
 
     typedef ParserResult::Type ResultType;
+    typedef ParserState::Type StateType;
 
     // ---------- Constructors / Destructor ----------
 
@@ -57,6 +58,9 @@ public:
     const std::string&      getHeaderValue( const std::string& key ) const;
     const std::string&      getUri() const;
     int                     getErrorCode() const;
+    StateType               getState() const;
+    std::string             getStateToString() const;
+
 
     // ---------- Member Methods -----------------------
     void            appendData( const char *data, size_t len );
@@ -76,7 +80,6 @@ private:
     size_t                  content_length_bytes_;
     long long               current_chunk_size_;
     bool                    waiting_for_chunk_size_;
-
 
     // ---------------------- Private Member Methods ----------------------
     ResultType            parseRequestLine();

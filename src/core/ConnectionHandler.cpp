@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConnectionHandler.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:42:02 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/25 11:28:35 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/30 19:30:24 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,8 @@
 #include "core/ConnectionHandler.hpp"
 #include "http/HttpConstants.hpp"
 #include "http/ResponseBuilder.hpp"
+#include "routing/MergedConfig.hpp"
 #include "utils/Utils.hpp"
-#include "ServerMatcher.hpp"
-#include "LocationMatcher.hpp"
-#include "MergedConfig.hpp"
 
 // ############################# ConnectionHandler Class #############################
 
@@ -35,8 +33,12 @@ ConnectionHandler::ConnectionHandler(int client_fd,
     fd_(client_fd),
     reactor_(reactor),
     request_parser_(),
+    bytes_sent_(0),
     port_(port),
-    servers_(servers)
+    servers_(servers),
+    server_resolved_(false),
+    selected_server_(),
+    selected_location_()
 {
 }
 
@@ -67,7 +69,11 @@ void ConnectionHandler::handleRead()
         ssize_t bytes_received = recv(fd_, buffer, sizeof(buffer), 0);
         if (bytes_received == 0)
         {
-            reactor_.deleteHandler(fd_);
+            if (!request_parser_.isComplete())
+            {
+                std::cerr << "[ConnectionHandler::handleRead][ERROR] Client closed before full body received" << std::endl;
+                prepareResponse(400);
+            }
             return ;
         }
         else if (bytes_received < 0)
@@ -92,59 +98,50 @@ void ConnectionHandler::handleRead()
                 RequestParser::ResultType result = request_parser_.parseNext();
                 if (result == RequestParser::ParserResult::ERROR)
                 {
-                    // TODO: remove this log
-                    std::cout << "result == RequestParser::ParserResult::ERROR bloc" << std::endl;
-
-                    reactor_.deleteHandler(fd_);
+                    if (!server_resolved_)
+                        resolveServerAndLocation();
+                    prepareResponse(request_parser_.getErrorCode());
                     return ;
                 }
-                else if (result == RequestParser::ParserResult::AGAIN)
+                if (!server_resolved_)
                 {
-                    // TODO: remove this log
-                    std::cout << "result == RequestParser::ParserResult::AGAIN bloc" << std::endl;
-                    break;
+                    RequestParser::ParserState::Type state = request_parser_.getState();
+                    if (state == RequestParser::ParserState::BODY_CONTENT_LENGTH
+                        || state == RequestParser::ParserState::BODY_CHUNKED
+                        || state == RequestParser::ParserState::BODY_NONE
+                        || state == RequestParser::ParserState::COMPLETE)
+                    {
+                        server_resolved_ = true;
+                        resolveServerAndLocation();
+                        if (!checkIsMethodAllowed())
+                            return;
+                        if (!checkBodySizeLimit())
+                            return;
+                    }
                 }
-                else if (result == RequestParser::ParserResult::OK)
+                if (result == RequestParser::ParserResult::AGAIN)
+                    break;
+                if (result == RequestParser::ParserResult::OK)
                 {
-                    // TODO: remove this log
-                    std::cout << "result == RequestParser::ParserResult::OK bloc" << std::endl;
                     if (request_parser_.isComplete())
                     {
-                        // TODO: remove this log
-                        std::cout << "request_.isComplete bloc" << std::endl;
-                        // TODO: integrate the server, host like the following in the response_builder object
-                        const ServerConfig&        selected_server = ServerMatcher::matchServer(servers_, request_parser_.getHeader(Http::Headers::HOST), port_);
-                        const LocationConfig&      selected_location = LocationMatcher::matchLocation(selected_server, request_parser_.getUri() );
-                        MergedConfig        config_data( selected_server, selected_location );
-
-                        ResponseBuilder     builder( request_parser_.getRequest(), config_data );
-                        const HttpResponse&        response = builder.getResponse();
-
-                        serialized_response_ = response.serialize();
-
-                        bytes_sent_ = 0;
-                        setWantWrite(true);
-                        // setWantRead(false); // TODO: should i disable the EPOLLIN here?
-                        reactor_.updateHandler(this);
+                        prepareResponse(Http::Response::REQUEST_VALID);
                         return ;
                     }
                 }
             }
         }
     }
-
 }
 
 // TODO: add check on bytes_send
 // TODO: track progress across multiple EPOLLOUT events.
 void ConnectionHandler::handleWrite()
 {
-    // TODO these logs
-    std::cout << "EPOLLOUT case" << std::endl;
-
     if (serialized_response_.empty())
         return ;
-    while (bytes_sent_ < static_cast<int>(serialized_response_.length()))
+    size_t total_size = serialized_response_.size();
+    while (bytes_sent_ < total_size)
     {
         ssize_t bytes = send(
             fd_,
@@ -162,7 +159,7 @@ void ConnectionHandler::handleWrite()
     }
 
     // Done sending → close connection
-    if (bytes_sent_ >= static_cast<int>(serialized_response_.length()))
+    if (bytes_sent_ >= total_size)
     {
         /*
             TODO:
@@ -182,4 +179,71 @@ void ConnectionHandler::handleWrite()
 void ConnectionHandler::handleError()
 {
     reactor_.deleteHandler(fd_);
+}
+
+// --------------------------- Private Member Methods --------------------------
+
+
+void ConnectionHandler::resolveServerAndLocation()
+{
+    selected_server_ = ServerMatcher::matchServer(
+        servers_,
+        request_parser_.getHeaderValue(Http::Headers::HOST),
+        port_
+    );
+
+    selected_location_ = LocationMatcher::matchLocation(
+        selected_server_,
+        request_parser_.getUri()
+    );
+}
+
+
+void ConnectionHandler::prepareResponse(int status)
+{
+    MergedConfig config_data(selected_server_, selected_location_);
+    ResponseBuilder builder(request_parser_.getRequest(), config_data, status);
+    const HttpResponse& response = builder.getResponse();
+
+    serialized_response_ = response.serialize();
+    bytes_sent_ = 0;
+
+    setWantWrite(true);
+    setWantRead(false);
+    reactor_.updateHandler(this);
+}
+
+bool ConnectionHandler::checkBodySizeLimit()
+{
+    const std::string& content_length_str = request_parser_.getHeaderValue(Http::Headers::CONTENT_LENGTH);
+    if (content_length_str.empty())
+        return (true);
+
+    bool success;
+    long long content_length_value = Utils::parseLongLong(content_length_str, success, 10);
+
+    long long selected_client_max_body_size = selected_location_.getClientMaxBodySize();
+    if (selected_client_max_body_size == -1)
+        selected_client_max_body_size = selected_server_.getClientMaxBodySize();
+    if (!success || content_length_value > selected_client_max_body_size)
+    {
+        prepareResponse(413);
+        return (false);
+    }
+    return (true);
+}
+
+bool ConnectionHandler::checkIsMethodAllowed()
+{
+    const std::string current_method = request_parser_.getRequest().getMethodToString();
+    const std::vector<std::string> allowed_methods = selected_location_.getAllowedMethods();
+
+    for ( std::vector<std::string>::const_iterator it = allowed_methods.begin();
+            it != allowed_methods.end(); ++it )
+    {
+        if (*it == current_method)
+            return (true);
+    }
+    prepareResponse(405);
+    return (false);
 }
