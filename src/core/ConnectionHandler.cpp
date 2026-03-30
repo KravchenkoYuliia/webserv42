@@ -188,8 +188,7 @@ void ConnectionHandler::resolveServerAndLocation()
 {
     selected_server_ = ServerMatcher::matchServer(
         servers_,
-        request_parser_.getHeaderValue(Http::Headers::HOST),
-        port_
+        request_parser_.getHeaderValue(Http::Headers::HOST)
     );
 
     selected_location_ = LocationMatcher::matchLocation(

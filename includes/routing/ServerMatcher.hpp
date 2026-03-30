@@ -2,12 +2,12 @@
 #define SERVERMATCHER_HPP
 
 #include <iostream>
-#include "ServerConfig.hpp" 
+#include "parser/ServerConfig.hpp"
 
 class ServerMatcher {
 
 public:
-	static const ServerConfig&	matchServer( const std::vector<ServerConfig>& servers, const std::string& host, uint16_t port );
+	static const ServerConfig&	matchServer( const std::vector<ServerConfig>& servers, const std::string& host );
 
 private:
 
