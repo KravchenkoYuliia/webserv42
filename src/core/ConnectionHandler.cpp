@@ -164,10 +164,13 @@ void ConnectionHandler::handleWrite()
         /*
             TODO:
                 - [x] reset bytes_sent_ to 0
-                - [] reset serialized_response_
+                - [x] reset serialized_response_
                 - [] reset request_parser_
+                - [x] reset server_resolved_ to false
         */
         bytes_sent_ = 0;
+        serialized_response_.clear();
+        server_resolved_ = false;
         // setWantRead(true); // TODO: uncomment this line is setWantRead(false) is kept in handleWrite
         setWantWrite(false);
         // finish to write, update state from EPOLLOUT to EPOLLIN
