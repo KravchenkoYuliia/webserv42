@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/31 11:13:28 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/31 17:18:52 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,12 @@
 #include "http/HttpConstants.hpp"
 #include "http/ResponseBuilder.hpp"
 
-extern char** global_env;
 //std::cout << "\e[1;92m" << "\033[0m" << std::endl;
+
+extern char** global_env;
 ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data, size_t request_error ) {
 
-	initialize_values( request.getUri(), config_data );
+	initialize_values( request, config_data );
 
 	if ( request_error != 1 ) {
 		setErrorState( request_error );
@@ -37,6 +38,7 @@ ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig
 		buildErrorResponse();
 	}
 
+	setCookie();
 	setContentLength();
 	setLastLineOfHeader();
 }
@@ -60,76 +62,28 @@ bool	ResponseBuilder::returnInRequest() {
 
 	return true;
 }
-/*
-bool	ResponseBuilder::cgiInRequest() {
 
-	const std::map<std::string, std::string>&	cgi_map = config_data_.getCgi();
-	if ( cgi_map.empty() )
-		return false;
+void	ResponseBuilder::setCookie() {
 
-	const std::string uri_extension = "." + getExtension( uri_ );
-	for ( std::map<std::string, std::string>::const_iterator it = cgi_map.begin(); it != cgi_map.end(); it++ ) {
-
-		if ( uri_extension == it->first ) {
-			cgi_extension_ = it->first;
-			return true;
-		}
-	}
-	return false;
-}
-
-void	ResponseBuilder::executeCgi() {
-
-	pid_t	pid = fork();
-	if ( pid == -1 ) {
-		setErrorState( 500 );
-		return ;
-	}
-
-	if ( pid == 0 ) {
-		//check if path exists and has permissions
-		//
-		
-		std::string cgi_path = getElemFromMap( config_data_.getCgi(), cgi_extension_ );
-		std::string python_compiler = "/usr/bin/python3";
-		std::string php_compiler = "/usr/bin/php-cgi";
-
-		char	*argv[2];
-		if ( cgi_extension_ == ".py" )
-			argv[0] =  const_cast<char*>( python_compiler.c_str() );
-		else if ( cgi_extension_ == ".php" ) {
-			argv[0] =  const_cast<char*>( php_compiler.c_str() );
-		}
-		argv[1] = const_cast<char*>( cgi_path.c_str() );
-		argv[2] = NULL;
-
-
-		int execve_return = execve( argv[0], argv, global_env );
-		if ( execve_return == -1 ) {
-			
-			std::cout << "\e[1;92m" << "execve fail" << "\033[0m" << std::endl;
-			setErrorState( 500 );
-			return ;
-		}
-	}
-	int	status;
-	pid_t	waitpid_return = waitpid( pid, &status, 0 );
-	if ( waitpid_return == -1 ) {
-		setErrorState( 500 );
-		return ;
+	if ( query_ != "" )
+		header_ << "Set-cookie: " << query_ << Http::Formatting::CRLF;
+	else if ( !cookie_.empty() ) {
+		header_ << "Set-cookie: " << cookie_.begin()->second << Http::Formatting::CRLF;
 	}
 }
-*/
-void	ResponseBuilder::initialize_values( const std::string& uri, const MergedConfig& config_data ) {
+
+void	ResponseBuilder::initialize_values( const HttpRequest& request, const MergedConfig& config_data ) {
 
 	error_ = false;
 	file_or_dir_ = NOT_SPECIFIED;
 	code_ = NOT_SPECIFIED;
 	code_meaning_ = "";
 	header_.str("");
-
 	config_data_ = config_data;
-	uri_ = uri;
+	cutQueryFromUri( request.getUri() );
+
+	if ( !request.getCookie().empty() )
+		cookie_ = request.getCookie();
 }
 
 const HttpResponse&	ResponseBuilder::getResponse() {
@@ -225,8 +179,6 @@ void	ResponseBuilder::buildResponseGET() {
 
 void	ResponseBuilder::buildResponsePOST( const HttpRequest& request ) {
 
-	/*if ( config_data_.getCgiAllowed() == true )
-		handleCGI();*/
 	if ( config_data_.getUploadAllowed() == true )
 		handleUpload( request );
 	else
@@ -315,6 +267,11 @@ int	ResponseBuilder::handleFile( const std::string& path ) {
 
 	std::string	body;
 	body = readContentFromFile( path );
+	
+	std::string	username_cookie = getUsernameCookie();
+	if ( username_cookie != "" )
+		replaceUsernameByCookie( body, username_cookie );
+	
 	if ( error_ == true ) {
 		setErrorState( 500 );
 		return ERROR;
@@ -322,6 +279,41 @@ int	ResponseBuilder::handleFile( const std::string& path ) {
 
 	response_.setBody( body );
 	return SUCCESS;
+}
+
+const std::string	ResponseBuilder::getUsernameCookie() {
+	
+	if ( query_ != "" && query_.length() > 8 && query_.substr( 0, 9 ) == "username=" ) {
+		return query_.substr( 9 );
+	}
+	else if ( !cookie_.empty() ) {
+
+		std::string all_cookies = cookie_["cookie"];
+		size_t pos_of_username = all_cookies.find("username=");
+		if ( pos_of_username == all_cookies.npos )
+			return "";
+		char	username[1000];
+		int i = 0;
+		pos_of_username += 9;
+		while ( pos_of_username < all_cookies.length() && std::isalnum( all_cookies[pos_of_username] ) && i < 1000 ) {
+			username[i] = all_cookies[pos_of_username];
+			i++;
+			pos_of_username++;
+			username[i] = '\0';
+		}
+
+		std::string username_str = username;
+		return username_str;
+	}
+	return "";
+}
+
+void	ResponseBuilder::replaceUsernameByCookie( std::string& body, const std::string& username_cookie ) {
+
+	size_t	pos_of_username = body.find( "user" );
+	if ( pos_of_username == body.npos )
+		return ;
+	body.replace( pos_of_username, 4, username_cookie );
 }
 
 void	ResponseBuilder::handleDirectory( const std::string& path_without_file ) {
@@ -677,6 +669,18 @@ std::string	ResponseBuilder::getElemFromMap( const std::map<std::string, std::st
 	}
 
 	return "";
+}
+
+void	ResponseBuilder::cutQueryFromUri( const std::string& uri ) {
+
+	size_t position_of_delimiter = uri.find( "?" );
+	if ( position_of_delimiter == uri.npos ) {
+		uri_ = uri;
+		return;
+	}
+
+	uri_ 	= uri.substr( 0, position_of_delimiter );
+	query_  = uri.substr( position_of_delimiter + 1 ); 
 }
 
 std::string	ResponseBuilder::getCodeMeaning() {

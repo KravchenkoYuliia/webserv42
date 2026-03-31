@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestParser.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:07 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/30 19:30:51 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/01 13:05:55 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -322,10 +322,59 @@ bool    RequestParser::parseHeaderField( const std::string& line )
         return (false);
     if (!validateHeaderFieldIsUnique(key, value))
         return (false);
+    if (Utils::toLower(key) == "cookie") {
+
+		if (!checkCookieIsValid(value))
+			return (false);
+		request_.setCookie(Utils::toLower(key), value);
+    }
     request_.setHeader(key, value);
     return (true);
 }
 
+bool	RequestParser::checkCookieIsValid(std::string cookie)
+{
+	if (!request_.getCookie().empty()) {
+		error_code_ = 400;
+		return (false);
+	}
+	size_t pos_of_delim = cookie.find(";");
+	while (pos_of_delim != cookie.npos) {
+		std::string left_part = cookie.substr(0, pos_of_delim);
+		cookie = cookie.substr(pos_of_delim+1);
+		if (!checkCookieSyntax(left_part)) {
+			error_code_ = 400;
+			return (false);
+		}
+		pos_of_delim = cookie.find(";");
+	}
+	if (!checkCookieSyntax(cookie)) {
+		error_code_ = 400;
+		return (false);
+	}
+	return (true);
+}
+
+bool	RequestParser::checkCookieSyntax( const std::string& cookie)
+{
+	size_t i = 0;
+	while (i < cookie.length() && std::isspace(cookie[i]))
+		i++;
+	if (i < cookie.length() && !std::isalnum(cookie[i]))
+		return (false);
+	while (i < cookie.length() && std::isalnum(cookie[i]))
+		i++;
+	if (i >= cookie.length() || cookie[i] != '=')
+		return (false);
+	i += 1;
+	if (i < cookie.length() && !std::isalnum(cookie[i]))
+		return (false);
+	while (i < cookie.length() && std::isalnum(cookie[i]))
+		i++;
+	if (i < cookie.length() && !std::isspace(cookie[i]))
+		return (false);
+	return (true);
+}
 /**
  * @brief Validates that a header field complies with uniqueness constraints.
  *

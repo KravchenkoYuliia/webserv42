@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 16:46:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/31 11:13:28 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/03/31 17:18:52 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,10 @@ private:
 	std::string		upload_path_;
 	std::string		cgi_extension_;
 	std::ostringstream	header_;
+	std::map<std::string, std::string>	cookie_;
+	std::string		query_;
 
-	void	        initialize_values( const std::string& uri, const MergedConfig& config_data );
+	void	        initialize_values( const HttpRequest& request, const MergedConfig& config_data );
 	void		buildResponse( const HttpRequest& request );
 
 	void	        setStatusCode();
@@ -55,6 +57,12 @@ private:
 	std::string		getCodeMeaning();
 
 //
+//Cookie
+//
+	void			setCookie();
+	void			cutQueryFromUri( const std::string& uri );
+	const std::string	getUsernameCookie();
+	void			replaceUsernameByCookie( std::string& body, const std::string& username_cookie );
 //CGI
 	bool	cgiInRequest();
 	void	executeCgi();

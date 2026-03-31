@@ -79,6 +79,12 @@ void    HttpRequest::setHeader(const std::string& key, const std::string& value)
     headers_[normalized_key] = value;
 }
 
+void	HttpRequest::setCookie(const std::string& key, const std::string& value)
+{
+	std::string normalized_key = Utils::toLower(key);
+	cookie_[normalized_key] = value;
+}
+
 void    HttpRequest::appendToBody(const std::string& body)
 {
     body_.append(body);
@@ -137,6 +143,11 @@ const std::string&                              HttpRequest::getVersion() const
 const std::map<std::string, std::string>&       HttpRequest::getHeaders() const
 {
     return (headers_);
+}
+
+const std::map<std::string, std::string>&       HttpRequest::getCookie() const
+{
+    return (cookie_);
 }
 
 const std::string&                                     HttpRequest::getHeaderValue(const std::string& key) const

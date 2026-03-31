@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestParser.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:28:58 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/30 16:34:44 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/01 13:05:34 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,8 @@ private:
     std::string     extract_header_field();
     bool            parseRequestLineFields( const std::string& line );
     bool            parseHeaderField( const std::string& line );
+    bool	        checkCookieIsValid(std::string cookie);
+    bool            checkCookieSyntax( const std::string& cookie);
     bool            validateHeaderFields();
     bool            validateHostHeader();
     bool            validateHeaderConflicts();

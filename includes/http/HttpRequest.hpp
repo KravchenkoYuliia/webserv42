@@ -37,6 +37,7 @@ public:
     void                                            setUri(const std::string& uri);
     void                                            setVersion(const std::string& version);
     void                                            setHeader(const std::string& key, const std::string& value);
+    void                                            setCookie(const std::string& key, const std::string& value);
     void                                            appendToBody(const std::string& body);
     void                                            setContentLength(size_t value);
     void                                            setChunkSize(size_t value);
@@ -48,6 +49,7 @@ public:
     const std::string&                              getUri() const;
     const std::string&                              getVersion() const;
     const std::map<std::string, std::string>&       getHeaders() const;
+    const std::map<std::string, std::string>&       getCookie() const;
     const std::string&                              getHeaderValue(const std::string& key) const;
     const std::string&                              getBody() const;
     size_t                                          getContentLength() const;
@@ -67,6 +69,7 @@ private:
     std::string                             uri_;
     std::string                             version_;
     std::map<std::string, std::string>      headers_;
+    std::map<std::string, std::string>      cookie_;
     std::string                             body_;
     size_t                                  content_length_;
     size_t                                  chunk_size_;
