@@ -26,7 +26,7 @@ extern char** global_env;
 ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data, size_t request_error ) {
 
 	initialize_values( request, config_data );
-
+	
 	if ( request_error != 1 ) {
 		setErrorState( request_error );
 	}
@@ -81,9 +81,9 @@ void	ResponseBuilder::initialize_values( const HttpRequest& request, const Merge
 	header_.str("");
 	config_data_ = config_data;
 	cutQueryFromUri( request.getUri() );
-
 	if ( !request.getCookie().empty() )
 		cookie_ = request.getCookie();
+	headers_in_request = request.getHeaders();
 }
 
 const HttpResponse&	ResponseBuilder::getResponse() {
@@ -179,8 +179,9 @@ void	ResponseBuilder::buildResponseGET() {
 
 void	ResponseBuilder::buildResponsePOST( const HttpRequest& request ) {
 
-	if ( config_data_.getUploadAllowed() == true )
+	if ( config_data_.getUploadAllowed() == true ) {
 		handleUpload( request );
+	}
 	else
 		setErrorState( 403 );
 }
@@ -352,11 +353,13 @@ void	ResponseBuilder::handleUpload( const HttpRequest& request ) {
 	const std::string&	request_body = request.getBody();
 	const std::string	filename = getFileNametoUpload( request_body );
 	if ( filename == "") {
+
+		std::cerr << "Upload: No file name to upload" << std::endl;
 		setErrorState( 400 );
 		return ;
 	}
 	const std::string	file_content = getFileContent( request_body );
-	if ( file_content == "") {
+	if ( file_content == "" && code_ == 400 ) {
 		setErrorState( 400 );
 		return ;
 	}
@@ -396,15 +399,46 @@ const std::string	ResponseBuilder::getFileNametoUpload( const std::string& reque
 const std::string	ResponseBuilder::getFileContent( const std::string& request_body ) {
 
 	size_t	position_of_start = request_body.find( Http::Formatting::HEADER_END ) + 4;
-	if ( position_of_start == request_body.npos)
+	if ( position_of_start == request_body.npos) {
+		code_ = 400;
 		return "";
-
-	size_t	position_of_end   = request_body.find_last_of( Http::Formatting::HEADER_END ) + 4;
-	if ( position_of_end == request_body.npos )
+	}
+	
+	const std::string boundary = "--" + getBoundaryFromHeaders() + "--";
+	if ( boundary == "--" && code_ == 400 )
 		return "";
+	size_t	position_of_end = request_body.find( boundary ) - 2;
+	if ( position_of_end == request_body.npos ) {
+		code_ = 400;
+		return "";
+	}
 
-	size_t	length_of_filename = position_of_end - position_of_start - 1;
+	size_t	length_of_filename = position_of_end - position_of_start;
 	return request_body.substr( position_of_start, length_of_filename );
+}
+
+std::string	ResponseBuilder::getBoundaryFromHeaders() {
+
+	bool	is_content_type = false;
+	for ( std::map<std::string, std::string>::const_iterator it = headers_in_request.begin(); it != headers_in_request.end(); it++ ) {
+		if ( it->first == "content-type" ) {
+			is_content_type = true;
+			size_t pos_of_boundary = it->second.find( "boundary=" );
+			if ( pos_of_boundary == it->second.npos ) {
+				std::cerr << "Error: Boundary is missing" << std::endl;
+				code_ = 400;
+				return "";
+			}
+			return it->second.substr( pos_of_boundary + 9 );
+		}
+	}
+	if ( is_content_type == false ) {
+		std::cerr << "Error: Content-type is missing" << std::endl;
+		code_ = 400;
+		return "";
+	}
+	
+	return "";
 }
 
 int	ResponseBuilder::createUploadedFile( const std::string& filename, const std::string& file_content ) {

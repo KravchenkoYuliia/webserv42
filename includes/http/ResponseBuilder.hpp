@@ -44,6 +44,7 @@ private:
 	std::string		cgi_extension_;
 	std::ostringstream	header_;
 	std::map<std::string, std::string>	cookie_;
+	std::map<std::string, std::string>	headers_in_request;
 	std::string		query_;
 
 	void	        initialize_values( const HttpRequest& request, const MergedConfig& config_data );
@@ -100,6 +101,7 @@ private:
 	void	buildSuccessUploadResponse( const std::string& filename );
 	const std::string	getFileNametoUpload( const std::string& request_body );
 	const std::string	getFileContent( const std::string& request_body );
+	std::string		getBoundaryFromHeaders();
 	int		createUploadedFile( const std::string& filename, const std::string& file_content );
 	void	buildResponseDELETE( const HttpRequest& request );
 	int	deleteFile( const std::string& path );
