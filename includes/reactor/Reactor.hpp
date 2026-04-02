@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:19:32 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/13 13:23:23 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/02 09:36:57 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <inttypes.h> // uint32_t
 #include "reactor/IEventHandler.hpp"
 
@@ -49,11 +50,16 @@ public:
     // ---------- Member Methods -----------------------
 
     void        addHandler( IEventHandler *handler );
+    void        addHandler( IEventHandler* handler, int fd );
+    void        addHandler(IEventHandler* handler, int fd, uint32_t events);
+
     void        updateHandler( IEventHandler *handler );
     void        deleteHandler( int fd );
     void        removeDeactivatedHandler();
     void        run(); // TODO: should it be renamed to handleEvent?
     uint32_t    computeEvents(IEventHandler *handler);
+    void        wakeUpHandler(int fd);
+
 
 protected:
     // ---------- Protected Data Members ---------------------
@@ -62,6 +68,10 @@ private:
     // ---------- Private Data members -------------------------
     int                           epoll_fd_;
     std::vector<IEventHandler *>  handlers_;
+    std::map<int, IEventHandler *>  fd_map_;
+
+
+    bool        isHandlerRegistered( IEventHandler* handler ) const;
 
     Reactor(const Reactor& copy);
     Reactor& operator=(const Reactor& copy);

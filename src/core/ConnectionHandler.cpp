@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:42:02 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/30 19:30:24 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/02 22:12:21 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <sys/epoll.h>      // EPOLLIN , EPOLLOUT
 #include <sys/socket.h>     // recv
 #include <errno.h>          // errno, EAGAIN, EWOULDBLOCK
+#include "core/CgiHandler.hpp"
 #include "core/ConnectionHandler.hpp"
 #include "http/HttpConstants.hpp"
 #include "http/ResponseBuilder.hpp"
@@ -38,7 +39,8 @@ ConnectionHandler::ConnectionHandler(int client_fd,
     servers_(servers),
     server_resolved_(false),
     selected_server_(),
-    selected_location_()
+    selected_location_(),
+    cgi_pending_(false)
 {
 }
 
@@ -138,6 +140,11 @@ void ConnectionHandler::handleRead()
 // TODO: track progress across multiple EPOLLOUT events.
 void ConnectionHandler::handleWrite()
 {
+    if (serialized_response_.empty() && cgi_pending_)
+    {
+        handleCgi();
+        return;
+    }
     if (serialized_response_.empty())
         return ;
     size_t total_size = serialized_response_.size();
@@ -151,32 +158,32 @@ void ConnectionHandler::handleWrite()
         if (bytes == -1)
         {
             // TODO: update the logging error message or maybe throw an exception?
-            std::cerr << "Error sending data!" << std::endl;
+            std::cerr << "[ConnectionHandler::handleWrite] send error\n" << std::endl;
             reactor_.deleteHandler(fd_);
             return ;
         }
-        bytes_sent_ += bytes;
+        if (bytes > 0)
+        {
+            bytes_sent_ += static_cast<size_t>(bytes);
+        }
+        else
+        {
+            // assume EAGAIN
+            setWantWrite(true);
+            reactor_.updateHandler(this);
+            return;
+        }
     }
 
     // Done sending → close connection
-    if (bytes_sent_ >= total_size)
-    {
-        /*
-            TODO:
-                - [x] reset bytes_sent_ to 0
-                - [x] reset serialized_response_
-                - [] reset request_parser_
-                - [x] reset server_resolved_ to false
-        */
-        bytes_sent_ = 0;
-        serialized_response_.clear();
-        server_resolved_ = false;
-        // setWantRead(true); // TODO: uncomment this line is setWantRead(false) is kept in handleWrite
-        setWantWrite(false);
-        // finish to write, update state from EPOLLOUT to EPOLLIN
-        reactor_.updateHandler(this);
-    }
-    reactor_.deleteHandler(fd_);
+    bytes_sent_ = 0;
+    serialized_response_.clear();
+    cgi_output_buffer_.clear();
+    request_parser_.reset();
+    server_resolved_ = false;
+    setWantWrite(false);
+    reactor_.updateHandler(this);
+    // reactor_.deleteHandler(fd_);
 }
 
 void ConnectionHandler::handleError()
@@ -185,7 +192,6 @@ void ConnectionHandler::handleError()
 }
 
 // --------------------------- Private Member Methods --------------------------
-
 
 void ConnectionHandler::resolveServerAndLocation()
 {
@@ -201,15 +207,31 @@ void ConnectionHandler::resolveServerAndLocation()
 }
 
 
-void ConnectionHandler::prepareResponse(int status)
+void ConnectionHandler::prepareResponse(size_t status)
 {
-    MergedConfig config_data(selected_server_, selected_location_);
-    ResponseBuilder builder(request_parser_.getRequest(), config_data, status);
-    const HttpResponse& response = builder.getResponse();
+    MergedConfig            config_data(selected_server_, selected_location_);
+    size_t                  status_code = static_cast<size_t>(status);
+    const HttpRequest&      request = request_parser_.getRequest();
 
-    serialized_response_ = response.serialize();
+    if (status_code == Http::Response::REQUEST_VALID && request.isCgiRequest(config_data.getCgi())) {
+        cgi_output_buffer_.clear();
+        cgi_pending_ = true;
+
+        CgiHandler* cgi = new CgiHandler( reactor_, request, config_data, cgi_output_buffer_ ,fd_ );
+        if (!cgi->execCgi())
+        {
+            delete cgi;
+            status_code = 502; // Bad Gateway
+        }
+        setWantRead(false);
+        setWantWrite(false);
+        reactor_.updateHandler(this);
+        return;
+    }
+    ResponseBuilder builder(request, config_data, status);
+    serialized_response_ = builder.getResponse().serialize();
+
     bytes_sent_ = 0;
-
     setWantWrite(true);
     setWantRead(false);
     reactor_.updateHandler(this);
@@ -248,4 +270,28 @@ bool ConnectionHandler::checkIsMethodAllowed()
     }
     prepareResponse(405);
     return (false);
+}
+
+void ConnectionHandler::handleCgi()
+{
+    cgi_pending_ = false;
+    MergedConfig config_data(selected_server_, selected_location_);
+
+    if (cgi_output_buffer_.empty())
+    {
+        // CgiHandler signalled failure with an empty buffer → 502.
+        std::cerr << "[ConnectionHandler::handleWrite] cgi_output_buffer_ is empty! ResponseBuilder will build the 502 response"<< std::endl;
+        ResponseBuilder builder(request_parser_.getRequest(), config_data, 502);
+        serialized_response_ = builder.getResponse().serialize();
+    }
+    else
+    {
+        ResponseBuilder builder(request_parser_.getRequest(),
+                                config_data,
+                                cgi_output_buffer_);
+        serialized_response_ = builder.getResponse().serialize();
+    }
+    bytes_sent_ = 0;
+    setWantWrite(true);
+    reactor_.updateHandler(this);
 }

@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 11:46:46 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/27 12:08:30 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/01 14:46:20 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ const std::string Http::Headers::CONTENT_LENGTH = "Content-Length";
 const std::string Http::Headers::TRANSFER_ENCODING = "Transfer-Encoding";
 const std::string Http::Headers::CONTENT_TYPE = "Content-Type";
 const std::string Http::Headers::CONNECTION = "Connection";
+const std::string Http::Headers::COOKIE = "Cookie";
 
 // ------------------------- Struct Formatting -------------------------
 
@@ -51,6 +52,7 @@ const size_t     Http::Formatting::BOUNDARY_DELIMITER_SIZE = 2;
 // ------------------------- Struct ContentType -------------------------
 
 const std::string Http::ContentType::TEXT_PLAIN = "text/plain";
+const std::string Http::ContentType::TEXT_HTML = "text/html";
 const std::string Http::ContentType::MULTIPART_FORM_DATA = "multipart/form-data";
 const std::string Http::ContentType::APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
 

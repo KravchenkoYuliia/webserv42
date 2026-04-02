@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:09:30 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 16:25:45 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/02 21:57:20 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,9 @@ public:
     virtual void    deactivate() = 0;
     virtual bool    wantRead() const = 0;
     virtual bool    wantWrite() const = 0;
+
+    virtual void    setWantWrite(bool enable) = 0;
+    virtual void    setWantRead(bool enable) = 0;
 };
 
 #endif // IEVENT_HANDLER_HPP

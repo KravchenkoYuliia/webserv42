@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:02:42 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/02 16:37:10 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/04/07 14:15:19 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,24 @@ HttpRequest::~HttpRequest(void)
 {
     // TODO: Delete this log
     std::cout << "HttpRequest destructor called" << std::endl;
+}
+
+HttpRequest::HttpRequest(const HttpRequest& copy)
+{
+    *this = copy;
+}
+
+HttpRequest& HttpRequest::operator=(const HttpRequest& copy)
+{
+    if (this != &copy)
+    {
+        method_ = copy.method_;
+        version_ = copy.version_;
+        content_length_ = copy.content_length_;
+        chunk_size_ = copy.chunk_size_;
+        is_multipart_ = copy.is_multipart_;
+    }
+    return (*this);
 }
 
 // --------------------------- Public Setter Methods ---------------------------
@@ -193,4 +211,17 @@ bool    HttpRequest::hasHeader( const std::string& key) const
 {
     std::string normalized_key = Utils::toLower(key);
     return (headers_.find(normalized_key) != headers_.end());
+}
+
+bool HttpRequest::isCgiRequest(const std::map<std::string, std::string>& cgi_map) const
+{
+    // const std::map<std::string,std::string>& cgi_map = config.getCgi();
+    if (cgi_map.empty())
+        return (false);
+    const std::string& uri = getUri();
+    size_t dot_pos = uri.find_last_of('.');
+    if (dot_pos == std::string::npos)
+        return (false);
+    std::string extension = uri.substr(dot_pos);
+    return (cgi_map.find(extension) != cgi_map.end());
 }

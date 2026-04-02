@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   ResponseBuilder.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 14:45:37 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/04/07 15:28:17 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h> //opendir
@@ -19,10 +20,10 @@
 #include <ctime>
 #include "http/HttpConstants.hpp"
 #include "http/ResponseBuilder.hpp"
+#include "utils/Utils.hpp"
 
 //std::cout << "\e[1;92m" << "\033[0m" << std::endl;
 
-extern char** global_env;
 ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data, size_t request_error ) {
 
 	initialize_values( request, config_data );
@@ -38,21 +39,86 @@ ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig
 		buildErrorResponse();
 	}
 
-	setCookie();
+    setCookie();
 	setContentLength();
 	setLastLineOfHeader();
+}
+
+ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data, const std::string& raw_cgi_output )
+{
+    initialize_values( request, config_data );
+
+    buildCgiResponse( raw_cgi_output );
+
+    if ( error_ == true ) {
+        buildErrorResponse();
+    }
+
+    setContentLength();
+    setLastLineOfHeader();
 }
 
 ResponseBuilder::~ResponseBuilder() {}
 
 void	ResponseBuilder::buildResponse( const HttpRequest& request ) {
 
-	if ( returnInRequest() == true ) {
+	if ( returnInRequest() == true )
 		buildReturn( config_data_.getReturn() );
-	}
-	else {
+    // TODO: remove these lines
+    // else if (request.isCgiRequest(config_data_.getCgi()))
+    //     buildCgiResponse(request.getBody());
+	else
 		buildResponseAccordingToMethod( request );
-	}
+}
+
+
+void ResponseBuilder::buildCgiResponse(const std::string& raw_cgi_output)
+{
+    const std::string   separator = Http::Formatting::CRLF;
+    size_t              sep_pos = raw_cgi_output.find(separator);
+    if (sep_pos == std::string::npos)
+    {
+        // Malformed CGI output — the child didn't write a blank line.
+        std::cerr << "[ResponseBuilder::buildCgiResponse] no HEADER_END separator found, will return 502 "<< std::endl;
+        setErrorState(502);
+        return;
+    }
+
+    std::string cgi_headers = raw_cgi_output.substr(0, sep_pos);
+    std::string body        = raw_cgi_output.substr(sep_pos + separator.size());
+
+    // Defaults if the CGI script doesn't set them.
+    code_ = 200;
+    std::string content_type = Http::ContentType::TEXT_HTML;
+    size_t      start_pos = 0;
+    while (start_pos < cgi_headers.size())
+    {
+        size_t end_pos = cgi_headers.find(Http::Formatting::CRLF, start_pos);
+        if (end_pos == std::string::npos)
+            end_pos = cgi_headers.size();
+        std::string line = Utils::toLower(cgi_headers.substr(start_pos, end_pos - start_pos));
+        if (!line.empty())
+        {
+            static const std::string status = "status: ";
+            static const std::string content_type_header = "content-type: ";
+            if (line.find(status) == 0)
+            {
+                std::istringstream ss(line.substr(status.size()));
+                ss >> code_;
+            }
+            else if (line.find(content_type_header) == 0)
+                content_type = line.substr(content_type_header.size());
+            else
+                header_ << line << Http::Formatting::CRLF;
+        }
+        if (end_pos == cgi_headers.size())
+            break;
+        start_pos = end_pos + Http::Formatting::CRLF_SIZE;
+    }
+    setStatusCode();
+    setServerAndDate();
+    header_ << Http::Headers::CONTENT_TYPE << ": " << content_type << Http::Formatting::CRLF;
+    response_.setBody(body);
 }
 
 bool	ResponseBuilder::returnInRequest() {
@@ -180,7 +246,7 @@ void	ResponseBuilder::buildResponseGET() {
 void	ResponseBuilder::buildResponsePOST( const HttpRequest& request ) {
 
 	if ( request.getHeaderValue( "Content-Type" ) == Http::ContentType::TEXT_PLAIN ) {
-		
+
 		int return_value = handlePlainText( request.getBody() );
 		if ( return_value == ERROR ) {
 			setErrorState( 500 );

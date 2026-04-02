@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:54:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/18 15:26:07 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/02 21:55:33 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,11 @@
 #include <unistd.h>         // close
 #include <stdexcept>
 #include <errno.h>
+#include <cstring>          //strerror
+#include <algorithm>        // std::find
 #include "core/SignalHandler.hpp"
 #include "reactor/Reactor.hpp"
+#include "reactor/BaseEventHandler.hpp"
 
 Reactor::Reactor(void)
 {
@@ -43,6 +46,7 @@ void Reactor::addHandler( IEventHandler *handler )
     // if push_back failed and throw a bad_alloc
     //-> handler will be freed by the catch statement in ServerManager::init()
     handlers_.push_back(handler);
+    fd_map_[handler->getFd()] = handler;
 
     int fd = handler->getFd();
 
@@ -56,33 +60,106 @@ void Reactor::addHandler( IEventHandler *handler )
         // remove handler from handlers_ if epoll_ctl fails
         //-> handler will be freed by the catch statement in ServerManager::init() since Reactor does not own the handler
         handlers_.pop_back();
+        fd_map_.erase(handler->getFd());
+        throw std::runtime_error("epoll_ctl ADD failed");
+    }
+}
+
+bool Reactor::isHandlerRegistered(IEventHandler* handler) const
+{
+    for (std::vector<IEventHandler *>::const_iterator it = handlers_.begin();
+        it != handlers_.end(); ++it)
+    {
+        if (*it == handler)
+            return (true);
+    }
+    return (false);
+}
+
+void Reactor::addHandler(IEventHandler* handler, int fd)
+{
+    if (handler == NULL)
+        throw std::invalid_argument("handler is NULL");
+
+    if (!isHandlerRegistered(handler))
+        handlers_.push_back(handler);
+    fd_map_[fd] = handler;
+
+    struct epoll_event event;
+    event.events = computeEvents(handler);
+    event.data.ptr = handler;
+
+    if (epoll_ctl( epoll_fd_, EPOLL_CTL_ADD, fd, &event) == -1)
+    {
+        fd_map_.erase(fd);
+        throw std::runtime_error("epoll_ctl ADD failed");
+    }
+}
+
+void Reactor::addHandler(IEventHandler* handler, int fd, uint32_t events)
+{
+    if (handler == NULL)
+        throw std::invalid_argument("handler is NULL");
+
+    if (!isHandlerRegistered(handler))
+        handlers_.push_back(handler);
+    fd_map_[fd] = handler;
+    struct epoll_event event;
+    event.events   = events | EPOLLET;
+    event.data.ptr = handler;
+
+    if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, fd, &event) == -1)
+    {
+        fd_map_.erase(fd);
         throw std::runtime_error("epoll_ctl ADD failed");
     }
 }
 
 void Reactor::updateHandler( IEventHandler *handler )
 {
-    int fd = handler->getFd();
-
     struct epoll_event event;
     event.events = computeEvents(handler);
     event.data.ptr = handler;
-
-    if (epoll_ctl( epoll_fd_, EPOLL_CTL_MOD, fd, &event) == -1)
-        throw std::runtime_error("epoll_ctl MOD failed");
+    for (std::map<int, IEventHandler* >::iterator it = fd_map_.begin(); it != fd_map_.end(); ++it)
+    {
+        if (it->second == handler)
+        {
+            if (epoll_ctl( epoll_fd_, EPOLL_CTL_MOD, it->first, &event) == -1)
+            {
+                std::cerr << "[Reactor::updateHandler] epoll_ctl MOD failded for fd : " << it->first << std::endl;
+                throw std::runtime_error("[Reactor::updateHandler] epoll_ctl MOD failed");
+            }
+        }
+    }
 }
 
 void Reactor::deleteHandler( int fd )
 {
     if (epoll_ctl( epoll_fd_, EPOLL_CTL_DEL, fd, NULL) == -1)
         throw std::runtime_error("epoll_ctl DEL failed");
-    for (std::vector<IEventHandler* >::iterator it = handlers_.begin(); it != handlers_.end(); ++it)
+    std::map<int, IEventHandler* >::iterator map_it = fd_map_.find(fd);
+    if (map_it == fd_map_.end())
     {
-        if ((*it)->getFd() == fd)
+        std::cerr << "[Reactor::deleteHandler] in case map_it == fd_map_.end()" << std::endl;
+        return ;
+    }
+    IEventHandler *handler = map_it->second;
+    fd_map_.erase(map_it);
+
+    bool has_others_fds = false;
+    for (std::map<int, IEventHandler* >::iterator it = fd_map_.begin(); it != fd_map_.end(); ++it)
+    {
+        if (it->second == handler)
         {
-            (*it)->deactivate();
+            has_others_fds = true;
             break;
         }
+    }
+    if (!has_others_fds)
+    {
+         std::cerr << "[Reactor::deleteHandler] called, has_others_fds="
+              << has_others_fds << std::endl;
+        handler->deactivate();
     }
 }
 
@@ -92,7 +169,19 @@ void Reactor::removeDeactivatedHandler()
     {
         if ((*it)->isInactive())
         {
-            delete *it;
+            IEventHandler *handler = *it;
+            for (std::map<int, IEventHandler *>::iterator map_it = fd_map_.begin(); map_it != fd_map_.end(); )
+            {
+                if (map_it->second == handler)
+                {
+                    std::map<int, IEventHandler *>::iterator tmp = map_it;
+                    ++map_it;
+                    fd_map_.erase(tmp);
+                }
+                else
+                    ++map_it;
+            }
+            delete handler;
             // erase reallocate the vector leading to iterator invalidation
             // => need to reallocate iterator by the returning iterator pointer
             it = handlers_.erase(it);
@@ -137,17 +226,68 @@ void Reactor::run()
             IEventHandler *handler = static_cast<IEventHandler *>(ev.data.ptr);
             if (handler->isInactive())
                 continue;
-            if (ev.events & (EPOLLERR | EPOLLHUP))
+            if (ev.events & (EPOLLERR))
             {
                 handler->handleError();
                 continue; // skip read / write if error
             }
-            if (ev.events & EPOLLIN)
+            if (ev.events & EPOLLHUP)
+            {
+                BaseEventHandler *base = static_cast<BaseEventHandler *>(handler);
+                if (base->getType() == BaseEventHandler::CGI)
+                    handler->handleRead();
+                else
+                    handler->handleError();
+                continue;
+            }
+            if (ev.events & EPOLLIN || ev.events & EPOLLHUP)
                 handler->handleRead();
             if ((ev.events & EPOLLOUT) && !handler->isInactive())
                 handler->handleWrite();
         }
         // safe deletion of all the inactived handler
         removeDeactivatedHandler();
+    }
+}
+
+void Reactor::wakeUpHandler(int fd)
+{
+    std::cerr << "[wakeUpHandler] looking for fd=" << fd
+              << " fd_map_ size=" << fd_map_.size() << std::endl;
+    std::map<int, IEventHandler *>::iterator it = fd_map_.find(fd);
+    if (it == fd_map_.end())
+    {
+        // TODO remove these logs
+        std::cerr << "[Reactor::wakeUpHandler] ERROR fd=" << fd
+                  << " not found in fd_map_!\n";
+        // Print entire fd_map_ for debugging
+        for (std::map<int,IEventHandler*>::iterator dit = fd_map_.begin();
+             dit != fd_map_.end(); ++dit)
+            std::cerr << "  fd_map_[" << dit->first << "]\n";
+        return ;
+    }
+    std::cerr << "[wakeUpHandler] found fd=" << it->first << std::endl;
+    IEventHandler *handler = it->second;
+    BaseEventHandler* base = static_cast<BaseEventHandler*>(handler);
+    std::cerr << "[wakeUpHandler] handler type=" << base->getTypeToString()
+              << " isInactive=" << handler->isInactive() << std::endl;
+    if (handler->isInactive())
+    {
+        std::cerr << "[Reactor::wakeUpHandler] handler for fd=" << fd
+                  << " is already inactive!\n";
+        return;
+    }
+    handler->setWantWrite(true);
+    handler->setWantRead(false);
+    struct epoll_event event;
+    event.events = computeEvents(handler);
+    event.data.ptr = handler;
+    std::cerr << "[Reactor::wakeUpHandler] MOD fd=" << fd
+              << " events=" << event.events << "\n";
+    if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, fd, &event) == -1)
+    {
+        std::cerr << "[Reactor::wakeUpHandler] epoll_ctl MOD failed: "
+                  << strerror(errno) << "\n";
+        throw std::runtime_error("epoll_ctl MOD failed in wakeUpHandler");
     }
 }

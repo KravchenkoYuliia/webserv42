@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 11:44:57 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/27 12:08:22 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/01 14:46:37 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ struct Http
         static const std::string TRANSFER_ENCODING;
         static const std::string CONTENT_TYPE;
         static const std::string CONNECTION;
+        static const std::string COOKIE;
     };
 
     struct Formatting {
@@ -54,6 +55,7 @@ struct Http
 
     struct ContentType {
         static const std::string TEXT_PLAIN;
+        static const std::string TEXT_HTML;
         static const std::string MULTIPART_FORM_DATA;
         static const std::string APPLICATION_X_WWW_FORM_URLENCODED;
     };

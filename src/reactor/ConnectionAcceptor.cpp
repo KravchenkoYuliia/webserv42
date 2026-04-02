@@ -51,7 +51,7 @@ void ConnectionAcceptor::handleRead()
         if (client_fd == -1)
             break ;
         Utils::setNonBlocking(client_fd);
-        std::cout << "New client connected!" << std::endl;
+        std::cout << "New client connected! client_fd = " << client_fd << std::endl;
         ConnectionHandler *connection_handler = new ConnectionHandler( client_fd, reactor_, port_, servers_ );
         try {
             reactor_.addHandler(connection_handler);

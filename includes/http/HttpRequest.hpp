@@ -25,11 +25,12 @@ public:
     // ---------- Constructors / Destructor ----------
 
     HttpRequest(void);
+    HttpRequest(const HttpRequest& copy);
     ~HttpRequest(void);
 
     // ---------- Overloading Operators Methods -------
 
-
+    HttpRequest& operator=(const HttpRequest& copy);
 
     // ---------- Getter and Setter Methods ------------
     void                                            setMethod(Method method);
@@ -59,6 +60,7 @@ public:
 
     // ---------- Member Methods -----------------------
     bool                                            hasHeader( const std::string& key) const;
+    bool                                            isCgiRequest( const std::map<std::string, std::string>& cgi_map ) const;
 
 protected:
     // ---------- Protected Data Members ---------------------
@@ -75,10 +77,6 @@ private:
     size_t                                  chunk_size_;
     bool                                    is_multipart_;
     MultipartData                           multipart_data_;
-
-    HttpRequest& operator=(const HttpRequest& copy);
-    HttpRequest(const HttpRequest& copy);
-
 };
 
 #endif // HTTP_REQUEST_HPP

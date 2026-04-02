@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestParser.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:28:58 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/01 13:05:34 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/04/07 14:13:30 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ public:
     bool            parseRequest( const std::string& ); // or parseRequestBytes or process
     ResultType      parseNext(); // or parseRequestBytes or process
     bool            isComplete() const;
-
+    void            reset();
 protected:
     // ---------- Protected Data Members ---------------------
 

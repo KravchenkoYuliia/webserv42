@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 11:52:33 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 18:07:07 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/01 11:59:28 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ public:
     enum EventType {
         ACCEPTOR,
         CONNECTION,
+        CGI,
     };
 
     // ---------- Constructors / Destructor ----------
@@ -39,10 +40,10 @@ public:
 
     // ---------- Getter and Setter Methods ------------
 
-    EventType       getType() const;
-    std::string     getTypeToString() const;
-    void            setWantWrite(bool enable);
-    void            setWantRead(bool enable);
+    EventType               getType() const;
+    std::string             getTypeToString() const;
+    virtual void            setWantWrite(bool enable);
+    virtual void            setWantRead(bool enable);
 
     // ---------- Inherited Member Methods -----------------------
 

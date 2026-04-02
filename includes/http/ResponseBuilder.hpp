@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ResponseBuilder.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 16:46:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/31 17:18:52 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/04/07 14:15:04 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,14 @@ enum status { SUCCESS, ERROR, NOT_SPECIFIED=-1, IS_FILE, IS_DIR };
 class ResponseBuilder {
 public:
 
+	ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data, const std::string& raw_cgi_output );
 	ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data, size_t error_code );
     ~ResponseBuilder();
 
 	const HttpResponse&	getResponse();
+
+//CGI
+	void	buildCgiResponse( const std::string& raw_cgi_output );
 
 private:
 	HttpResponse	response_;
@@ -64,9 +68,6 @@ private:
 	void			cutQueryFromUri( const std::string& uri );
 	const std::string	getUsernameCookie();
 	void			replaceUsernameByCookie( std::string& body, const std::string& username_cookie );
-//CGI
-	bool	cgiInRequest();
-	void	executeCgi();
 
 //Build `Return` response **************************************************************************
 	bool	returnInRequest();

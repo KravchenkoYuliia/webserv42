@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:50:43 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/30 16:35:01 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/02 22:12:32 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,11 +80,14 @@ private:
     bool                        server_resolved_;
     ServerConfig                selected_server_;
     LocationConfig              selected_location_;
+    std::string                 cgi_output_buffer_;
+    bool                        cgi_pending_;
 
-    void                        prepareResponse(int status);
+    void                        prepareResponse(size_t status);
     void                        resolveServerAndLocation();
     bool                        checkBodySizeLimit();
     bool                        checkIsMethodAllowed();
+    void                        handleCgi();
 
     ConnectionHandler& operator=(const ConnectionHandler& copy);
     ConnectionHandler(const ConnectionHandler& copy);

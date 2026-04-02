@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestParser.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:07 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 14:12:52 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/04/07 15:28:09 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,25 @@ RequestParser::RequestParser(void)
 RequestParser::~RequestParser(void)
 {
     std::cout << "RequestParser destructor called" << std::endl;
+}
+
+RequestParser::RequestParser(const RequestParser& copy)
+{
+    *this = copy;
+}
+
+RequestParser& RequestParser::operator=(const RequestParser& copy)
+{
+    if (this != &copy)
+    {
+        request_ = copy.request_;
+        state_ = copy.state_;
+        error_code_ = copy.error_code_;
+        content_length_bytes_ = copy.content_length_bytes_;
+        current_chunk_size_ = copy.current_chunk_size_;
+        waiting_for_chunk_size_ = copy.waiting_for_chunk_size_;
+    }
+    return (*this);
 }
 
 // --------------------------- Public Getter Methods ---------------------------
@@ -801,4 +820,14 @@ void    RequestParser::handleMultiPart()
         error_code_ = 400; // TODO: BAD_REQUEST
         state_ = ParserState::ERROR;
     }
+}
+
+void RequestParser::reset()
+{
+    request_ = HttpRequest();
+    state_ = ParserState::REQUEST_LINE;
+    error_code_ = -1;
+    content_length_bytes_ = 0;
+    current_chunk_size_ = 0;
+    waiting_for_chunk_size_ = true;
 }

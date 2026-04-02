@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:43:36 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/11 18:08:58 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/03/31 13:00:17 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,8 @@ std::string   BaseEventHandler::getTypeToString() const
 {
     if (type_ == CONNECTION)
         return ("CONNECTION");
+    else if (type_ == CGI)
+        return ("CGI");
     return ("ACCEPTOR");
 }
 
