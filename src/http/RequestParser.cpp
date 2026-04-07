@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:07 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 13:21:45 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/04/07 14:12:52 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 #include "http/RequestParser.hpp"
 #include "utils/Utils.hpp"
 
-const size_t one_mb = 1024 * 1024;
+const size_t ten_mb = 10 * 1024 * 1024;
 // ------------------------- Struct ParserState helper -------------------------
 
 std::string     RequestParser::ParserState::toString(RequestParser::ParserState::Type state)
@@ -434,7 +434,7 @@ RequestParser::ResultType       RequestParser::parseBodyContentLength()
         return (ParserResult::AGAIN);
     size_t              body_data_size_parsed = std::min(raw_buffer_.size(), content_length_bytes_);
     const std::string   body_data = raw_buffer_.substr(0, body_data_size_parsed);
-    if (request_.getBody().size() + body_data.size() > one_mb) {
+    if (request_.getBody().size() + body_data.size() > ten_mb) {
 	    error_code_ = 413;
 	    state_ = ParserState::ERROR;
 	    std::cerr << "[RequestParser][ERROR] Body is too large"  << std::endl;
