@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:07 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 11:59:51 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/04/07 13:21:45 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -435,10 +435,10 @@ RequestParser::ResultType       RequestParser::parseBodyContentLength()
     size_t              body_data_size_parsed = std::min(raw_buffer_.size(), content_length_bytes_);
     const std::string   body_data = raw_buffer_.substr(0, body_data_size_parsed);
     if (request_.getBody().size() + body_data.size() > one_mb) {
-	error_code_ = 413;
-	state_ = ParserState::ERROR;
-	std::cerr << "[RequestParser][ERROR] Body is too large"  << std::endl;
-	return (ParserResult::ERROR);
+	    error_code_ = 413;
+	    state_ = ParserState::ERROR;
+	    std::cerr << "[RequestParser][ERROR] Body is too large"  << std::endl;
+	    return (ParserResult::ERROR);
     }
     request_.appendToBody(body_data);
     raw_buffer_.erase(0, body_data_size_parsed);

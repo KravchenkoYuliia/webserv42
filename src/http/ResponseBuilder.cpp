@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/31 17:18:52 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/04/07 14:02:15 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ extern char** global_env;
 ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data, size_t request_error ) {
 
 	initialize_values( request, config_data );
-	
+
 	if ( request_error != 1 ) {
 		setErrorState( request_error );
 	}
@@ -234,9 +234,11 @@ void	ResponseBuilder::buildErrorResponse() {
 
 	bool					error_page_from_config = false;
 	const std::map<int, std::string>&	config_errors = config_data_.getErrorPage();
+	std::string				root = config_data_.getRoot();
 	for ( std::map<int, std::string>::const_iterator it = config_errors.begin(); it != config_errors.end(); it++ ) {
 		if ( it->first == code_ ) {
-			setErrorPageHtml( it->second );
+			const std::string path = buildPathFromRootAndResource( root, it->second );
+			setErrorPageHtml( path );
 			if ( response_.getBody() != "" )
 				error_page_from_config = true;
 		}
@@ -268,11 +270,11 @@ int	ResponseBuilder::handleFile( const std::string& path ) {
 
 	std::string	body;
 	body = readContentFromFile( path );
-	
+
 	std::string	username_cookie = getUsernameCookie();
 	if ( username_cookie != "" )
 		replaceUsernameByCookie( body, username_cookie );
-	
+
 	if ( error_ == true ) {
 		setErrorState( 500 );
 		return ERROR;
@@ -283,7 +285,7 @@ int	ResponseBuilder::handleFile( const std::string& path ) {
 }
 
 const std::string	ResponseBuilder::getUsernameCookie() {
-	
+
 	if ( query_ != "" && query_.length() > 8 && query_.substr( 0, 9 ) == "username=" ) {
 		return query_.substr( 9 );
 	}
@@ -403,7 +405,7 @@ const std::string	ResponseBuilder::getFileContent( const std::string& request_bo
 		code_ = 400;
 		return "";
 	}
-	
+
 	const std::string boundary = "--" + getBoundaryFromHeaders() + "--";
 	if ( boundary == "--" && code_ == 400 )
 		return "";
@@ -437,7 +439,7 @@ std::string	ResponseBuilder::getBoundaryFromHeaders() {
 		code_ = 400;
 		return "";
 	}
-	
+
 	return "";
 }
 
@@ -714,7 +716,7 @@ void	ResponseBuilder::cutQueryFromUri( const std::string& uri ) {
 	}
 
 	uri_ 	= uri.substr( 0, position_of_delimiter );
-	query_  = uri.substr( position_of_delimiter + 1 ); 
+	query_  = uri.substr( position_of_delimiter + 1 );
 }
 
 std::string	ResponseBuilder::getCodeMeaning() {
