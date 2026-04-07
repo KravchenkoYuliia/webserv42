@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 15:28:17 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 15:37:49 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,9 +64,6 @@ void	ResponseBuilder::buildResponse( const HttpRequest& request ) {
 
 	if ( returnInRequest() == true )
 		buildReturn( config_data_.getReturn() );
-    // TODO: remove these lines
-    // else if (request.isCgiRequest(config_data_.getCgi()))
-    //     buildCgiResponse(request.getBody());
 	else
 		buildResponseAccordingToMethod( request );
 }
@@ -78,8 +75,7 @@ void ResponseBuilder::buildCgiResponse(const std::string& raw_cgi_output)
     size_t              sep_pos = raw_cgi_output.find(separator);
     if (sep_pos == std::string::npos)
     {
-        // Malformed CGI output — the child didn't write a blank line.
-        std::cerr << "[ResponseBuilder::buildCgiResponse] no HEADER_END separator found, will return 502 "<< std::endl;
+        std::cerr << "[ResponseBuilder::buildCgiResponse] no CRLF separator found, will return 502 "<< std::endl;
         setErrorState(502);
         return;
     }
@@ -87,7 +83,6 @@ void ResponseBuilder::buildCgiResponse(const std::string& raw_cgi_output)
     std::string cgi_headers = raw_cgi_output.substr(0, sep_pos);
     std::string body        = raw_cgi_output.substr(sep_pos + separator.size());
 
-    // Defaults if the CGI script doesn't set them.
     code_ = 200;
     std::string content_type = Http::ContentType::TEXT_HTML;
     size_t      start_pos = 0;

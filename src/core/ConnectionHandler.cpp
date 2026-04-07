@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:42:02 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 13:01:28 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 15:34:51 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,8 +62,6 @@ int ConnectionHandler::getFd() const
 void ConnectionHandler::handleRead()
 {
     char buffer[8192];
-    // TODO: remove this log
-    std::cout << "EPOLLIN case" << std::endl;
 
     // read the request until recv == 0
     while (true)
@@ -157,8 +155,7 @@ void ConnectionHandler::handleWrite()
             0 );
         if (bytes == -1)
         {
-            // TODO: update the logging error message or maybe throw an exception?
-            std::cerr << "[ConnectionHandler::handleWrite] send error\n" << std::endl;
+            std::cerr << "[ConnectionHandler::handleWrite] bytes send failed\n" << std::endl;
             reactor_.deleteHandler(fd_);
             return ;
         }
@@ -274,10 +271,6 @@ bool ConnectionHandler::checkIsMethodAllowed()
 
 void ConnectionHandler::handleCgi()
 {
-    // TODO: remove this log
-    std::cerr << "[ConnectionHandler::handleWrite] cgi_output_buffer_ size="
-              << cgi_output_buffer_.size()
-              << " content='" << cgi_output_buffer_ << "'" << std::endl;
     cgi_pending_ = false;
     MergedConfig config_data(selected_server_, selected_location_);
 
@@ -289,8 +282,6 @@ void ConnectionHandler::handleCgi()
     }
     else
     {
-        std::cerr << "[ConnectionHandler::handleWrite] in !cgi_output_buffer_.empty() case! cgi_output_buffer_ content = " << cgi_output_buffer_ << std::endl;
-
         ResponseBuilder builder(request_parser_.getRequest(),
                                 config_data,
                                 cgi_output_buffer_);

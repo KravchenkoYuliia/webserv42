@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:54:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 13:20:45 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 15:48:07 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,10 +156,7 @@ void Reactor::deleteHandler( int fd )
         }
     }
     if (!has_others_fds)
-    {
-        std::cerr << "[Reactor::deleteHandler] has_others_fds=" << has_others_fds << ", deactivating handler for fd = " << fd << std::endl;
         handler->deactivate();
-    }
 }
 
 void Reactor::removeDeactivatedHandler()
@@ -251,37 +248,17 @@ void Reactor::run()
 
 void Reactor::wakeUpHandler(int fd)
 {
-    std::cerr << "[wakeUpHandler] looking for fd=" << fd
-              << " fd_map_ size=" << fd_map_.size() << std::endl;
     std::map<int, IEventHandler *>::iterator it = fd_map_.find(fd);
     if (it == fd_map_.end())
-    {
-        // TODO remove these logs
-        std::cerr << "[Reactor::wakeUpHandler] ERROR fd=" << fd
-                  << " not found in fd_map_!\n";
-        // Print entire fd_map_ for debugging
-        for (std::map<int,IEventHandler*>::iterator dit = fd_map_.begin();
-             dit != fd_map_.end(); ++dit)
-            std::cerr << "  fd_map_[" << dit->first << "]\n";
         return ;
-    }
     IEventHandler *handler = it->second;
-    BaseEventHandler* base = static_cast<BaseEventHandler*>(handler);
-    std::cerr << "[wakeUpHandler] found fd = " << it->first << ", handler type=" << base->getTypeToString()
-              << " isInactive=" << handler->isInactive() << std::endl;
     if (handler->isInactive())
-    {
-        std::cerr << "[Reactor::wakeUpHandler] handler for fd=" << fd
-                  << " is already inactive!\n";
         return;
-    }
     handler->setWantWrite(true);
     handler->setWantRead(false);
     struct epoll_event event;
     event.events = computeEvents(handler);
     event.data.ptr = handler;
-    std::cerr << "[Reactor::wakeUpHandler] MOD fd=" << fd
-              << " events=" << event.events << "\n";
     if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, fd, &event) == -1)
     {
         std::cerr << "[Reactor::wakeUpHandler] epoll_ctl MOD failed: "

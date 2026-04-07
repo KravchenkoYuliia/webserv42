@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/31 12:53:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 15:09:45 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 15:45:23 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,6 @@ CgiHandler::CgiHandler(
         pid_(-1),
         write_offset_(0)
 {
-    std::cout << "CgiHandler default constructor called" << std::endl;
     stdin_pipe_[0] = -1;
     stdin_pipe_[1] = -1;
     stdout_pipe_[0] = -1;
@@ -53,7 +52,6 @@ CgiHandler::CgiHandler(
 
 CgiHandler::~CgiHandler(void)
 {
-    std::cout << "CgiHandler destructor called" << std::endl;
     cleanup();
 }
 
@@ -80,16 +78,12 @@ int CgiHandler::getWriteFd() const
 // collect child stdout (EPOLLIN on read-end)
 void    CgiHandler::handleRead(void)
 {
-    std::cout << "CgiHandler handleRead called" << std::endl;
     char buffer[8192];
     while (true)
     {
         ssize_t bytes_read = read(stdout_pipe_[0], buffer, sizeof(buffer));
-        if (bytes_read == 0) // EOF — child finished writing
+        if (bytes_read == 0)
         {
-            std::cerr << "[CgiHandler::handleRead] EOF, output_buffer_ size="
-                      << output_buffer_.size()
-                      << " content='" << output_buffer_ << "'" << std::endl;
             reactor_.deleteHandler(stdout_pipe_[0]);
             close(stdout_pipe_[0]);
             stdout_pipe_[0] = -1;
@@ -112,7 +106,6 @@ void    CgiHandler::handleRead(void)
 // forward request body to child stdin (EPOLLOUT on write-end)
 void    CgiHandler::handleWrite(void)
 {
-    std::cout << "CgiHandler handleWrite called" << std::endl;
     while (write_offset_ < body_.size())
     {
         ssize_t n = write(stdin_pipe_[1],
@@ -128,7 +121,6 @@ void    CgiHandler::handleWrite(void)
         }
         write_offset_ += static_cast<size_t>(n);
     }
-    // Done writing body → close child's stdin so it sees EOF
     reactor_.deleteHandler(stdin_pipe_[1]);
     close(stdin_pipe_[1]);
     stdin_pipe_[1] = -1;
@@ -137,7 +129,6 @@ void    CgiHandler::handleWrite(void)
 
 void    CgiHandler::handleError(void)
 {
-    std::cout << "CgiHandler handleError called" << std::endl;
     output_buffer_.clear();
 
     // Remove both pipe fds from epoll before deactivating
@@ -248,23 +239,16 @@ bool CgiHandler::execCgi()
     Utils::setNonBlocking(stdin_pipe_[1]);
     Utils::setNonBlocking(stdout_pipe_[0]);
 
-    // Register the write-end only when there is a body to forward.
-    // We use the explicit-fd overload because one CgiHandler covers two fds.
     if (!body_.empty())
         reactor_.addHandler(this, stdin_pipe_[1],  EPOLLOUT);
     else
     {
-        // No body: close child stdin immediately so it sees EOF.
         close(stdin_pipe_[1]);
         stdin_pipe_[1] = -1;
     }
-
-    // Always register the read-end to collect the child's output.
     setWantWrite(false);
     setWantRead(true);
-
     reactor_.addHandler(this, stdout_pipe_[0], EPOLLIN);
-
     return (true);
 }
 
