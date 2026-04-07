@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/31 12:53:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/02 21:54:03 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 15:09:45 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,7 +229,7 @@ bool CgiHandler::execCgi()
 
         // Build env variables
         std::vector<char*>       envp;
-        buildEnvironmentVariables(envp);
+        buildEnvironmentVariables(envp, cgi_script_path);
 
         if (execve(argv[0], argv, envp.data()) == -1)
         {
@@ -300,19 +300,22 @@ void    CgiHandler::cleanup()
     }
 }
 
-void    CgiHandler::buildEnvironmentVariables( std::vector<char*>& envp )
+void    CgiHandler::buildEnvironmentVariables( std::vector<char*>& envp, const std::string cgi_path )
 {
     env_strings_.push_back("GATEWAY_INTERFACE=CGI/1.1");
     env_strings_.push_back("SERVER_PROTOCOL=HTTP/1.1");
     env_strings_.push_back("SERVER_SOFTWARE=Webserv/1.0");
     env_strings_.push_back("REQUEST_METHOD=" + request_.getMethodToString());
-    env_strings_.push_back("SCRIPT_FILENAME=" + request_.getUri());
-    env_strings_.push_back("SCRIPT_NAME=" + request_.getUri());
+    env_strings_.push_back("SCRIPT_NAME=" + cgi_path);
     env_strings_.push_back("PATH_INFO=" + request_.getUri());
-    env_strings_.push_back("CONTENT_LENGTH=" + Utils::toString(request_.getBody().size()));
+    if (!request_.getBody().empty())
+    {
+        env_strings_.push_back("CONTENT_LENGTH=" + Utils::toString(request_.getBody().size()));
+    }
     env_strings_.push_back("CONTENT_TYPE=" + request_.getHeaderValue(Http::Headers::CONTENT_TYPE));
-    env_strings_.push_back("HTTP_HOST=" + request_.getHeaderValue(Http::Headers::HOST));
-    env_strings_.push_back("HTTP_COOKIE=" + request_.getHeaderValue(Http::Headers::COOKIE)); // TODO: update with getCookies method
+    // required for PHP-CGI to recognize the request as a CGI request
+    env_strings_.push_back("SCRIPT_FILENAME=" + cgi_path);
+    env_strings_.push_back("REDIRECT_STATUS=200");
 
     for (size_t i = 0; i < env_strings_.size(); ++i)
         envp.push_back(const_cast<char*>(env_strings_[i].c_str()));

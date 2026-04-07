@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/31 10:59:41 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/02 10:33:12 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 12:48:53 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ private:
     // ---------- Private Helper Method -------------------------
 
     void    cleanup();
-    void    buildEnvironmentVariables( std::vector<char*>& envp);
+    void    buildEnvironmentVariables( std::vector<char*>& envp, const std::string cgi_path);
 
     // non-copyable
     CgiHandler(const CgiHandler& copy);

@@ -1,32 +1,56 @@
 <!DOCTYPE html>
 <html>
-<head><title>Welcome to Webserv</title>
-	<style>
-	.button {
-		background-color: #FFB6C1;
-		color: black;
-		box-shadow: 5px 10px #D3D3D3;
-		padding: 25px 50px;
-		font-size: 17px;
-	}
-	</style>
-</head><br>
-<body style="background-color:lavender;">
-	<center><h1>Welcome to Webserv</h1></center>
-	<hr><center> &#128225;&#9989; Webserv &#128029;</center><br><br>
-	<p>Hello, user</p>
-	<p>Enter your name</p>
-	<form action="\" method="get">
-		<input name="username">
-		<button type="submit">Submit</button>
-		<br><br><br>
-	</form>
-	<form action="/upload" method="post" enctype="multipart/form-data">
-		<button class="button">Press to upload a file</button><br><br>
-		<input type="file" name="test"><br><br><br>
-	</form>
-	<form action="/cgi/script.py" method="post" enctype="multipart/form-data">
-		<button class="button">Press to run a script</button><br><br><br><br>
-	</form>
-</body>
+    <head>
+        <title>Welcome to Webserv</title>
+        <style>
+            .button {
+                background-color: #FFB6C1;
+                color: black;
+                box-shadow: 5px 10px #D3D3D3;
+                padding: 25px 50px;
+                font-size: 17px;
+            }
+            .center {
+                text-align: center;
+            }
+        </style>
+    </head>
+    <br>
+    <body style="background-color:lavender;">
+        <div class="center">
+            <h1>Welcome to Webserv</h1>
+        </div>
+        <hr>
+        <div class="center">
+            &#128225;&#9989; Webserv &#128029;
+        </div>
+        <br>
+        <br>
+        <p>Hello, user</p>
+        <p>Enter your name</p>
+        <form action="\" method="get">
+            <input name="username">
+            <button type="submit">Submit</button>
+            <br><br><br>
+        </form>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <button class="button">Press to upload a file</button>
+            <br>
+            <br>
+            <input type="file" name="test">
+            <br>
+            <br>
+            <br>
+        </form>
+        <form action="/cgi/script.py" method="post" enctype="multipart/form-data">
+            <button class="button">Press to run a python script</button>
+            <br>
+            <br>
+        </form>
+        <form action="/cgi/script.php" method="post" enctype="multipart/form-data">
+            <button class="button">Press to run a php script</button>
+            <br>
+            <br>
+        </form>
+    </body>
 </html>

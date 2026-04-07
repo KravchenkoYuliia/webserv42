@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:54:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/02 21:55:33 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 13:20:45 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,8 +157,7 @@ void Reactor::deleteHandler( int fd )
     }
     if (!has_others_fds)
     {
-         std::cerr << "[Reactor::deleteHandler] called, has_others_fds="
-              << has_others_fds << std::endl;
+        std::cerr << "[Reactor::deleteHandler] has_others_fds=" << has_others_fds << ", deactivating handler for fd = " << fd << std::endl;
         handler->deactivate();
     }
 }
@@ -266,10 +265,9 @@ void Reactor::wakeUpHandler(int fd)
             std::cerr << "  fd_map_[" << dit->first << "]\n";
         return ;
     }
-    std::cerr << "[wakeUpHandler] found fd=" << it->first << std::endl;
     IEventHandler *handler = it->second;
     BaseEventHandler* base = static_cast<BaseEventHandler*>(handler);
-    std::cerr << "[wakeUpHandler] handler type=" << base->getTypeToString()
+    std::cerr << "[wakeUpHandler] found fd = " << it->first << ", handler type=" << base->getTypeToString()
               << " isInactive=" << handler->isInactive() << std::endl;
     if (handler->isInactive())
     {

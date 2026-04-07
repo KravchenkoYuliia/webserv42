@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:42:02 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/02 22:12:21 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 13:01:28 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,7 +183,7 @@ void ConnectionHandler::handleWrite()
     server_resolved_ = false;
     setWantWrite(false);
     reactor_.updateHandler(this);
-    // reactor_.deleteHandler(fd_);
+    reactor_.deleteHandler(fd_);
 }
 
 void ConnectionHandler::handleError()
@@ -274,18 +274,23 @@ bool ConnectionHandler::checkIsMethodAllowed()
 
 void ConnectionHandler::handleCgi()
 {
+    // TODO: remove this log
+    std::cerr << "[ConnectionHandler::handleWrite] cgi_output_buffer_ size="
+              << cgi_output_buffer_.size()
+              << " content='" << cgi_output_buffer_ << "'" << std::endl;
     cgi_pending_ = false;
     MergedConfig config_data(selected_server_, selected_location_);
 
     if (cgi_output_buffer_.empty())
     {
-        // CgiHandler signalled failure with an empty buffer → 502.
         std::cerr << "[ConnectionHandler::handleWrite] cgi_output_buffer_ is empty! ResponseBuilder will build the 502 response"<< std::endl;
         ResponseBuilder builder(request_parser_.getRequest(), config_data, 502);
         serialized_response_ = builder.getResponse().serialize();
     }
     else
     {
+        std::cerr << "[ConnectionHandler::handleWrite] in !cgi_output_buffer_.empty() case! cgi_output_buffer_ content = " << cgi_output_buffer_ << std::endl;
+
         ResponseBuilder builder(request_parser_.getRequest(),
                                 config_data,
                                 cgi_output_buffer_);

@@ -26,13 +26,12 @@ keys = [
     "SERVER_PROTOCOL",
     "SERVER_SOFTWARE",
     "REQUEST_METHOD",
-    "SCRIPT_FILENAME",
     "SCRIPT_NAME",
     "PATH_INFO",
     "CONTENT_LENGTH",
     "CONTENT_TYPE",
-    "HTTP_HOST",
-    "HTTP_COOKIE"
+    "REDIRECT_STATUS",
+    "SCRIPT_FILENAME",
 ]
 
 for key in keys:
