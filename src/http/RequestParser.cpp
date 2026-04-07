@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:07 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 17:56:34 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:37:25 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,6 @@ RequestParser::RequestParser(void)
 
 RequestParser::~RequestParser(void)
 {
-    std::cout << "RequestParser destructor called" << std::endl;
 }
 
 RequestParser::RequestParser(const RequestParser& copy)
@@ -165,7 +164,7 @@ RequestParser::ResultType       RequestParser::parseNext()
             return (parseBodyChunked());
         case ParserState::BODY_NONE:
         {
-            state_ = ParserState::COMPLETE; // TODO: check if not redundant with validateHeaders()
+            state_ = ParserState::COMPLETE;
             return (ParserResult::OK);
         }
         case ParserState::COMPLETE:
@@ -187,7 +186,7 @@ RequestParser::ResultType       RequestParser::parseRequestLine()
 
     if (!parseRequestLineFields(line))
     {
-        std::cout << "parseRequestLineFields(line) failed" << std::endl;
+        std::cerr << "parseRequestLineFields(line) failed" << std::endl;
         state_ = ParserState::ERROR;
         return (ParserResult::ERROR);
     }
@@ -224,8 +223,7 @@ RequestParser::ResultType       RequestParser::parseHeaderFields()
     {
         if (!validateHeaderFields())
         {
-            // TODO: remove this log
-            std::cout << "validateHeaderFields return false because method = " << request_.getMethodToString() << ", state_ = " << ParserState::toString(state_) << std::endl;
+            std::cerr << "[RequestParser::parseHeaderFields] validateHeaderFields return false"<< std::endl;
             state_ = ParserState::ERROR;
             return (ParserResult::ERROR);
         }
@@ -233,9 +231,7 @@ RequestParser::ResultType       RequestParser::parseHeaderFields()
     }
     if (!parseHeaderField(extracted_header_field))
     {
-        // TODO: remove this log
-        std::cout << "parseHeaderField return false" << std::endl;
-        // error_code_ = 400;
+        std::cerr << "[RequestParser::parseHeaderFields] parseHeaderField return false" << std::endl;
         state_ = ParserState::ERROR;
         return (ParserResult::ERROR);
     }
@@ -270,35 +266,34 @@ bool RequestParser::validateHeaderFields()
 {
     if (!validateHostHeader())
     {
-        std::cout << "validateHostHeader() failed" << std::endl;
+        std::cerr << "validateHostHeader() failed" << std::endl;
         return (false);
     }
     if (!validateHeaderConflicts())
     {
-        std::cout << "validateHeaderConflicts failed" << std::endl;
+        std::cerr << "validateHeaderConflicts failed" << std::endl;
         return (false);
     }
     if (!validateTransferEncodingHeader())
     {
-        std::cout << "validateTransferEncodingHeader failed" << std::endl;
+        std::cerr << "validateTransferEncodingHeader failed" << std::endl;
         return (false);
     }
     if (!validateContentTypeHeader())
     {
-        std::cout << "validateContentTypeHeader failed" << std::endl;
+        std::cerr << "validateContentTypeHeader failed" << std::endl;
         return (false);
     }
     if (!validateContentLengthHeader())
     {
-        std::cout << "validateContentLengthHeader failed" << std::endl;
+        std::cerr << "validateContentLengthHeader failed" << std::endl;
         return (false);
     }
     if (!validateBodyForMethod())
     {
-        std::cout << "validateBodyForMethod failed" << std::endl;
+        std::cerr << "validateBodyForMethod failed" << std::endl;
         return (false);
     }
-    // TODO: any others check to perform on this step?
     return (true);
 }
 
@@ -440,7 +435,7 @@ bool            RequestParser::validateHeaderFieldIsUnique( const std::string& k
             || normalized_key == normalized_transfer_encoding)
             && request_.hasHeader(normalized_key))
     {
-        error_code_ = 400; // TODO: BAD_REQUEST
+        error_code_ = 400; // BAD_REQUEST
         return (false);
     }
     return (true);
@@ -566,8 +561,8 @@ bool RequestParser::parseRequestLineFields( const std::string& line )
 
     if (!isValidMethod(tokens_list[0]) || !isValidUriFormat(tokens_list[1]))
     {
-        std::cout << "!isValidMethod(tokens_list[0]) || !isValidUriFormat(tokens_list[1]) failed! method = " << tokens_list[0] << " uri format = " << tokens_list[1] << std::endl;
-        error_code_ = 400; // TODO: BAD_REQUEST
+        std::cerr << "!isValidMethod(tokens_list[0]) || !isValidUriFormat(tokens_list[1]) failed! method = " << tokens_list[0] << " uri format = " << tokens_list[1] << std::endl;
+        error_code_ = 400; // BAD_REQUEST
         return (false);
     }
     request_.setMethod(tokens_list[0]);
@@ -575,8 +570,8 @@ bool RequestParser::parseRequestLineFields( const std::string& line )
 
     if (!isValidHttpProtocolVersion(tokens_list[2]))
     {
-        std::cout << "isValidHttpProtocolVersion(tokens_list[2]) failed! http protocol version = " << tokens_list[2] << std::endl;
-        error_code_ = 505; // Todo: // HTTP_VERSION_NOT_SUPPORTED
+        std::cerr << "isValidHttpProtocolVersion(tokens_list[2]) failed! http protocol version = " << tokens_list[2] << std::endl;
+        error_code_ = 505; // HTTP_VERSION_NOT_SUPPORTED
         return (false);
     }
     request_.setVersion(tokens_list[2]);
@@ -615,7 +610,7 @@ bool    RequestParser::isValidUriFormat( const std::string& uri )
     {
         if (uri[i] == ' ' || uri[i] == '\t')
         {
-            std::cout << "uri[i] == ' ' || uri[i] == '\t' failed" << std::endl;
+            std::cerr << "uri[i] == ' ' || uri[i] == '\t' failed" << std::endl;
             return (false);
         }
     }
@@ -642,7 +637,7 @@ bool    RequestParser::validateHostHeader()
 {
     if ( request_.getVersion() == Http::Protocol::HTTP_VERSION_1_1 && !request_.hasHeader( Http::Headers::HOST ) )
     {
-        error_code_ = 400; // TODO: BAD_REQUEST
+        error_code_ = 400; // BAD_REQUEST
         return (false);
     }
     return (true);
@@ -664,7 +659,7 @@ bool    RequestParser::validateHeaderConflicts()
     if (!request_.getHeaderValue(Http::Headers::CONTENT_LENGTH).empty()
             && !request_.getHeaderValue(Http::Headers::TRANSFER_ENCODING).empty())
     {
-        error_code_ = 400; // TODO: BAD_REQUEST
+        error_code_ = 400; // BAD_REQUEST
         return (false);
     }
     return (true);
@@ -694,7 +689,7 @@ bool    RequestParser::validateTransferEncodingHeader()
     const std::string transfer_encoding_type = "chunked";
     if (Utils::toLower(transfer_encoding_header) != transfer_encoding_type)
     {
-        error_code_ = 400; // TODO: BAD_REQUEST
+        error_code_ = 400; // BAD_REQUEST
         return (false);
     }
     state_ = ParserState::BODY_CHUNKED;
@@ -738,12 +733,12 @@ bool    RequestParser::validateContentLengthHeader()
     long long value = Utils::parseLongLong(Utils::trim(content_length_header), success, base);
     if (!success || value < 0)
     {
-        error_code_ = 400; // TODO: BAD_REQUEST
+        error_code_ = 400; // BAD_REQUEST
         return (false);
     }
     if (static_cast<unsigned long long>(value) > std::numeric_limits<size_t>::max())
     {
-        error_code_ = 413; // TODO: PAYLOAD_TOO_LARGE
+        error_code_ = 413; // PAYLOAD_TOO_LARGE
         return (false);
     }
     request_.setContentLength(static_cast<size_t>(value));
@@ -775,7 +770,7 @@ bool    RequestParser::validateBodyForMethod()
 {
     if ((request_.getMethod() == HttpRequest::GET || request_.getMethod() == HttpRequest::DELETE) && state_ != ParserState::BODY_NONE)
     {
-        error_code_ = 400; // TODO: BAD_REQUEST
+        error_code_ = 400; // BAD_REQUEST
         return (false);
     }
     return (true);
@@ -796,7 +791,7 @@ bool    RequestParser::validateContentTypeHeader()
     }
     if (content_type.find(Http::ContentType::APPLICATION_X_WWW_FORM_URLENCODED) != std::string::npos)
         return (true);
-    error_code_ = 415; // TODO: UNSUPPORTED_MEDIA_TYPE
+    error_code_ = 415; // UNSUPPORTED_MEDIA_TYPE
     return (false);
 }
 
@@ -814,9 +809,8 @@ void    RequestParser::handleMultiPart()
         request_.setMultipartData(data);
     } catch (const std::runtime_error& e)
     {
-        // TODO: remove this log ?
-        std::cerr << "Multipart parsing error: " << e.what() << std::endl;
-        error_code_ = 400; // TODO: BAD_REQUEST
+        std::cerr << "[RequestParser::handleMultiPart()] Multipart parsing failed! " << e.what() << std::endl;
+        error_code_ = 400; // BAD_REQUEST
         state_ = ParserState::ERROR;
     }
 }

@@ -28,10 +28,32 @@ GFLAG = -g3
 
 EXTENSION_TYPE = cpp
 
-# TODO: Update SRC_FILES
-SRC_FILES =	$(shell find $(SRC_DIR) -type f -name "*.cpp")
-# SRC_FILES = $(SRC_DIR)/main.cpp \
-
+SRC_FILES = $(SRC_DIR)/main.cpp \
+			$(SRC_DIR)/reactor/BaseEventHandler.cpp \
+			$(SRC_DIR)/reactor/ConnectionAcceptor.cpp \
+			$(SRC_DIR)/reactor/Reactor.cpp \
+			$(SRC_DIR)/core/SignalHandler.cpp \
+			$(SRC_DIR)/core/ServerManager.cpp \
+			$(SRC_DIR)/core/ConnectionHandler.cpp \
+			$(SRC_DIR)/core/Socket.cpp \
+			$(SRC_DIR)/core/CgiHandler.cpp \
+			$(SRC_DIR)/http/RequestParser.cpp \
+			$(SRC_DIR)/http/MultipartData.cpp \
+			$(SRC_DIR)/http/MultipartParser.cpp \
+			$(SRC_DIR)/http/UploadedFile.cpp \
+			$(SRC_DIR)/http/HttpResponse.cpp \
+			$(SRC_DIR)/http/HttpConstants.cpp \
+			$(SRC_DIR)/http/ResponseBuilder.cpp \
+			$(SRC_DIR)/http/HttpRequest.cpp \
+			$(SRC_DIR)/parser/Token.cpp \
+			$(SRC_DIR)/parser/Lexer.cpp \
+			$(SRC_DIR)/parser/ServerConfig.cpp \
+			$(SRC_DIR)/parser/ConfigParser.cpp \
+			$(SRC_DIR)/parser/LocationConfig.cpp \
+			$(SRC_DIR)/utils/Utils.cpp \
+			$(SRC_DIR)/routing/LocationMatcher.cpp \
+			$(SRC_DIR)/routing/ServerMatcher.cpp \
+			$(SRC_DIR)/routing/MergedConfig.cpp \
 
 # Object files - map source files to object files
 OBJ_FILES = $(SRC_FILES:$(SRC_DIR)/%.$(EXTENSION_TYPE)=$(BUILD_DIR)/%.o)

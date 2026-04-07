@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 16:54:38 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 18:10:59 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:35:17 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,8 +41,13 @@ Socket::~Socket(void)
 
 Socket& Socket::operator=(const Socket& copy)
 {
-    if (this != &copy) {
-        fd_ = copy.fd_; // TODO: issue with 2 potential fd pointing to the same address => fix this by using dup
+    if (this != &copy)
+    {
+        if (fd_ != -1)
+            close(fd_);
+        int new_fd = dup(copy.fd_);
+        if (new_fd == -1)
+            throw std::runtime_error("dup failed");
         bind_port_ = copy.bind_port_;
     }
     return (*this);

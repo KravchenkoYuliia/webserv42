@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/20 11:11:01 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/23 15:57:55 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:38:34 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,6 @@ UploadedFile& UploadedFile::operator=(const UploadedFile& copy)
 
 UploadedFile::~UploadedFile(void)
 {
-    std::cout << "UploadedFile destructor called" << std::endl;
 }
 
 // --------------------------- Public Getter Methods ---------------------------

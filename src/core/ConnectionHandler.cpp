@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:42:02 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 18:10:18 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:23:15 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,6 @@ void ConnectionHandler::handleRead()
             break; // assume EAGAIN
         else if (bytes_received > 0)
         {
-            // TODO: remove printing lines when done
             std::cout.write(buffer, bytes_received);
             std::cout.flush();
 

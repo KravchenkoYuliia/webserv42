@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:54:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 18:13:31 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:25:38 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,6 @@ void Reactor::addHandler( IEventHandler *handler )
     if (handler == NULL)
         throw std::invalid_argument("handler is NULL");
 
-    // TODO: remove these logs
     // if push_back failed and throw a bad_alloc
     //-> handler will be freed by the catch statement in ServerManager::init()
     handlers_.push_back(handler);
@@ -56,7 +55,6 @@ void Reactor::addHandler( IEventHandler *handler )
 
     if (epoll_ctl( epoll_fd_, EPOLL_CTL_ADD, fd, &event) == -1)
     {
-        // TODO: remove these logs
         // remove handler from handlers_ if epoll_ctl fails
         //-> handler will be freed by the catch statement in ServerManager::init() since Reactor does not own the handler
         handlers_.pop_back();

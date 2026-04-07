@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:58:31 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/23 18:02:09 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:38:13 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@ MultipartParser::MultipartParser(void) : multipart_data_()
 
 MultipartParser::~MultipartParser(void)
 {
-    std::cout << "MultipartParser destructor called" << std::endl;
 }
 
 // --------------------------- Public Getter Method ---------------------------

@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:43:36 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/31 13:00:17 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:25:27 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,6 @@ BaseEventHandler::BaseEventHandler(EventType type)
 
 BaseEventHandler::~BaseEventHandler(void)
 {
-    // TODO: remove this log
-
-    std::cout << "BaseEventHandler destructor called" << std::endl;
 }
 
 // --------------------------- Public Getter Methods ---------------------------

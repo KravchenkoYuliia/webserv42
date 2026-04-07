@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 18:02:42 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 14:15:19 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:27:11 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 // ------------------------- Destructor / Constructor -------------------------
 
 HttpRequest::HttpRequest(void)
-    :   method_(GET), // TODO: is not hiding that default method is GET?
+    :   method_(GET),
         version_(Http::Protocol::HTTP_VERSION_1_1),
         content_length_(0),
         chunk_size_(0),
@@ -32,8 +32,6 @@ HttpRequest::HttpRequest(void)
 
 HttpRequest::~HttpRequest(void)
 {
-    // TODO: Delete this log
-    std::cout << "HttpRequest destructor called" << std::endl;
 }
 
 HttpRequest::HttpRequest(const HttpRequest& copy)
@@ -76,7 +74,6 @@ void    HttpRequest::setMethod(const std::string& method)
 
 void    HttpRequest::setUri(const std::string& uri)
 {
-    // TODO: consider adding an uri limit to handle 414 - request uri too long?
     uri_ = uri;
 }
 
@@ -215,7 +212,6 @@ bool    HttpRequest::hasHeader( const std::string& key) const
 
 bool HttpRequest::isCgiRequest(const std::map<std::string, std::string>& cgi_map) const
 {
-    // const std::map<std::string,std::string>& cgi_map = config.getCgi();
     if (cgi_map.empty())
         return (false);
     const std::string& uri = getUri();

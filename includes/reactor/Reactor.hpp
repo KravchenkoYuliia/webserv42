@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:19:32 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/02 09:36:57 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 16:11:27 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ public:
     void        updateHandler( IEventHandler *handler );
     void        deleteHandler( int fd );
     void        removeDeactivatedHandler();
-    void        run(); // TODO: should it be renamed to handleEvent?
+    void        run();
     uint32_t    computeEvents(IEventHandler *handler);
     void        wakeUpHandler(int fd);
 

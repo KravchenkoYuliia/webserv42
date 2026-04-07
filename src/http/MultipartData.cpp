@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/23 13:58:44 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/23 16:00:40 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:38:17 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@ MultipartData::MultipartData(void)
 
 MultipartData::~MultipartData(void)
 {
-    std::cout << "MultipartData destructor called" << std::endl;
 }
 
 MultipartData::MultipartData(const MultipartData& copy) : fields_(copy.fields_), files_(copy.files_)
