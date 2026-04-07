@@ -97,6 +97,7 @@ private:
 	void	buildListing( std::vector<std::string>& files_from_dir );
 	void	handleAutoindex( const std::string& path );
 	void	buildResponsePOST( const HttpRequest& request );
+	int	handlePlainText( const std::string& body );
 	void	handleUpload( const HttpRequest& request );
 	void	buildSuccessUploadResponse( const std::string& filename );
 	const std::string	getFileNametoUpload( const std::string& request_body );

@@ -6,7 +6,7 @@
 /*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 14:02:15 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/04/07 14:45:37 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,11 +179,31 @@ void	ResponseBuilder::buildResponseGET() {
 
 void	ResponseBuilder::buildResponsePOST( const HttpRequest& request ) {
 
-	if ( config_data_.getUploadAllowed() == true ) {
+	if ( request.getHeaderValue( "Content-Type" ) == Http::ContentType::TEXT_PLAIN ) {
+		
+		int return_value = handlePlainText( request.getBody() );
+		if ( return_value == ERROR ) {
+			setErrorState( 500 );
+			return ;
+		}
+	}
+	else if ( config_data_.getUploadAllowed() == true ) {
 		handleUpload( request );
 	}
 	else
 		setErrorState( 403 );
+}
+
+int	ResponseBuilder::handlePlainText( const std::string& body ) {
+
+	std::ofstream file;
+	const std::string path = buildPathFromRootAndResource( config_data_.getRoot(), "Text_uploaded_to_server.txt");
+	file.open( path.c_str() );
+	if ( !file.is_open() )
+		return ERROR;
+
+	file << body;
+	return SUCCESS;
 }
 
 void	ResponseBuilder::buildResponseDELETE( const HttpRequest& request ) {
