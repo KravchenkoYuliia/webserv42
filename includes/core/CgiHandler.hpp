@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/31 10:59:41 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 12:48:53 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 16:11:10 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,10 @@ public:
     // ---------- Constructors / Destructor ----------
 
     CgiHandler(
-        // ConnectionHandler *connection_handler,
         Reactor& reactor,
         const HttpRequest& request,
         const MergedConfig& merge_config,
-        std::string& output_buffer, // TODO: should be const?
+        std::string& output_buffer,
         int fd
     );
 

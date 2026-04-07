@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/31 12:53:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 15:45:23 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:10:08 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 #include <sys/types.h>  // pid_t
 #include <sys/wait.h>   // waitpid()
 #include <signal.h>     // kill(), signal constants
-#include <errno.h>      // errno
 #include <cstdlib>      // std::exit()
 #include <sys/epoll.h>  // EPOLLIN, EPOLLOUT, EPOLL_CTL_MOD
 #include "core/CgiHandler.hpp"
@@ -124,7 +123,7 @@ void    CgiHandler::handleError(void)
     // Remove both pipe fds from epoll before deactivating
     if (stdin_pipe_[1] != -1)
     {
-       reactor_.deleteHandler(stdin_pipe_[1]);
+        reactor_.deleteHandler(stdin_pipe_[1]);
         close(stdin_pipe_[1]);
         stdin_pipe_[1] = -1;
     }
@@ -169,20 +168,20 @@ bool CgiHandler::execCgi()
         size_t                                          dot_pos = cgi_uri.find_last_of('.');
         if (dot_pos == std::string::npos)
         {
-            cleanup(); // TODO: really usefull here?
+            std::cerr << "[CgiHandler::execCgi] no file extension found in URI: " << cgi_uri << std::endl;
             std::exit(1);
         }
         const std::string                               cgi_extension = cgi_uri.substr(dot_pos);
         const std::map<std::string,std::string>&        cgi_map = config_.getCgi();
         if (cgi_map.empty())
         {
-            cleanup(); // TODO: really usefull here?
+            std::cerr << "[CgiHandler::execCgi] CGI map is empty" << std::endl;
             std::exit(1);
         }
         std::map<std::string, std::string>::const_iterator it = cgi_map.find(cgi_extension);
         if (it == cgi_map.end())
         {
-            cleanup(); // TODO: really usefull here?
+            std::cerr << "[CgiHandler::execCgi] no CGI handler found for extension: " << cgi_extension << std::endl;
             std::exit(1);
         }
         const std::string   cgi_script_path = it->second;
@@ -194,12 +193,12 @@ bool CgiHandler::execCgi()
             code_interpreter = "/usr/bin/php-cgi";
         else
         {
-            cleanup(); // TODO: really usefull here?
+            std::cerr << "[CgiHandler::execCgi] no code interpreter found for extension: " << cgi_extension << std::endl;
             std::exit(1);
         }
         if (access(cgi_script_path.c_str(), F_OK | X_OK) == -1)
         {
-            cleanup();  // TODO: really usefull here?
+            std::cerr << "[CgiHandler::execCgi] CGI script not found or not executable: " << cgi_script_path << std::endl;
             std::exit(1);
         }
         char *argv[] = {
@@ -214,8 +213,7 @@ bool CgiHandler::execCgi()
 
         if (execve(argv[0], argv, envp.data()) == -1)
         {
-            std::cerr << "Error executing CGI script!" << std::endl;
-            cleanup();  // TODO: really usefull here? or better close STDIN_FILENO, STDOUT_FILENO and STDERR_FILENO directly?
+            std::cerr << "[CgiHandler::execCgi] execve failed for: " << code_interpreter << " " << cgi_script_path << std::endl;
             std::exit(1);
         }
     }
@@ -276,6 +274,7 @@ void    CgiHandler::cleanup()
 
 void    CgiHandler::buildEnvironmentVariables( std::vector<char*>& envp, const std::string cgi_path )
 {
+    env_strings_.clear();
     env_strings_.push_back("GATEWAY_INTERFACE=CGI/1.1");
     env_strings_.push_back("SERVER_PROTOCOL=HTTP/1.1");
     env_strings_.push_back("SERVER_SOFTWARE=Webserv/1.0");
