@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 18:00:12 by yukravch         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:22:01 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,7 +170,7 @@ void	ResponseBuilder::setContentLength() {
 
 void	ResponseBuilder::setLastLineOfHeader() {
 
-	header_ << "Connection: keep-alive" << Http::Formatting::HEADER_END;
+	header_ << "Connection: close" << Http::Formatting::HEADER_END;
 	response_.setHeader( header_ );
 }
 
