@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 15:37:49 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:00:12 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -258,12 +258,13 @@ void	ResponseBuilder::buildResponsePOST( const HttpRequest& request ) {
 int	ResponseBuilder::handlePlainText( const std::string& body ) {
 
 	std::ofstream file;
-	const std::string path = buildPathFromRootAndResource( config_data_.getRoot(), "Text_uploaded_to_server.txt");
+	const std::string path = buildPathFromRootAndResource( config_data_.getRoot(), "text_uploaded_to_server.txt");
 	file.open( path.c_str() );
 	if ( !file.is_open() )
 		return ERROR;
 
 	file << body;
+	buildSuccessUploadResponse( "text_uploaded_to_server.txt" );
 	return SUCCESS;
 }
 
