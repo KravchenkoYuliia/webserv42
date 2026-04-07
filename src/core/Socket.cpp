@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 16:54:38 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/06 16:59:45 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:10:59 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,6 @@ int Socket::accept()
     int new_fd = ::accept(fd_, NULL, NULL);
     if (new_fd < 0)
     {
-        // TODO: remove this check?
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             return (-1);
         throw std::runtime_error(std::string("accept failed! ") + std::strerror(errno));

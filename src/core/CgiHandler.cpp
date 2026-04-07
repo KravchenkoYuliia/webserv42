@@ -82,7 +82,9 @@ void    CgiHandler::handleRead(void)
     while (true)
     {
         ssize_t bytes_read = read(stdout_pipe_[0], buffer, sizeof(buffer));
-        if (bytes_read == 0)
+        if (bytes_read > 0)
+            output_buffer_.append(buffer, bytes_read);
+        else if (bytes_read == 0)
         {
             reactor_.deleteHandler(stdout_pipe_[0]);
             close(stdout_pipe_[0]);
@@ -91,15 +93,8 @@ void    CgiHandler::handleRead(void)
             reactor_.wakeUpHandler(fd_);
             return;
         }
-        if (bytes_read == -1)
-        {
-            // TODO: remove usage of errno
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
-                return; // more data coming, wait for next EPOLLIN
-            handleError();
-            return;
-        }
-        output_buffer_.append(buffer, bytes_read);
+        else
+            return ; // assume EAGAIN
     }
 }
 
@@ -111,15 +106,10 @@ void    CgiHandler::handleWrite(void)
         ssize_t n = write(stdin_pipe_[1],
                          body_.data() + write_offset_,
                          body_.size() - write_offset_);
-        if (n == -1)
-        {
-            // TODO: remove usage of errno
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
-                return; // come back on next EPOLLOUT
-            handleError();
-            return;
-        }
-        write_offset_ += static_cast<size_t>(n);
+        if (n > 0)
+            write_offset_ += static_cast<size_t>(n);
+        else
+            return; // assume EAGAIN
     }
     reactor_.deleteHandler(stdin_pipe_[1]);
     close(stdin_pipe_[1]);

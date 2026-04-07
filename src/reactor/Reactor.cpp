@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 11:54:17 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 15:48:07 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:13:31 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <sys/epoll.h>      // epoll_create
 #include <unistd.h>         // close
 #include <stdexcept>
-#include <errno.h>
+#include <errno.h>          // errno, EINTR
 #include <cstring>          //strerror
 #include <algorithm>        // std::find
 #include "core/SignalHandler.hpp"
@@ -212,8 +212,11 @@ void Reactor::run()
         int num_fds_ready = epoll_wait(epoll_fd_, ready_events_list, kMaxReadyEventsBatchSize, -1);
         if (num_fds_ready == -1)
         {
-            if (errno == EINTR) // TODO: check in which case we can hit this check/ can we keep it?
+            if (errno == EINTR)
+            {
+                std::cerr << "\n[Reactor::run] CTRL-C intercepted" << std::endl;
                 continue;
+            }
             throw std::runtime_error("epoll_wait failed");
         }
         for (int i = 0; i < num_fds_ready; ++i)
@@ -260,9 +263,5 @@ void Reactor::wakeUpHandler(int fd)
     event.events = computeEvents(handler);
     event.data.ptr = handler;
     if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, fd, &event) == -1)
-    {
-        std::cerr << "[Reactor::wakeUpHandler] epoll_ctl MOD failed: "
-                  << strerror(errno) << "\n";
         throw std::runtime_error("epoll_ctl MOD failed in wakeUpHandler");
-    }
 }

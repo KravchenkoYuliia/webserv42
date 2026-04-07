@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 17:54:23 by jgossard          #+#    #+#             */
-/*   Updated: 2026/03/27 15:12:35 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:13:44 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include <stdexcept>        // std::runtime_error
 #include <sstream>          // std::stringstream
 #include <cstdlib>          // strtoll
-#include <errno.h>          // errno // TODO: to keep?
+#include <errno.h>          // errno
 #include "utils/Utils.hpp"
 
 void Utils::setNonBlocking(int fd)
@@ -68,9 +68,9 @@ long long        Utils::parseLongLong(const std::string &str, bool &success, int
         success = false;
         return (0);
     }
-    errno = 0; // TODO: to keep?
+    errno = 0;
     value = std::strtoll(trimmed_str.c_str(), &endptr, base);
-    // TODO: this errno check cases of overflow...can be kept?
+    // errno check cases of overflow
     if (errno == ERANGE || *endptr != '\0' || value < 0)
     {
         success = false;

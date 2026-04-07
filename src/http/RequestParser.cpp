@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:07 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 15:28:09 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 17:56:34 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 #include <vector>
 #include <cstring>      // strlen
 #include <algorithm>    // std::min
-#include <errno.h>      // errno
 #include <limits>       // std::numeric_limits
 #include "http/MultipartParser.hpp"
 #include "http/HttpConstants.hpp"

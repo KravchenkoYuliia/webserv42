@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 16:42:02 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 15:34:51 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:10:18 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include <unistd.h>         // close
 #include <sys/epoll.h>      // EPOLLIN , EPOLLOUT
 #include <sys/socket.h>     // recv
-#include <errno.h>          // errno, EAGAIN, EWOULDBLOCK
 #include "core/CgiHandler.hpp"
 #include "core/ConnectionHandler.hpp"
 #include "http/HttpConstants.hpp"
@@ -63,7 +62,6 @@ void ConnectionHandler::handleRead()
 {
     char buffer[8192];
 
-    // read the request until recv == 0
     while (true)
     {
         ssize_t bytes_received = recv(fd_, buffer, sizeof(buffer), 0);
@@ -77,13 +75,7 @@ void ConnectionHandler::handleRead()
             return ;
         }
         else if (bytes_received < 0)
-        {
-            // TODO: remove check with EAGAIN and replace with a CTRL-C check through signal
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
-                break ;
-            reactor_.deleteHandler(fd_);
-            return ;
-        }
+            break; // assume EAGAIN
         else if (bytes_received > 0)
         {
             // TODO: remove printing lines when done
@@ -134,8 +126,6 @@ void ConnectionHandler::handleRead()
     }
 }
 
-// TODO: add check on bytes_send
-// TODO: track progress across multiple EPOLLOUT events.
 void ConnectionHandler::handleWrite()
 {
     if (serialized_response_.empty() && cgi_pending_)
