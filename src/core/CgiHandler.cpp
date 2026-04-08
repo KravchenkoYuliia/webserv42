@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/31 12:53:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 18:10:08 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/08 14:26:19 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,8 @@ void    CgiHandler::handleRead(void)
             reactor_.deleteHandler(stdout_pipe_[0]);
             close(stdout_pipe_[0]);
             stdout_pipe_[0] = -1;
+            waitpid(pid_, NULL, WNOHANG);
+            pid_ = -1;
             deactivate();
             reactor_.wakeUpHandler(fd_);
             return;
