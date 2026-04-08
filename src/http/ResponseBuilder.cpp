@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ResponseBuilder.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:28 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 18:22:01 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/08 16:18:08 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,13 @@
 
 ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig& config_data, size_t request_error ) {
 
-	initialize_values( request, config_data );
+	if ( initialize_values( request, config_data ) == ERROR ) {
+
+		buildErrorResponse();
+		setContentLength();
+		setLastLineOfHeader();
+		return;
+	}
 
 	if ( request_error != 1 ) {
 		setErrorState( request_error );
@@ -39,7 +45,7 @@ ResponseBuilder::ResponseBuilder( const HttpRequest& request, const MergedConfig
 		buildErrorResponse();
 	}
 
-    setCookie();
+	setCookie();
 	setContentLength();
 	setLastLineOfHeader();
 }
@@ -133,7 +139,7 @@ void	ResponseBuilder::setCookie() {
 	}
 }
 
-void	ResponseBuilder::initialize_values( const HttpRequest& request, const MergedConfig& config_data ) {
+int	ResponseBuilder::initialize_values( const HttpRequest& request, const MergedConfig& config_data ) {
 
 	error_ = false;
 	file_or_dir_ = NOT_SPECIFIED;
@@ -142,9 +148,25 @@ void	ResponseBuilder::initialize_values( const HttpRequest& request, const Merge
 	header_.str("");
 	config_data_ = config_data;
 	cutQueryFromUri( request.getUri() );
+	int equal = 0;
+	for ( size_t i = 0; i < query_.length(); i++ ) {
+		if ( query_[i] == '=' )
+			equal += 1;
+		if ( !std::isalpha(query_[i]) && query_[i] != '=' ) {
+			setErrorState(400);
+			return ERROR;
+		}
+	}
+	if ( equal > 1 ) {
+		setErrorState(400);
+		return ERROR;
+	}
+
+
 	if ( !request.getCookie().empty() )
 		cookie_ = request.getCookie();
 	headers_in_request = request.getHeaders();
+	return SUCCESS;
 }
 
 const HttpResponse&	ResponseBuilder::getResponse() {
@@ -374,8 +396,14 @@ const std::string	ResponseBuilder::getUsernameCookie() {
 	else if ( !cookie_.empty() ) {
 
 		std::string all_cookies = cookie_["cookie"];
+
 		size_t pos_of_username = all_cookies.find("username=");
 		if ( pos_of_username == all_cookies.npos )
+			return "";
+		if ( pos_of_username + 10 >= all_cookies.length()) {
+			return "";
+		}
+		if ( pos_of_username + 10 < all_cookies.length() && !std::isalnum(all_cookies[pos_of_username+10]) )
 			return "";
 		char	username[1000];
 		int i = 0;
@@ -390,6 +418,7 @@ const std::string	ResponseBuilder::getUsernameCookie() {
 		std::string username_str = username;
 		return username_str;
 	}
+
 	return "";
 }
 

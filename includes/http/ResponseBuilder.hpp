@@ -51,7 +51,7 @@ private:
 	std::map<std::string, std::string>	headers_in_request;
 	std::string		query_;
 
-	void	        initialize_values( const HttpRequest& request, const MergedConfig& config_data );
+	int	        initialize_values( const HttpRequest& request, const MergedConfig& config_data );
 	void		buildResponse( const HttpRequest& request );
 
 	void	        setStatusCode();

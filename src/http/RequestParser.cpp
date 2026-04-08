@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestParser.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yukravch <yukravch@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 10:12:07 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 18:37:25 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/08 16:19:23 by yukravch         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -374,16 +374,16 @@ bool	RequestParser::checkCookieSyntax( const std::string& cookie)
 	size_t i = 0;
 	while (i < cookie.length() && std::isspace(cookie[i]))
 		i++;
-	if (i < cookie.length() && !std::isalnum(cookie[i]))
+	if (i < cookie.length() && !std::isalpha(cookie[i]))
 		return (false);
-	while (i < cookie.length() && std::isalnum(cookie[i]))
+	while (i < cookie.length() && std::isalpha(cookie[i]))
 		i++;
 	if (i >= cookie.length() || cookie[i] != '=')
 		return (false);
 	i += 1;
-	if (i < cookie.length() && !std::isalnum(cookie[i]))
+	if (i < cookie.length() && !std::isalpha(cookie[i]))
 		return (false);
-	while (i < cookie.length() && std::isalnum(cookie[i]))
+	while (i < cookie.length() && std::isalpha(cookie[i]))
 		i++;
 	if (i < cookie.length() && !std::isspace(cookie[i]))
 		return (false);
