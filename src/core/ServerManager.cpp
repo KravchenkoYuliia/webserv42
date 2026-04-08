@@ -6,7 +6,7 @@
 /*   By: jgossard <jgossard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 18:51:35 by jgossard          #+#    #+#             */
-/*   Updated: 2026/04/07 18:37:54 by jgossard         ###   ########.fr       */
+/*   Updated: 2026/04/08 15:34:48 by jgossard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,13 +35,20 @@ void ServerManager::init( const std::map<uint16_t , std::vector<ServerConfig> >&
     {
         uint16_t port = it->first;
         Socket *socket = new Socket();
-        socket->create();
-        socket->setReusable();
-        socket->bind(port);
-        Utils::setNonBlocking(socket->getFd());
-        socket->listen();
+        try {
+            socket->create();
+            socket->setReusable();
+            socket->bind(port);
+            Utils::setNonBlocking(socket->getFd());
+            socket->listen();
+            listening_sockets_.push_back(socket);
 
-        listening_sockets_.push_back(socket);
+        }
+        catch (const std::exception& e)
+        {
+            delete socket;
+            throw; // rethrow the exception after cleanup
+        }
 
         ConnectionAcceptor *acceptor = new ConnectionAcceptor(socket, reactor_, port, it->second);
         try {
@@ -49,6 +56,7 @@ void ServerManager::init( const std::map<uint16_t , std::vector<ServerConfig> >&
         }
         catch (const std::exception& e)
         {
+            std::cerr << "Exception caught while adding handler: " << e.what() << std::endl;
             delete acceptor;
             delete socket;
             throw; // rethrow the exception after cleanup
