@@ -8,6 +8,7 @@ class LocationMatcher {
 
 public:
 	static const LocationConfig	matchLocation( const ServerConfig& selected_server, const std::string& uri );
+	static bool			isUriLongerThanLocation( const std::string& uri, const std::string& location );
 
 private:
 	LocationMatcher();

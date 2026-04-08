@@ -15,6 +15,9 @@ const LocationConfig	LocationMatcher::matchLocation( const ServerConfig& selecte
 		if ( uri.rfind( path, 0 ) == std::string::npos ) {
 			continue;
 		}
+        if ( isUriLongerThanLocation( uri, path ) ) {
+            continue;
+        }
 		if ( biggest_match.length() < path.length() ) {
 			biggest_match = path;
 			index_of_matched_location = i;
@@ -25,4 +28,22 @@ const LocationConfig	LocationMatcher::matchLocation( const ServerConfig& selecte
 	}
 
 	return locations[index_of_matched_location];
+}
+
+
+bool	LocationMatcher::isUriLongerThanLocation( const std::string& uri, const std::string& location ) {
+
+	size_t i = 0;
+
+	while ( i < location.length() ) {
+
+		if ( location[i] != uri[i] )
+			break;
+		i++;
+	}
+	if ( i >= location.length() && i < uri.length() && ( (i != 0 && uri[i - 1] != '/') && uri[i] != '/' ) ) {
+		return true;
+	}
+
+	return false;
 }
